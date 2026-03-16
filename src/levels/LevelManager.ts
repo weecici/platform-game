@@ -4,21 +4,17 @@ import type { Engine } from '../core/Engine';
 import type { PhysicsWorld } from '../core/PhysicsWorld';
 import type { TextureManager } from '../systems/TextureManager';
 
-/**
- * Platform definition for level building
- */
 export interface PlatformDef {
   position: [number, number, number];
   size: [number, number, number];
   color?: number;
   texture?: string;
   textureRepeat?: [number, number];
+  solid?: boolean;
   type?: 'static' | 'moving' | 'rotating' | 'crumbling';
-  // For moving platforms
   moveAxis?: 'x' | 'y' | 'z';
   moveRange?: number;
   moveSpeed?: number;
-  // For rotating
   rotateAxis?: 'x' | 'y' | 'z';
   rotateSpeed?: number;
 }
@@ -49,9 +45,10 @@ export interface DecorationDef {
 
 interface PlatformRuntime {
   mesh: THREE.Mesh;
-  body: CANNON.Body;
+  body: CANNON.Body | null;
   def: PlatformDef;
   initialPosition: THREE.Vector3;
+  previousPosition: THREE.Vector3;
   time: number;
 }
 
@@ -80,14 +77,10 @@ export class LevelManager {
     this.textureManager = textureManager;
   }
 
-  /**
-   * Load a level from config
-   */
   loadLevel(config: LevelConfig): void {
     this.clearLevel();
     this.currentConfig = config;
 
-    // Sky and fog
     if (config.skyColor !== undefined) {
       this.engine.scene.background = new THREE.Color(config.skyColor);
     }
@@ -99,12 +92,10 @@ export class LevelManager {
       );
     }
 
-    // Build platforms
     for (const platDef of config.platforms) {
       this.createPlatform(platDef);
     }
 
-    // Build decorations
     if (config.decorations) {
       for (const decDef of config.decorations) {
         this.createDecoration(decDef);
@@ -116,7 +107,6 @@ export class LevelManager {
     const [sx, sy, sz] = def.size;
     const [px, py, pz] = def.position;
 
-    // Visual mesh
     const geometry = new THREE.BoxGeometry(sx, sy, sz);
     const material = new THREE.MeshStandardMaterial({
       color: def.color || 0x668899,
@@ -124,7 +114,6 @@ export class LevelManager {
       metalness: 0.2,
     });
 
-    // Apply texture if specified
     if (def.texture) {
       const tex = this.textureManager.getTexture(def.texture);
       if (tex) {
@@ -140,26 +129,33 @@ export class LevelManager {
 
     const mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(px, py, pz);
-    mesh.castShadow = true;
+    mesh.castShadow = def.solid !== false;
     mesh.receiveShadow = true;
     this.engine.scene.add(mesh);
 
-    // Physics body
-    const halfExtents = new CANNON.Vec3(sx / 2, sy / 2, sz / 2);
-    const shape = new CANNON.Box(halfExtents);
-    const body = new CANNON.Body({
-      mass: 0, // Static
-      shape,
-      position: new CANNON.Vec3(px, py, pz),
-    });
-    this.physics.addBody(body);
+    let body: CANNON.Body | null = null;
+    if (def.solid !== false) {
+      const halfExtents = new CANNON.Vec3(sx / 2, sy / 2, sz / 2);
+      const shape = new CANNON.Box(halfExtents);
+      body = new CANNON.Body({
+        mass: 0,
+        type:
+          def.type === 'moving' || def.type === 'rotating'
+            ? CANNON.Body.KINEMATIC
+            : CANNON.Body.STATIC,
+        shape,
+        position: new CANNON.Vec3(px, py, pz),
+      });
+      this.physics.addBody(body);
+    }
 
     this.platforms.push({
       mesh,
       body,
       def,
       initialPosition: new THREE.Vector3(px, py, pz),
-      time: Math.random() * Math.PI * 2, // Random phase offset
+      previousPosition: new THREE.Vector3(px, py, pz),
+      time: Math.random() * Math.PI * 2,
     });
   }
 
@@ -207,11 +203,7 @@ export class LevelManager {
     });
   }
 
-  /**
-   * Update moving/rotating platforms and decorations
-   */
   update(dt: number): void {
-    // Update platforms
     for (const plat of this.platforms) {
       plat.time += dt;
 
@@ -227,7 +219,16 @@ export class LevelManager {
         if (axis === 'z') newPos.z += offset;
 
         plat.mesh.position.copy(newPos);
-        plat.body.position.set(newPos.x, newPos.y, newPos.z);
+        if (plat.body) {
+          plat.body.velocity.set(
+            (newPos.x - plat.previousPosition.x) / Math.max(dt, 1 / 120),
+            (newPos.y - plat.previousPosition.y) / Math.max(dt, 1 / 120),
+            (newPos.z - plat.previousPosition.z) / Math.max(dt, 1 / 120),
+          );
+          plat.body.position.set(newPos.x, newPos.y, newPos.z);
+          plat.body.aabbNeedsUpdate = true;
+        }
+        plat.previousPosition.copy(newPos);
       }
 
       if (plat.def.type === 'rotating') {
@@ -237,17 +238,18 @@ export class LevelManager {
         if (axis === 'y') plat.mesh.rotation.y += speed * dt;
         if (axis === 'z') plat.mesh.rotation.z += speed * dt;
 
-        // Sync physics body rotation
-        plat.body.quaternion.set(
-          plat.mesh.quaternion.x,
-          plat.mesh.quaternion.y,
-          plat.mesh.quaternion.z,
-          plat.mesh.quaternion.w,
-        );
+        if (plat.body) {
+          plat.body.quaternion.set(
+            plat.mesh.quaternion.x,
+            plat.mesh.quaternion.y,
+            plat.mesh.quaternion.z,
+            plat.mesh.quaternion.w,
+          );
+          plat.body.aabbNeedsUpdate = true;
+        }
       }
     }
 
-    // Update decorations (animations)
     for (const dec of this.decorations) {
       dec.time += dt;
       if (dec.def.animate) {
@@ -264,18 +266,32 @@ export class LevelManager {
     }
   }
 
-  /**
-   * Clear all level objects
-   */
   clearLevel(): void {
     for (const plat of this.platforms) {
       this.engine.scene.remove(plat.mesh);
-      this.physics.removeBody(plat.body);
-      if (plat.mesh.geometry) plat.mesh.geometry.dispose();
+      if (plat.body) {
+        this.physics.removeBody(plat.body);
+      }
+      plat.mesh.geometry.dispose();
+      if (Array.isArray(plat.mesh.material)) {
+        plat.mesh.material.forEach((material) => material.dispose());
+      } else {
+        plat.mesh.material.dispose();
+      }
     }
+
     for (const dec of this.decorations) {
       this.engine.scene.remove(dec.mesh);
+      if (dec.mesh instanceof THREE.Mesh) {
+        dec.mesh.geometry.dispose();
+        if (Array.isArray(dec.mesh.material)) {
+          dec.mesh.material.forEach((material) => material.dispose());
+        } else {
+          dec.mesh.material.dispose();
+        }
+      }
     }
+
     this.platforms = [];
     this.decorations = [];
     this.currentConfig = null;
@@ -286,5 +302,15 @@ export class LevelManager {
       return new THREE.Vector3(...this.currentConfig.spawnPosition);
     }
     return new THREE.Vector3(0, 5, 0);
+  }
+
+  isPlayerAtFinish(position: THREE.Vector3): boolean {
+    return (
+      position.z <= -131 &&
+      position.z >= -141 &&
+      position.x >= 10 &&
+      position.x <= 20 &&
+      position.y >= 12
+    );
   }
 }

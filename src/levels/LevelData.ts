@@ -225,6 +225,7 @@ export const LEVEL_PARKOUR_CITY: LevelConfig = {
       position: [10, -5, -60],
       size: [200, 0.5, 300],
       color: 0x1a1a2e,
+      solid: false,
     },
   ],
 

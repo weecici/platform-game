@@ -44,6 +44,7 @@ export class Engine {
     });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -95,6 +96,5 @@ export class Engine {
 
   dispose(): void {
     this.renderer.dispose();
-    window.removeEventListener('resize', this.onResize.bind(this));
   }
 }

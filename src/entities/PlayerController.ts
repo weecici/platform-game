@@ -4,10 +4,6 @@ import type { Engine } from '../core/Engine';
 import type { InputManager } from '../core/InputManager';
 import type { PhysicsWorld } from '../core/PhysicsWorld';
 
-/**
- * PlayerController - First-person parkour player with physics
- * Handles: movement, jumping, sprinting, camera look, collision
- */
 export interface PlayerConfig {
   moveSpeed: number;
   sprintMultiplier: number;
@@ -20,7 +16,6 @@ export interface PlayerConfig {
 
 export class PlayerController {
   public body: CANNON.Body;
-  public velocity: THREE.Vector3 = new THREE.Vector3();
   public isGrounded = false;
   public isSprinting = false;
   public config: PlayerConfig;
@@ -33,9 +28,7 @@ export class PlayerController {
   private direction = new THREE.Vector3();
   private frontVector = new THREE.Vector3();
   private sideVector = new THREE.Vector3();
-
-  // Contact tracking for ground detection
-  private contactNormal = new CANNON.Vec3();
+  private groundCheckResult = new CANNON.RaycastResult();
 
   constructor(
     engine: Engine,
@@ -57,7 +50,6 @@ export class PlayerController {
       maxPitchAngle: Math.PI / 2 - 0.1,
     };
 
-    // Physics body - capsule approximated as sphere
     const shape = new CANNON.Sphere(this.config.playerRadius);
     this.body = new CANNON.Body({
       mass: 80,
@@ -68,58 +60,34 @@ export class PlayerController {
         spawnPosition.z,
       ),
       linearDamping: 0.05,
-      angularDamping: 1.0, // Prevent rolling
+      angularDamping: 1,
       fixedRotation: true,
     });
 
     physics.addBody(this.body);
-
-    // Ground contact detection
-    this.body.addEventListener('collide', (e: { contact: CANNON.ContactEquation }) => {
-      const contact = e.contact;
-      // Determine which body is "this" vs the other
-      if (contact.bi.id === this.body.id) {
-        contact.ni.negate(this.contactNormal);
-      } else {
-        this.contactNormal.copy(contact.ni);
-      }
-      // If the contact normal points upward, we're on the ground
-      if (this.contactNormal.y > 0.5) {
-        this.isGrounded = true;
-      }
-    });
+    this.syncCameraToBody();
   }
 
-  /**
-   * Update player every frame
-   */
   update(dt: number): void {
     this.handleMouseLook();
+    this.updateGroundedState();
     this.handleMovement(dt);
     this.handleJump();
     this.syncCameraToBody();
-
-    // Reset grounded flag - will be set by collision events
-    // Use a slight delay to allow for edge detection
-    if (this.body.velocity.y < -0.5) {
-      this.isGrounded = false;
-    }
   }
 
   private handleMouseLook(): void {
-    const mx = this.input.mouseMovementX;
-    const my = this.input.mouseMovementY;
+    if (!this.input.isPointerLocked) {
+      return;
+    }
 
-    this.yaw -= mx * this.config.mouseSensitivity;
-    this.pitch -= my * this.config.mouseSensitivity;
-
-    // Clamp pitch
+    this.yaw -= this.input.mouseMovementX * this.config.mouseSensitivity;
+    this.pitch -= this.input.mouseMovementY * this.config.mouseSensitivity;
     this.pitch = Math.max(
       -this.config.maxPitchAngle,
       Math.min(this.config.maxPitchAngle, this.pitch),
     );
 
-    // Apply rotation to camera
     this.engine.camera.rotation.order = 'YXZ';
     this.engine.camera.rotation.y = this.yaw;
     this.engine.camera.rotation.x = this.pitch;
@@ -131,7 +99,6 @@ export class PlayerController {
       this.config.moveSpeed *
       (this.isSprinting ? this.config.sprintMultiplier : 1);
 
-    // Get forward and right vectors from camera yaw
     this.frontVector.set(0, 0, -1);
     this.sideVector.set(1, 0, 0);
 
@@ -142,22 +109,23 @@ export class PlayerController {
     this.frontVector.applyQuaternion(yawQuat);
     this.sideVector.applyQuaternion(yawQuat);
 
-    // Calculate desired direction
     this.direction.set(0, 0, 0);
-
     if (this.input.isKeyDown('w')) this.direction.add(this.frontVector);
     if (this.input.isKeyDown('s')) this.direction.sub(this.frontVector);
     if (this.input.isKeyDown('d')) this.direction.add(this.sideVector);
     if (this.input.isKeyDown('a')) this.direction.sub(this.sideVector);
 
-    if (this.direction.length() > 0) {
+    if (this.direction.lengthSq() > 0) {
       this.direction.normalize();
-      this.body.velocity.x = this.direction.x * speed;
-      this.body.velocity.z = this.direction.z * speed;
+      const airControl = this.isGrounded ? 1 : 0.35;
+      this.body.velocity.x +=
+        (this.direction.x * speed - this.body.velocity.x) * airControl;
+      this.body.velocity.z +=
+        (this.direction.z * speed - this.body.velocity.z) * airControl;
     } else {
-      // Apply friction when not moving
-      this.body.velocity.x *= 0.85;
-      this.body.velocity.z *= 0.85;
+      const damping = this.isGrounded ? 0.78 : 0.96;
+      this.body.velocity.x *= damping;
+      this.body.velocity.z *= damping;
     }
   }
 
@@ -168,6 +136,24 @@ export class PlayerController {
     }
   }
 
+  private updateGroundedState(): void {
+    this.groundCheckResult.reset();
+    const from = new CANNON.Vec3(
+      this.body.position.x,
+      this.body.position.y,
+      this.body.position.z,
+    );
+    const to = new CANNON.Vec3(
+      this.body.position.x,
+      this.body.position.y - (this.config.playerRadius + 0.2),
+      this.body.position.z,
+    );
+
+    this.physics.world.raycastClosest(from, to, { skipBackfaces: true }, this.groundCheckResult);
+
+    this.isGrounded = this.groundCheckResult.hasHit && this.body.velocity.y <= 1.5;
+  }
+
   private syncCameraToBody(): void {
     this.engine.camera.position.set(
       this.body.position.x,
@@ -176,9 +162,6 @@ export class PlayerController {
     );
   }
 
-  /**
-   * Reset player to a position
-   */
   respawn(position: THREE.Vector3): void {
     this.body.position.set(position.x, position.y, position.z);
     this.body.velocity.set(0, 0, 0);
@@ -186,20 +169,16 @@ export class PlayerController {
     this.yaw = 0;
     this.pitch = 0;
     this.isGrounded = false;
+    this.engine.camera.rotation.set(0, 0, 0);
+    this.syncCameraToBody();
   }
 
-  /**
-   * Get current speed for HUD
-   */
   getSpeed(): number {
     const vx = this.body.velocity.x;
     const vz = this.body.velocity.z;
     return Math.sqrt(vx * vx + vz * vz);
   }
 
-  /**
-   * Get current position
-   */
   getPosition(): THREE.Vector3 {
     return new THREE.Vector3(
       this.body.position.x,

@@ -6,22 +6,50 @@ export class InputManager {
   public mouseMovementX = 0;
   public mouseMovementY = 0;
   public isPointerLocked = false;
+  public isGameplayActive = false;
 
   private canvas: HTMLCanvasElement;
   private keyDownCallbacks: Map<string, Array<() => void>> = new Map();
+  private readonly gameplayKeys = new Set([
+    'w',
+    'a',
+    's',
+    'd',
+    ' ',
+    'shift',
+    'p',
+    'g',
+    'r',
+    '1',
+    '2',
+    '3',
+    '4',
+    '5',
+    '6',
+    '7',
+    'backspace',
+    'arrowup',
+    'arrowdown',
+    'arrowleft',
+    'arrowright',
+  ]);
+
+  private readonly handleKeyDown = (e: KeyboardEvent): void => this.onKeyDown(e);
+  private readonly handleKeyUp = (e: KeyboardEvent): void => this.onKeyUp(e);
+  private readonly handleMouseMove = (e: MouseEvent): void => this.onMouseMove(e);
+  private readonly handlePointerLockChange = (): void => this.onPointerLockChange();
+  private readonly handleBlur = (): void => this.resetAllKeys();
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
 
-    document.addEventListener('keydown', this.onKeyDown.bind(this));
-    document.addEventListener('keyup', this.onKeyUp.bind(this));
-    document.addEventListener('mousemove', this.onMouseMove.bind(this));
-    document.addEventListener('pointerlockchange', this.onPointerLockChange.bind(this));
+    document.addEventListener('keydown', this.handleKeyDown);
+    document.addEventListener('keyup', this.handleKeyUp);
+    document.addEventListener('mousemove', this.handleMouseMove);
+    document.addEventListener('pointerlockchange', this.handlePointerLockChange);
+    window.addEventListener('blur', this.handleBlur);
   }
 
-  /**
-   * Register a callback for when a specific key is pressed down
-   */
   onKeyPress(key: string, callback: () => void): void {
     const lowerKey = key.toLowerCase();
     if (!this.keyDownCallbacks.has(lowerKey)) {
@@ -35,6 +63,7 @@ export class InputManager {
   }
 
   requestPointerLock(): void {
+    this.canvas.focus();
     this.canvas.requestPointerLock();
   }
 
@@ -42,25 +71,65 @@ export class InputManager {
     document.exitPointerLock();
   }
 
-  /**
-   * Call at end of each frame to reset per-frame mouse deltas
-   */
   resetMouseDelta(): void {
     this.mouseMovementX = 0;
     this.mouseMovementY = 0;
   }
 
+  setGameplayActive(active: boolean): void {
+    this.isGameplayActive = active;
+    if (!active) {
+      this.resetAllKeys();
+      this.resetMouseDelta();
+    }
+  }
+
+  private normalizeKey(e: KeyboardEvent): string {
+    switch (e.code) {
+      case 'Space':
+        return ' ';
+      case 'ShiftLeft':
+      case 'ShiftRight':
+        return 'shift';
+      case 'Backspace':
+        return 'backspace';
+      case 'ArrowUp':
+        return 'arrowup';
+      case 'ArrowDown':
+        return 'arrowdown';
+      case 'ArrowLeft':
+        return 'arrowleft';
+      case 'ArrowRight':
+        return 'arrowright';
+      default:
+        return e.key.toLowerCase();
+    }
+  }
+
+  private shouldCaptureKey(key: string): boolean {
+    return this.isGameplayActive && this.gameplayKeys.has(key);
+  }
+
   private onKeyDown(e: KeyboardEvent): void {
-    const key = e.key.toLowerCase();
+    const key = this.normalizeKey(e);
+    if (this.shouldCaptureKey(key)) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
     if (!this.keys.get(key)) {
-      // First press - fire callbacks
       this.keys.set(key, true);
       this.keyDownCallbacks.get(key)?.forEach((cb) => cb());
     }
   }
 
   private onKeyUp(e: KeyboardEvent): void {
-    this.keys.set(e.key.toLowerCase(), false);
+    const key = this.normalizeKey(e);
+    if (this.shouldCaptureKey(key)) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    this.keys.set(key, false);
   }
 
   private onMouseMove(e: MouseEvent): void {
@@ -74,9 +143,15 @@ export class InputManager {
     this.isPointerLocked = document.pointerLockElement === this.canvas;
   }
 
+  private resetAllKeys(): void {
+    this.keys.clear();
+  }
+
   dispose(): void {
-    document.removeEventListener('keydown', this.onKeyDown.bind(this));
-    document.removeEventListener('keyup', this.onKeyUp.bind(this));
-    document.removeEventListener('mousemove', this.onMouseMove.bind(this));
+    document.removeEventListener('keydown', this.handleKeyDown);
+    document.removeEventListener('keyup', this.handleKeyUp);
+    document.removeEventListener('mousemove', this.handleMouseMove);
+    document.removeEventListener('pointerlockchange', this.handlePointerLockChange);
+    window.removeEventListener('blur', this.handleBlur);
   }
 }
