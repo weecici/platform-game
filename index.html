@@ -94,6 +94,57 @@
         transform: translateY(-50%);
       }
 
+      /* Hotbar / Inventory */
+      #hotbar {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 4px;
+        background: rgba(20, 20, 20, 0.6);
+        padding: 6px;
+        border-radius: 8px;
+        border: 2px solid rgba(255, 255, 255, 0.15);
+        z-index: 10;
+        pointer-events: none;
+        backdrop-filter: blur(5px);
+      }
+      .hotbar-slot {
+        width: 48px;
+        height: 48px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 6px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: rgba(255, 255, 255, 0.8);
+        font-weight: bold;
+        position: relative;
+        text-shadow: 1px 1px 2px #000;
+        transition: all 0.1s;
+      }
+      .hotbar-slot.active {
+        border-color: #00d4ff;
+        background: rgba(0, 212, 255, 0.2);
+        box-shadow: 0 0 12px rgba(0, 212, 255, 0.4), inset 0 0 8px rgba(0, 212, 255, 0.2);
+        transform: translateY(-4px);
+        color: #fff;
+      }
+      .hotbar-slot .key-hint {
+        position: absolute;
+        top: 4px;
+        left: 6px;
+        font-size: 11px;
+        opacity: 0.9;
+      }
+      .hotbar-slot .item-icon {
+        font-size: 20px;
+        margin-top: 8px;
+      }
+
       /* Start Screen */
       #start-screen {
         position: absolute;
@@ -239,6 +290,20 @@
       </div>
       <div id="crosshair"></div>
       <div id="capture-hint">Click to lock cursor</div>
+
+      <!-- Hotbar -->
+      <div id="hotbar">
+        <div class="hotbar-slot" id="slot-1"><div class="key-hint">1</div><div class="item-icon">📦</div></div>
+        <div class="hotbar-slot" id="slot-2"><div class="key-hint">2</div><div class="item-icon">⚽</div></div>
+        <div class="hotbar-slot" id="slot-3"><div class="key-hint">3</div><div class="item-icon">🔺</div></div>
+        <div class="hotbar-slot" id="slot-4"><div class="key-hint">4</div><div class="item-icon">🛢️</div></div>
+        <div class="hotbar-slot" id="slot-5"><div class="key-hint">5</div><div class="item-icon">🍩</div></div>
+        <div class="hotbar-slot" id="slot-6"><div class="key-hint">6</div><div class="item-icon">🫖</div></div>
+        <div class="hotbar-slot" id="slot-7"><div class="key-hint">7</div><div class="item-icon">🥨</div></div>
+        <div class="hotbar-slot" id="slot-8"><div class="key-hint">8</div><div class="item-icon"></div></div>
+        <div class="hotbar-slot" id="slot-9"><div class="key-hint">9</div><div class="item-icon"></div></div>
+        <div class="hotbar-slot" id="slot-0"><div class="key-hint">0</div><div class="item-icon"></div></div>
+      </div>
     </div>
 
     <!-- Start Screen -->

@@ -97,18 +97,28 @@ export class PlayerController {
     });
   }
 
-  private createLimb(width: number, height: number, depth: number, color: number): THREE.Group {
+  private createSplitLimb(width: number, height: number, depth: number, topColor: number, bottomColor: number, splitRatio: number): THREE.Group {
     const group = new THREE.Group();
-    const material = new THREE.MeshStandardMaterial({ 
-      color, 
-      roughness: 0.7, 
-      metalness: 0.1 
-    });
-    const mesh = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), material);
-    mesh.position.y = -height / 2; // Move mesh down so pivot is at top
-    mesh.castShadow = true;
-    mesh.receiveShadow = true;
-    group.add(mesh);
+    
+    const topHeight = height * splitRatio;
+    const bottomHeight = height * (1 - splitRatio);
+
+    const topMaterial = new THREE.MeshStandardMaterial({ color: topColor, roughness: 0.8, metalness: 0.1 });
+    const bottomMaterial = new THREE.MeshStandardMaterial({ color: bottomColor, roughness: 0.8, metalness: 0.1 });
+
+    const topMesh = new THREE.Mesh(new THREE.BoxGeometry(width, topHeight, depth), topMaterial);
+    topMesh.position.y = -(topHeight / 2);
+    topMesh.castShadow = true;
+    topMesh.receiveShadow = true;
+
+    const bottomMesh = new THREE.Mesh(new THREE.BoxGeometry(width, bottomHeight, depth), bottomMaterial);
+    bottomMesh.position.y = -topHeight - (bottomHeight / 2);
+    bottomMesh.castShadow = true;
+    bottomMesh.receiveShadow = true;
+
+    group.add(topMesh);
+    group.add(bottomMesh);
+    
     return group;
   }
 
@@ -116,15 +126,45 @@ export class PlayerController {
     this.modelGroup = new THREE.Group();
 
     // Materials - Minecraft/Roblox style colors
-    const skinMaterial = new THREE.MeshStandardMaterial({ color: 0xffcc99, roughness: 0.6, metalness: 0.1 });
-    const shirtMaterial = new THREE.MeshStandardMaterial({ color: 0x3366cc, roughness: 0.8, metalness: 0.1 });
-    const pantsMaterial = new THREE.MeshStandardMaterial({ color: 0x223388, roughness: 0.9, metalness: 0.1 });
+    const skinColor = 0xffcc99;
+    const shirtColor = 0x3366cc;
+    const pantsColor = 0x223388;
+    const shoesColor = 0x111111;
+    const hairColor = 0x553311;
+    const eyeColor = 0x000000;
+    const mouthColor = 0xaa2222;
 
-    // Head
+    const skinMaterial = new THREE.MeshStandardMaterial({ color: skinColor, roughness: 0.6, metalness: 0.1 });
+    const shirtMaterial = new THREE.MeshStandardMaterial({ color: shirtColor, roughness: 0.8, metalness: 0.1 });
+
+    // Head Group
     this.head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), skinMaterial);
     this.head.position.y = 0.65;
     this.head.castShadow = true;
     this.head.receiveShadow = true;
+
+    // Hair
+    const hairMaterial = new THREE.MeshStandardMaterial({ color: hairColor, roughness: 0.9, metalness: 0.1 });
+    const hairTop = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.1, 0.52), hairMaterial);
+    hairTop.position.y = 0.25;
+    this.head.add(hairTop);
+
+    // Eyes
+    const eyeMaterial = new THREE.MeshStandardMaterial({ color: eyeColor, roughness: 0.5, metalness: 0.8 });
+    const leftEye = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 0.05), eyeMaterial);
+    leftEye.position.set(-0.12, 0.05, -0.26); // negative Z is forward
+    this.head.add(leftEye);
+
+    const rightEye = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 0.05), eyeMaterial);
+    rightEye.position.set(0.12, 0.05, -0.26);
+    this.head.add(rightEye);
+
+    // Mouth
+    const mouthMaterial = new THREE.MeshStandardMaterial({ color: mouthColor, roughness: 0.8, metalness: 0.1 });
+    const mouth = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.04, 0.05), mouthMaterial);
+    mouth.position.set(0, -0.1, -0.26);
+    this.head.add(mouth);
+
     this.modelGroup.add(this.head);
 
     // Torso
@@ -133,21 +173,21 @@ export class PlayerController {
     this.torso.receiveShadow = true;
     this.modelGroup.add(this.torso);
 
-    // Arms
-    this.leftArm = this.createLimb(0.3, 0.8, 0.3, 0xffcc99);
+    // Arms (Sleeves + Skin)
+    this.leftArm = this.createSplitLimb(0.3, 0.8, 0.3, shirtColor, skinColor, 0.4);
     this.leftArm.position.set(-0.55, 0.4, 0);
     this.modelGroup.add(this.leftArm);
 
-    this.rightArm = this.createLimb(0.3, 0.8, 0.3, 0xffcc99);
+    this.rightArm = this.createSplitLimb(0.3, 0.8, 0.3, shirtColor, skinColor, 0.4);
     this.rightArm.position.set(0.55, 0.4, 0);
     this.modelGroup.add(this.rightArm);
 
-    // Legs
-    this.leftLeg = this.createLimb(0.35, 0.9, 0.35, 0x223388);
+    // Legs (Pants + Shoes)
+    this.leftLeg = this.createSplitLimb(0.35, 0.9, 0.35, pantsColor, shoesColor, 0.8);
     this.leftLeg.position.set(-0.2, -0.4, 0);
     this.modelGroup.add(this.leftLeg);
 
-    this.rightLeg = this.createLimb(0.35, 0.9, 0.35, 0x223388);
+    this.rightLeg = this.createSplitLimb(0.35, 0.9, 0.35, pantsColor, shoesColor, 0.8);
     this.rightLeg.position.set(0.2, -0.4, 0);
     this.modelGroup.add(this.rightLeg);
 

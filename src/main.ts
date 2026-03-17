@@ -191,7 +191,7 @@ class Game {
       }
     });
 
-    const shapeKeys: Record<string, PrimitiveType> = {
+    const shapeKeys: Record<string, PrimitiveType | null> = {
       '1': 'box',
       '2': 'sphere',
       '3': 'cone',
@@ -199,12 +199,22 @@ class Game {
       '5': 'wheel',
       '6': 'teapot',
       '7': 'torusknot',
+      '8': null,
+      '9': null,
+      '0': null,
     };
 
     for (const [key, shape] of Object.entries(shapeKeys)) {
       this.input.onKeyPress(key, () => {
         if (this.isStarted && this.isRunning) {
-          this.debugGUI.spawnShapeAtCamera(shape);
+          // Update UI
+          document.querySelectorAll('.hotbar-slot').forEach(el => el.classList.remove('active'));
+          const slot = document.getElementById(`slot-${key}`);
+          if (slot) slot.classList.add('active');
+
+          if (shape) {
+            this.debugGUI.spawnShapeAtCamera(shape);
+          }
         }
       });
     }
