@@ -30,6 +30,21 @@ export class PlayerController {
   private sideVector = new THREE.Vector3();
   private groundCheckResult = new CANNON.RaycastResult();
 
+  // Character Model
+  private modelGroup!: THREE.Group;
+  private head!: THREE.Mesh;
+  private torso!: THREE.Mesh;
+  private leftArm!: THREE.Group;
+  private rightArm!: THREE.Group;
+  private leftLeg!: THREE.Group;
+  private rightLeg!: THREE.Group;
+  private animationTime = 0;
+
+  // Camera Settings
+  private cameraOffset = new THREE.Vector3(0, 1.5, 4); // 3rd person offset
+  private viewMode: 'first' | 'third' = 'third';
+  private thirdPersonView: 'back' | 'front' = 'back';
+
   constructor(
     engine: Engine,
     input: InputManager,
@@ -65,7 +80,135 @@ export class PlayerController {
     });
 
     physics.addBody(this.body);
+    this.createModel();
     this.syncCameraToBody();
+
+    // View mode toggles
+    this.input.onKeyPress('v', () => {
+      this.viewMode = this.viewMode === 'first' ? 'third' : 'first';
+      if (this.viewMode === 'first') {
+        this.engine.camera.rotation.order = 'YXZ';
+      }
+    });
+    this.input.onKeyPress('b', () => {
+      if (this.viewMode === 'third') {
+        this.thirdPersonView = this.thirdPersonView === 'back' ? 'front' : 'back';
+      }
+    });
+  }
+
+  private createLimb(width: number, height: number, depth: number, color: number): THREE.Group {
+    const group = new THREE.Group();
+    const material = new THREE.MeshStandardMaterial({ 
+      color, 
+      roughness: 0.7, 
+      metalness: 0.1 
+    });
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), material);
+    mesh.position.y = -height / 2; // Move mesh down so pivot is at top
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    group.add(mesh);
+    return group;
+  }
+
+  private createModel(): void {
+    this.modelGroup = new THREE.Group();
+
+    // Materials - Minecraft/Roblox style colors
+    const skinMaterial = new THREE.MeshStandardMaterial({ color: 0xffcc99, roughness: 0.6, metalness: 0.1 });
+    const shirtMaterial = new THREE.MeshStandardMaterial({ color: 0x3366cc, roughness: 0.8, metalness: 0.1 });
+    const pantsMaterial = new THREE.MeshStandardMaterial({ color: 0x223388, roughness: 0.9, metalness: 0.1 });
+
+    // Head
+    this.head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), skinMaterial);
+    this.head.position.y = 0.65;
+    this.head.castShadow = true;
+    this.head.receiveShadow = true;
+    this.modelGroup.add(this.head);
+
+    // Torso
+    this.torso = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.4), shirtMaterial);
+    this.torso.castShadow = true;
+    this.torso.receiveShadow = true;
+    this.modelGroup.add(this.torso);
+
+    // Arms
+    this.leftArm = this.createLimb(0.3, 0.8, 0.3, 0xffcc99);
+    this.leftArm.position.set(-0.55, 0.4, 0);
+    this.modelGroup.add(this.leftArm);
+
+    this.rightArm = this.createLimb(0.3, 0.8, 0.3, 0xffcc99);
+    this.rightArm.position.set(0.55, 0.4, 0);
+    this.modelGroup.add(this.rightArm);
+
+    // Legs
+    this.leftLeg = this.createLimb(0.35, 0.9, 0.35, 0x223388);
+    this.leftLeg.position.set(-0.2, -0.4, 0);
+    this.modelGroup.add(this.leftLeg);
+
+    this.rightLeg = this.createLimb(0.35, 0.9, 0.35, 0x223388);
+    this.rightLeg.position.set(0.2, -0.4, 0);
+    this.modelGroup.add(this.rightLeg);
+
+    this.engine.scene.add(this.modelGroup);
+  }
+
+  private animateModel(dt: number, speed: number): void {
+    if (!this.modelGroup) return;
+
+    // Toggle visibility based on view mode
+    this.modelGroup.visible = this.viewMode === 'third';
+    if (!this.modelGroup.visible) return;
+
+    // Sync position
+    this.modelGroup.position.copy(this.getPosition());
+    // Move model so legs align with bottom of physics sphere
+    // The sphere has a radius of this.config.playerRadius (0.4) so its bottom is at y - 0.4.
+    // The lowest point of the visual model legs is at -1.3. 
+    // To align the lowest points (-1.3 to -0.4): modelGroup.y += 0.9.
+    this.modelGroup.position.y += 0.9;
+    
+    // Rotate model to face movement direction based on yaw
+    this.modelGroup.rotation.y = this.yaw;
+
+    // Animations
+    if (!this.isGrounded) {
+      // Jump/Fall pose
+      this.leftArm.rotation.x = Math.PI / 4;
+      this.rightArm.rotation.x = Math.PI / 4;
+      this.leftLeg.rotation.x = -Math.PI / 6;
+      this.rightLeg.rotation.x = Math.PI / 6;
+      this.head.rotation.x = 0;
+    } else if (speed > 0.1) {
+      // Run animation
+      this.animationTime += dt * speed * (this.isSprinting ? 2.5 : 2.0);
+      const swing = Math.sin(this.animationTime) * 1.2;
+      
+      this.leftArm.rotation.x = swing;
+      this.rightArm.rotation.x = -swing;
+      this.leftLeg.rotation.x = -swing;
+      this.rightLeg.rotation.x = swing;
+      
+      // Slight bobbing for torso
+      this.torso.rotation.y = Math.sin(this.animationTime) * 0.1;
+      this.head.rotation.x = Math.sin(this.animationTime * 2) * 0.05;
+    } else {
+      // Idle pose
+      this.animationTime += dt * 2;
+      const breathe = Math.sin(this.animationTime) * 0.05;
+      
+      this.leftArm.rotation.x = breathe;
+      this.rightArm.rotation.x = -breathe;
+      this.leftArm.rotation.z = 0.1;
+      this.rightArm.rotation.z = -0.1;
+      
+      this.leftLeg.rotation.x = 0;
+      this.rightLeg.rotation.x = 0;
+      this.torso.rotation.y = 0;
+      
+      this.head.rotation.x = Math.sin(this.animationTime * 0.5) * 0.05;
+    }
   }
 
   update(dt: number): void {
@@ -73,6 +216,7 @@ export class PlayerController {
     this.updateGroundedState();
     this.handleMovement(dt);
     this.handleJump();
+    this.animateModel(dt, this.getSpeed());
     this.syncCameraToBody();
   }
 
@@ -83,14 +227,19 @@ export class PlayerController {
 
     this.yaw -= this.input.mouseMovementX * this.config.mouseSensitivity;
     this.pitch -= this.input.mouseMovementY * this.config.mouseSensitivity;
-    this.pitch = Math.max(
-      -this.config.maxPitchAngle,
-      Math.min(this.config.maxPitchAngle, this.pitch),
-    );
-
-    this.engine.camera.rotation.order = 'YXZ';
-    this.engine.camera.rotation.y = this.yaw;
-    this.engine.camera.rotation.x = this.pitch;
+    
+    if (this.viewMode === 'first') {
+      this.pitch = Math.max(
+        -this.config.maxPitchAngle,
+        Math.min(this.config.maxPitchAngle, this.pitch),
+      );
+    } else {
+      // Don't look too far down or up in 3rd person
+      this.pitch = Math.max(
+        -this.config.maxPitchAngle + 0.5,
+        Math.min(this.config.maxPitchAngle - 0.2, this.pitch),
+      );
+    }
   }
 
   private handleMovement(_dt: number): void {
@@ -155,11 +304,34 @@ export class PlayerController {
   }
 
   private syncCameraToBody(): void {
-    this.engine.camera.position.set(
-      this.body.position.x,
-      this.body.position.y + this.config.playerHeight * 0.4,
-      this.body.position.z,
-    );
+    if (this.viewMode === 'first') {
+      this.engine.camera.position.set(
+        this.body.position.x,
+        this.body.position.y + 1.5, // Move camera up to head level
+        this.body.position.z,
+      );
+      this.engine.camera.rotation.order = 'YXZ';
+      this.engine.camera.rotation.y = this.yaw;
+      this.engine.camera.rotation.x = this.pitch;
+    } else {
+      const targetPosition = this.getPosition();
+      targetPosition.y += 1.5; // Target head level for looking
+
+      const offset = this.cameraOffset.clone();
+      if (this.thirdPersonView === 'front') {
+        offset.z = -offset.z; // Move camera to the front
+      }
+      
+      // Apply pitch around x-axis, then yaw around y-axis
+      const pitchQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), this.pitch);
+      const yawQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), this.yaw);
+      
+      offset.applyQuaternion(pitchQuat);
+      offset.applyQuaternion(yawQuat);
+
+      this.engine.camera.position.copy(targetPosition).add(offset);
+      this.engine.camera.lookAt(targetPosition);
+    }
   }
 
   respawn(position: THREE.Vector3): void {
@@ -169,7 +341,6 @@ export class PlayerController {
     this.yaw = 0;
     this.pitch = 0;
     this.isGrounded = false;
-    this.engine.camera.rotation.set(0, 0, 0);
     this.syncCameraToBody();
   }
 

@@ -20,6 +20,8 @@ export class InputManager {
     'p',
     'g',
     'r',
+    'v',
+    'b',
     '1',
     '2',
     '3',
