@@ -194,16 +194,17 @@ export class PlayerController {
 
     // Animations State Machine
     let nextAction = 'HumanArmature|Man_Idle';
+    const isMovingInput = this.direction.lengthSq() > 0.01;
     
     if (this.isDead) {
       nextAction = 'HumanArmature|Man_Death';
     } else if (!this.isGrounded) {
-      if (speed > 1.0) {
+      if (isMovingInput) {
         nextAction = 'HumanArmature|Man_RunningJump';
       } else {
         nextAction = 'HumanArmature|Man_Jump';
       }
-    } else if (speed > 0.1) {
+    } else if (isMovingInput) {
       if (this.isSprinting) {
         nextAction = 'HumanArmature|Man_Run';
       } else {
@@ -297,13 +298,19 @@ export class PlayerController {
     );
     const to = new CANNON.Vec3(
       this.body.position.x,
-      this.body.position.y - (this.config.playerRadius + 0.2),
+      this.body.position.y - (this.config.playerRadius + 0.15),
       this.body.position.z,
     );
 
     this.physics.world.raycastClosest(from, to, { skipBackfaces: true }, this.groundCheckResult);
 
-    this.isGrounded = this.groundCheckResult.hasHit && this.body.velocity.y <= 1.5;
+    if (this.groundCheckResult.hasHit && this.groundCheckResult.body) {
+      const platformVelocityY = this.groundCheckResult.body.velocity.y;
+      const relativeVelY = this.body.velocity.y - platformVelocityY;
+      this.isGrounded = relativeVelY <= 1.5;
+    } else {
+      this.isGrounded = false;
+    }
   }
 
   private syncCameraToBody(): void {
