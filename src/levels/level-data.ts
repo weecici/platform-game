@@ -1,4 +1,4 @@
-import type { LevelConfig } from './LevelManager';
+import type { LevelConfig } from './level-manager';
 
 /**
  * Parkour level definitions

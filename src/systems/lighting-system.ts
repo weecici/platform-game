@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import type { Engine } from '../core/Engine';
+import type { Engine } from '../core/engine';
 
 /**
  * LightingSystem - Manages all lighting including:

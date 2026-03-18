@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
-import type { Engine } from '../core/Engine';
-import type { PhysicsWorld } from '../core/PhysicsWorld';
-import type { TextureManager } from '../systems/TextureManager';
+import type { Engine } from '../core/engine';
+import type { PhysicsWorld } from '../core/physics-world';
+import type { TextureManager } from '../systems/texture-manager';
 
 export interface PlatformDef {
   position: [number, number, number];

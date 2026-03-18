@@ -1,17 +1,17 @@
 import * as THREE from 'three';
-import { Engine } from './core/Engine';
-import { InputManager } from './core/InputManager';
-import { PhysicsWorld } from './core/PhysicsWorld';
-import { LightingSystem } from './systems/LightingSystem';
-import { TextureManager } from './systems/TextureManager';
-import { PlayerController } from './entities/PlayerController';
-import { LevelManager } from './levels/LevelManager';
-import { LEVEL_PARKOUR_CITY } from './levels/LevelData';
-import { DebugGUI } from './ui/DebugGUI';
+import { Engine } from './core/engine';
+import { InputManager } from './core/input-manager';
+import { PhysicsWorld } from './core/physics-world';
+import { LightingSystem } from './systems/lighting-system';
+import { TextureManager } from './systems/texture-manager';
+import { PlayerController } from './entities/player-controller';
+import { LevelManager } from './levels/level-manager';
+import { LEVEL_PARKOUR_CITY } from './levels/level-data';
+import { DebugGUI } from './ui/debug-ui';
 import {
   PrimitivePlacementSystem,
   type PrimitiveType,
-} from './systems/PrimitivePlacementSystem';
+} from './systems/primitive-placement';
 
 class Game {
   private engine: Engine;

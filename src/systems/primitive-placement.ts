@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
-import type { Engine } from '../core/Engine';
-import type { PhysicsWorld } from '../core/PhysicsWorld';
-import { ShapeFactory } from '../entities/ShapeFactory';
+import type { Engine } from '../core/engine';
+import type { PhysicsWorld } from '../core/physics-world';
+import { ShapeFactory } from '../entities/shape-factory';
 
 export type PrimitiveType =
   | 'box'

@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
-import type { Engine } from '../core/Engine';
-import type { InputManager } from '../core/InputManager';
-import type { PhysicsWorld } from '../core/PhysicsWorld';
+import type { Engine } from '../core/engine';
+import type { InputManager } from '../core/input-manager';
+import type { PhysicsWorld } from '../core/physics-world';
 
 export interface PlayerConfig {
   moveSpeed: number;

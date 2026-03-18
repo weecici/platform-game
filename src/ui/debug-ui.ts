@@ -1,9 +1,9 @@
 import GUI from 'lil-gui';
 import * as THREE from 'three';
-import type { Engine } from '../core/Engine';
-import type { LightingSystem } from '../systems/LightingSystem';
-import { AffineTransforms, TransformMode } from '../systems/AffineTransforms';
-import type { TextureManager } from '../systems/TextureManager';
+import type { Engine } from '../core/engine';
+import type { LightingSystem } from '../systems/lighting-system';
+import { AffineTransforms, TransformMode } from '../systems/affine-transforms';
+import type { TextureManager } from '../systems/texture-manager';
 
 export class DebugGUI {
   private gui: GUI;
