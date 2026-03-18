@@ -40,7 +40,7 @@ export class LightingSystem {
       directionalIntensity: 1.5,
       directionalPosition: { x: 50, y: 80, z: 30 },
       pointColor: 0xff8844,
-      pointIntensity: 0.6,
+      pointIntensity: 4.0,
       pointPosition: { x: 0, y: 10, z: 0 },
       pointDistance: 50,
       shadowMapSize: 2048,

@@ -1,9 +1,9 @@
-import * as THREE from 'three';
-import * as CANNON from 'cannon-es';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import type { Engine } from '../core/engine';
-import type { InputManager } from '../core/input-manager';
-import type { PhysicsWorld } from '../core/physics-world';
+import * as THREE from "three";
+import * as CANNON from "cannon-es";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import type { Engine } from "../core/engine";
+import type { InputManager } from "../core/input-manager";
+import type { PhysicsWorld } from "../core/physics-world";
 
 export interface PlayerConfig {
   moveSpeed: number;
@@ -30,20 +30,22 @@ export class PlayerController {
   private frontVector = new THREE.Vector3();
   private sideVector = new THREE.Vector3();
   private groundCheckResult = new CANNON.RaycastResult();
+  private ungroundedTimer = 0;
+  private readonly coyoteTime = 0.15; // 150ms of leniency when leaving ground
 
   // Character Model
   private modelGroup!: THREE.Group;
   private mixer!: THREE.AnimationMixer;
   private actions: Map<string, THREE.AnimationAction> = new Map();
-  private currentActionName = '';
+  private currentActionName = "";
   private isModelLoaded = false;
-  
+
   public isDead = false;
 
   // Camera Settings
   private cameraOffset = new THREE.Vector3(0, 1.5, 4); // 3rd person offset
-  private viewMode: 'first' | 'third' = 'third';
-  private thirdPersonView: 'back' | 'front' = 'back';
+  private viewMode: "first" | "third" = "third";
+  private thirdPersonView: "back" | "front" = "back";
 
   constructor(
     engine: Engine,
@@ -56,7 +58,7 @@ export class PlayerController {
     this.physics = physics;
 
     this.config = {
-      moveSpeed: 8,
+      moveSpeed: 7,
       sprintMultiplier: 1.6,
       jumpForce: 10,
       mouseSensitivity: 0.002,
@@ -84,15 +86,16 @@ export class PlayerController {
     this.syncCameraToBody();
 
     // View mode toggles
-    this.input.onKeyPress('v', () => {
-      this.viewMode = this.viewMode === 'first' ? 'third' : 'first';
-      if (this.viewMode === 'first') {
-        this.engine.camera.rotation.order = 'YXZ';
+    this.input.onKeyPress("v", () => {
+      this.viewMode = this.viewMode === "first" ? "third" : "first";
+      if (this.viewMode === "first") {
+        this.engine.camera.rotation.order = "YXZ";
       }
     });
-    this.input.onKeyPress('b', () => {
-      if (this.viewMode === 'third') {
-        this.thirdPersonView = this.thirdPersonView === 'back' ? 'front' : 'back';
+    this.input.onKeyPress("b", () => {
+      if (this.viewMode === "third") {
+        this.thirdPersonView =
+          this.thirdPersonView === "back" ? "front" : "back";
       }
     });
   }
@@ -102,8 +105,8 @@ export class PlayerController {
     this.engine.scene.add(this.modelGroup);
 
     const loader = new GLTFLoader();
-    loader.load('/src/assets/characters/Man.glb', (gltf) => {
-      console.log(gltf.animations)
+    loader.load("/src/assets/characters/Ninja.gltf", (gltf) => {
+      console.log(gltf.animations);
       const model = gltf.scene;
 
       // Enable shadows
@@ -118,7 +121,7 @@ export class PlayerController {
       // We want to align feet with the bottom of the physics sphere.
       // Since sphere center is at body.position, bottom is at -playerRadius.
       model.position.y = -this.config.playerRadius;
-      
+
       // Scale the loaded character model to a reasonable size (adjust as needed)
       model.scale.setScalar(0.5);
 
@@ -131,9 +134,7 @@ export class PlayerController {
         this.actions.set(clip.name, action);
       });
 
-      console.log(this.actions)
-
-      this.playAnimation('HumanArmature|Man_Idle');
+      this.playAnimation("Idle");
       this.isModelLoaded = true;
     });
   }
@@ -148,7 +149,7 @@ export class PlayerController {
 
     nextAction.reset().fadeIn(crossfadeTime).play();
 
-    if (name === 'HumanArmature|Man_Death') {
+    if (name === "Death") {
       nextAction.setLoop(THREE.LoopOnce, 1);
       nextAction.clampWhenFinished = true;
     } else {
@@ -170,54 +171,87 @@ export class PlayerController {
     }
 
     // Toggle visibility based on view mode
-    this.modelGroup.visible = this.viewMode === 'third';
+    this.modelGroup.visible = this.viewMode === "third";
     if (!this.modelGroup.visible) return;
 
     // Sync position
     this.modelGroup.position.copy(this.getPosition());
-    
+
     // Smoothly rotate model to face movement direction
     if (this.direction.lengthSq() > 0.01) {
       // Math.atan2(x, z) gives rotation around Y axis.
       // A typical GLTF model faces +Z by default.
       // If we move forward (-Z), direction is (0, 0, -1). atan2(0, -1) = PI or -PI.
       const targetRotation = Math.atan2(this.direction.x, this.direction.z);
-      
+
       // Find shortest path to target rotation
       let diff = targetRotation - this.modelGroup.rotation.y;
       // Normalize angle to [-PI, PI]
       diff = Math.atan2(Math.sin(diff), Math.cos(diff));
-      
+
       // Interpolate
       this.modelGroup.rotation.y += diff * 15 * dt;
     }
 
     // Animations State Machine
-    let nextAction = 'HumanArmature|Man_Idle';
+    let nextAction = "Idle";
     const isMovingInput = this.direction.lengthSq() > 0.01;
-    
+
     if (this.isDead) {
-      nextAction = 'HumanArmature|Man_Death';
+      nextAction = "Death";
     } else if (!this.isGrounded) {
-      if (isMovingInput) {
-        nextAction = 'HumanArmature|Man_RunningJump';
+      if (this.body.velocity.y > this.config.jumpForce * 0.8) {
+        // Just started the jump (high upward velocity) -> Takeoff
+        nextAction = "Jump";
+      } else if (this.predictLanding()) {
+        // Falling & close to ground -> Landing anticipation
+        console.log("Jump_Land");
+        nextAction = "Jump_Land";
       } else {
-        nextAction = 'HumanArmature|Man_Jump';
+        // Airborne (mid-air, apex, or falling far from ground) -> Airborne loop
+        nextAction = "Jump_Idle";
       }
     } else if (isMovingInput) {
       if (this.isSprinting) {
-        nextAction = 'HumanArmature|Man_Run';
+        nextAction = "Run";
       } else {
-        nextAction = 'HumanArmature|Man_Walk';
+        nextAction = "Walk";
       }
     }
 
     this.playAnimation(nextAction);
   }
 
+  private predictLanding(): boolean {
+    // Only predict landing when falling
+    if (this.body.velocity.y >= 0) return false;
+
+    this.groundCheckResult.reset();
+    const from = new CANNON.Vec3(
+      this.body.position.x,
+      this.body.position.y,
+      this.body.position.z,
+    );
+    // Look ahead 1.5 meters below the player to predict ground
+    const to = new CANNON.Vec3(
+      this.body.position.x,
+      this.body.position.y - (this.config.playerRadius + 1.5),
+      this.body.position.z,
+    );
+
+    this.physics.world.raycastClosest(
+      from,
+      to,
+      { skipBackfaces: true },
+      this.groundCheckResult,
+    );
+
+    return this.groundCheckResult.hasHit;
+  }
+
   update(dt: number): void {
     this.handleMouseLook();
-    this.updateGroundedState();
+    this.updateGroundedState(dt);
     this.handleMovement(dt);
     this.handleJump();
     this.animateModel(dt, this.getSpeed());
@@ -231,8 +265,8 @@ export class PlayerController {
 
     this.yaw -= this.input.mouseMovementX * this.config.mouseSensitivity;
     this.pitch -= this.input.mouseMovementY * this.config.mouseSensitivity;
-    
-    if (this.viewMode === 'first') {
+
+    if (this.viewMode === "first") {
       this.pitch = Math.max(
         -this.config.maxPitchAngle,
         Math.min(this.config.maxPitchAngle, this.pitch),
@@ -247,7 +281,7 @@ export class PlayerController {
   }
 
   private handleMovement(_dt: number): void {
-    this.isSprinting = this.input.isKeyDown('shift');
+    this.isSprinting = this.input.isKeyDown("shift");
     const speed =
       this.config.moveSpeed *
       (this.isSprinting ? this.config.sprintMultiplier : 1);
@@ -263,10 +297,10 @@ export class PlayerController {
     this.sideVector.applyQuaternion(yawQuat);
 
     this.direction.set(0, 0, 0);
-    if (this.input.isKeyDown('w')) this.direction.add(this.frontVector);
-    if (this.input.isKeyDown('s')) this.direction.sub(this.frontVector);
-    if (this.input.isKeyDown('d')) this.direction.add(this.sideVector);
-    if (this.input.isKeyDown('a')) this.direction.sub(this.sideVector);
+    if (this.input.isKeyDown("w")) this.direction.add(this.frontVector);
+    if (this.input.isKeyDown("s")) this.direction.sub(this.frontVector);
+    if (this.input.isKeyDown("d")) this.direction.add(this.sideVector);
+    if (this.input.isKeyDown("a")) this.direction.sub(this.sideVector);
 
     if (this.direction.lengthSq() > 0) {
       this.direction.normalize();
@@ -283,44 +317,56 @@ export class PlayerController {
   }
 
   private handleJump(): void {
-    if (this.input.isKeyDown(' ') && this.isGrounded) {
+    if (this.input.isKeyDown(" ") && this.isGrounded) {
       this.body.velocity.y = this.config.jumpForce;
       this.isGrounded = false;
+      this.ungroundedTimer = this.coyoteTime; // instantly expire leniency
     }
   }
 
-  private updateGroundedState(): void {
-    this.groundCheckResult.reset();
-    const from = new CANNON.Vec3(
-      this.body.position.x,
-      this.body.position.y,
-      this.body.position.z,
-    );
-    const to = new CANNON.Vec3(
-      this.body.position.x,
-      this.body.position.y - (this.config.playerRadius + 0.15),
-      this.body.position.z,
-    );
+  private updateGroundedState(dt: number): void {
+    let isTouchingGround = false;
 
-    this.physics.world.raycastClosest(from, to, { skipBackfaces: true }, this.groundCheckResult);
+    // Check all physical collision contacts to detect if we are standing on something.
+    // This perfectly avoids any "bouncing" or relative-velocity delays.
+    for (let i = 0; i < this.physics.world.contacts.length; i++) {
+      const contact = this.physics.world.contacts[i];
 
-    if (this.groundCheckResult.hasHit && this.groundCheckResult.body) {
-      const platformVelocityY = this.groundCheckResult.body.velocity.y;
-      const relativeVelY = this.body.velocity.y - platformVelocityY;
-      this.isGrounded = relativeVelY <= 1.5;
+      if (contact.bi === this.body || contact.bj === this.body) {
+        const isBi = contact.bi === this.body;
+
+        // Cannon's contact normal (ni) points from bi to bj
+        // If the player is 'bi', normal points from player down to the floor (y < -0.5)
+        // If the player is 'bj', normal points from floor up to the player (y > 0.5)
+        if (isBi && contact.ni.y < -0.5) {
+          isTouchingGround = true;
+          break;
+        } else if (!isBi && contact.ni.y > 0.5) {
+          isTouchingGround = true;
+          break;
+        }
+      }
+    }
+
+    if (isTouchingGround) {
+      this.isGrounded = true;
+      this.ungroundedTimer = 0;
     } else {
-      this.isGrounded = false;
+      this.ungroundedTimer += dt;
+      if (this.ungroundedTimer >= this.coyoteTime) {
+        this.isGrounded = false;
+      }
     }
   }
 
   private syncCameraToBody(): void {
-    if (this.viewMode === 'first') {
+    if (this.viewMode === "first") {
       this.engine.camera.position.set(
         this.body.position.x,
         this.body.position.y + 1.5, // Move camera up to head level
         this.body.position.z,
       );
-      this.engine.camera.rotation.order = 'YXZ';
+      this.engine.camera.rotation.order = "YXZ";
       this.engine.camera.rotation.y = this.yaw;
       this.engine.camera.rotation.x = this.pitch;
     } else {
@@ -328,14 +374,20 @@ export class PlayerController {
       targetPosition.y += 1.5; // Target head level for looking
 
       const offset = this.cameraOffset.clone();
-      if (this.thirdPersonView === 'front') {
+      if (this.thirdPersonView === "front") {
         offset.z = -offset.z; // Move camera to the front
       }
-      
+
       // Apply pitch around x-axis, then yaw around y-axis
-      const pitchQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), this.pitch);
-      const yawQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), this.yaw);
-      
+      const pitchQuat = new THREE.Quaternion().setFromAxisAngle(
+        new THREE.Vector3(1, 0, 0),
+        this.pitch,
+      );
+      const yawQuat = new THREE.Quaternion().setFromAxisAngle(
+        new THREE.Vector3(0, 1, 0),
+        this.yaw,
+      );
+
       offset.applyQuaternion(pitchQuat);
       offset.applyQuaternion(yawQuat);
 
