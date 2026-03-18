@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import type { Engine } from '../core/engine';
 import type { InputManager } from '../core/input-manager';
 import type { PhysicsWorld } from '../core/physics-world';
@@ -32,13 +33,12 @@ export class PlayerController {
 
   // Character Model
   private modelGroup!: THREE.Group;
-  private head!: THREE.Mesh;
-  private torso!: THREE.Mesh;
-  private leftArm!: THREE.Group;
-  private rightArm!: THREE.Group;
-  private leftLeg!: THREE.Group;
-  private rightLeg!: THREE.Group;
-  private animationTime = 0;
+  private mixer!: THREE.AnimationMixer;
+  private actions: Map<string, THREE.AnimationAction> = new Map();
+  private currentActionName = '';
+  private isModelLoaded = false;
+  
+  public isDead = false;
 
   // Camera Settings
   private cameraOffset = new THREE.Vector3(0, 1.5, 4); // 3rd person offset
@@ -80,7 +80,7 @@ export class PlayerController {
     });
 
     physics.addBody(this.body);
-    this.createModel();
+    this.loadModel();
     this.syncCameraToBody();
 
     // View mode toggles
@@ -97,105 +97,77 @@ export class PlayerController {
     });
   }
 
-  private createSplitLimb(width: number, height: number, depth: number, topColor: number, bottomColor: number, splitRatio: number): THREE.Group {
-    const group = new THREE.Group();
-    
-    const topHeight = height * splitRatio;
-    const bottomHeight = height * (1 - splitRatio);
+  private loadModel(): void {
+    this.modelGroup = new THREE.Group();
+    this.engine.scene.add(this.modelGroup);
 
-    const topMaterial = new THREE.MeshStandardMaterial({ color: topColor, roughness: 0.8, metalness: 0.1 });
-    const bottomMaterial = new THREE.MeshStandardMaterial({ color: bottomColor, roughness: 0.8, metalness: 0.1 });
+    const loader = new GLTFLoader();
+    loader.load('/src/assets/characters/Man.glb', (gltf) => {
+      console.log(gltf.animations)
+      const model = gltf.scene;
 
-    const topMesh = new THREE.Mesh(new THREE.BoxGeometry(width, topHeight, depth), topMaterial);
-    topMesh.position.y = -(topHeight / 2);
-    topMesh.castShadow = true;
-    topMesh.receiveShadow = true;
+      // Enable shadows
+      model.traverse((child) => {
+        if ((child as THREE.Mesh).isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+        }
+      });
 
-    const bottomMesh = new THREE.Mesh(new THREE.BoxGeometry(width, bottomHeight, depth), bottomMaterial);
-    bottomMesh.position.y = -topHeight - (bottomHeight / 2);
-    bottomMesh.castShadow = true;
-    bottomMesh.receiveShadow = true;
+      // Character's feet are usually at origin (y=0)
+      // We want to align feet with the bottom of the physics sphere.
+      // Since sphere center is at body.position, bottom is at -playerRadius.
+      model.position.y = -this.config.playerRadius;
+      
+      // Scale the loaded character model to a reasonable size (adjust as needed)
+      model.scale.setScalar(0.5);
 
-    group.add(topMesh);
-    group.add(bottomMesh);
-    
-    return group;
+      this.modelGroup.add(model);
+
+      // Setup animations
+      this.mixer = new THREE.AnimationMixer(model);
+      gltf.animations.forEach((clip) => {
+        const action = this.mixer.clipAction(clip);
+        this.actions.set(clip.name, action);
+      });
+
+      console.log(this.actions)
+
+      this.playAnimation('HumanArmature|Man_Idle');
+      this.isModelLoaded = true;
+    });
   }
 
-  private createModel(): void {
-    this.modelGroup = new THREE.Group();
+  private playAnimation(name: string, crossfadeTime = 0.2): void {
+    if (name === this.currentActionName) return;
 
-    // Materials - Minecraft/Roblox style colors
-    const skinColor = 0xffcc99;
-    const shirtColor = 0x3366cc;
-    const pantsColor = 0x223388;
-    const shoesColor = 0x111111;
-    const hairColor = 0x553311;
-    const eyeColor = 0x000000;
-    const mouthColor = 0xaa2222;
+    const nextAction = this.actions.get(name);
+    if (!nextAction) return;
 
-    const skinMaterial = new THREE.MeshStandardMaterial({ color: skinColor, roughness: 0.6, metalness: 0.1 });
-    const shirtMaterial = new THREE.MeshStandardMaterial({ color: shirtColor, roughness: 0.8, metalness: 0.1 });
+    const prevAction = this.actions.get(this.currentActionName);
 
-    // Head Group
-    this.head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), skinMaterial);
-    this.head.position.y = 0.65;
-    this.head.castShadow = true;
-    this.head.receiveShadow = true;
+    nextAction.reset().fadeIn(crossfadeTime).play();
 
-    // Hair
-    const hairMaterial = new THREE.MeshStandardMaterial({ color: hairColor, roughness: 0.9, metalness: 0.1 });
-    const hairTop = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.1, 0.52), hairMaterial);
-    hairTop.position.y = 0.25;
-    this.head.add(hairTop);
+    if (name === 'HumanArmature|Man_Death') {
+      nextAction.setLoop(THREE.LoopOnce, 1);
+      nextAction.clampWhenFinished = true;
+    } else {
+      nextAction.setLoop(THREE.LoopRepeat, Infinity);
+    }
 
-    // Eyes
-    const eyeMaterial = new THREE.MeshStandardMaterial({ color: eyeColor, roughness: 0.5, metalness: 0.8 });
-    const leftEye = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 0.05), eyeMaterial);
-    leftEye.position.set(-0.12, 0.05, -0.26); // negative Z is forward
-    this.head.add(leftEye);
+    if (prevAction) {
+      prevAction.fadeOut(crossfadeTime);
+    }
 
-    const rightEye = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 0.05), eyeMaterial);
-    rightEye.position.set(0.12, 0.05, -0.26);
-    this.head.add(rightEye);
-
-    // Mouth
-    const mouthMaterial = new THREE.MeshStandardMaterial({ color: mouthColor, roughness: 0.8, metalness: 0.1 });
-    const mouth = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.04, 0.05), mouthMaterial);
-    mouth.position.set(0, -0.1, -0.26);
-    this.head.add(mouth);
-
-    this.modelGroup.add(this.head);
-
-    // Torso
-    this.torso = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.4), shirtMaterial);
-    this.torso.castShadow = true;
-    this.torso.receiveShadow = true;
-    this.modelGroup.add(this.torso);
-
-    // Arms (Sleeves + Skin)
-    this.leftArm = this.createSplitLimb(0.3, 0.8, 0.3, shirtColor, skinColor, 0.4);
-    this.leftArm.position.set(-0.55, 0.4, 0);
-    this.modelGroup.add(this.leftArm);
-
-    this.rightArm = this.createSplitLimb(0.3, 0.8, 0.3, shirtColor, skinColor, 0.4);
-    this.rightArm.position.set(0.55, 0.4, 0);
-    this.modelGroup.add(this.rightArm);
-
-    // Legs (Pants + Shoes)
-    this.leftLeg = this.createSplitLimb(0.35, 0.9, 0.35, pantsColor, shoesColor, 0.8);
-    this.leftLeg.position.set(-0.2, -0.4, 0);
-    this.modelGroup.add(this.leftLeg);
-
-    this.rightLeg = this.createSplitLimb(0.35, 0.9, 0.35, pantsColor, shoesColor, 0.8);
-    this.rightLeg.position.set(0.2, -0.4, 0);
-    this.modelGroup.add(this.rightLeg);
-
-    this.engine.scene.add(this.modelGroup);
+    this.currentActionName = name;
   }
 
   private animateModel(dt: number, speed: number): void {
-    if (!this.modelGroup) return;
+    if (!this.isModelLoaded) return;
+
+    if (this.mixer) {
+      this.mixer.update(dt);
+    }
 
     // Toggle visibility based on view mode
     this.modelGroup.visible = this.viewMode === 'third';
@@ -203,52 +175,43 @@ export class PlayerController {
 
     // Sync position
     this.modelGroup.position.copy(this.getPosition());
-    // Move model so legs align with bottom of physics sphere
-    // The sphere has a radius of this.config.playerRadius (0.4) so its bottom is at y - 0.4.
-    // The lowest point of the visual model legs is at -1.3. 
-    // To align the lowest points (-1.3 to -0.4): modelGroup.y += 0.9.
-    this.modelGroup.position.y += 0.9;
     
-    // Rotate model to face movement direction based on yaw
-    this.modelGroup.rotation.y = this.yaw;
-
-    // Animations
-    if (!this.isGrounded) {
-      // Jump/Fall pose
-      this.leftArm.rotation.x = Math.PI / 4;
-      this.rightArm.rotation.x = Math.PI / 4;
-      this.leftLeg.rotation.x = -Math.PI / 6;
-      this.rightLeg.rotation.x = Math.PI / 6;
-      this.head.rotation.x = 0;
-    } else if (speed > 0.1) {
-      // Run animation
-      this.animationTime += dt * speed * (this.isSprinting ? 2.5 : 2.0);
-      const swing = Math.sin(this.animationTime) * 1.2;
+    // Smoothly rotate model to face movement direction
+    if (this.direction.lengthSq() > 0.01) {
+      // Math.atan2(x, z) gives rotation around Y axis.
+      // A typical GLTF model faces +Z by default.
+      // If we move forward (-Z), direction is (0, 0, -1). atan2(0, -1) = PI or -PI.
+      const targetRotation = Math.atan2(this.direction.x, this.direction.z);
       
-      this.leftArm.rotation.x = swing;
-      this.rightArm.rotation.x = -swing;
-      this.leftLeg.rotation.x = -swing;
-      this.rightLeg.rotation.x = swing;
+      // Find shortest path to target rotation
+      let diff = targetRotation - this.modelGroup.rotation.y;
+      // Normalize angle to [-PI, PI]
+      diff = Math.atan2(Math.sin(diff), Math.cos(diff));
       
-      // Slight bobbing for torso
-      this.torso.rotation.y = Math.sin(this.animationTime) * 0.1;
-      this.head.rotation.x = Math.sin(this.animationTime * 2) * 0.05;
-    } else {
-      // Idle pose
-      this.animationTime += dt * 2;
-      const breathe = Math.sin(this.animationTime) * 0.05;
-      
-      this.leftArm.rotation.x = breathe;
-      this.rightArm.rotation.x = -breathe;
-      this.leftArm.rotation.z = 0.1;
-      this.rightArm.rotation.z = -0.1;
-      
-      this.leftLeg.rotation.x = 0;
-      this.rightLeg.rotation.x = 0;
-      this.torso.rotation.y = 0;
-      
-      this.head.rotation.x = Math.sin(this.animationTime * 0.5) * 0.05;
+      // Interpolate
+      this.modelGroup.rotation.y += diff * 15 * dt;
     }
+
+    // Animations State Machine
+    let nextAction = 'HumanArmature|Man_Idle';
+    
+    if (this.isDead) {
+      nextAction = 'HumanArmature|Man_Death';
+    } else if (!this.isGrounded) {
+      if (speed > 1.0) {
+        nextAction = 'HumanArmature|Man_RunningJump';
+      } else {
+        nextAction = 'HumanArmature|Man_Jump';
+      }
+    } else if (speed > 0.1) {
+      if (this.isSprinting) {
+        nextAction = 'HumanArmature|Man_Run';
+      } else {
+        nextAction = 'HumanArmature|Man_Walk';
+      }
+    }
+
+    this.playAnimation(nextAction);
   }
 
   update(dt: number): void {

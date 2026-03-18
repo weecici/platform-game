@@ -269,6 +269,7 @@ class Game {
 
   private restartGame(): void {
     this.cancelLoop();
+    this.player.isDead = false;
     this.player.respawn(this.levelManager.getSpawnPosition());
     this.primitivePlacement.clear();
     this.score = 0;
