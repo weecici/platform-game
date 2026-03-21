@@ -145,6 +145,51 @@
         margin-top: 8px;
       }
 
+      /* Block Inventory Panel */
+      #block-inventory {
+        position: fixed;
+        top: 80px;
+        right: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        pointer-events: none;
+        z-index: 10;
+      }
+      .inv-card {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(10, 10, 30, 0.65);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 8px;
+        padding: 5px 10px;
+        color: #fff;
+        font-size: 13px;
+        min-width: 130px;
+        transition: opacity 0.2s;
+      }
+      .inv-card.depleted {
+        opacity: 0.35;
+      }
+      .inv-card .inv-icon { font-size: 18px; }
+      .inv-card .inv-label { flex: 1; font-weight: 600; }
+      .inv-card .inv-count {
+        font-weight: 700;
+        font-size: 15px;
+        color: #00d4ff;
+        min-width: 22px;
+        text-align: right;
+      }
+      .inv-card .inv-key {
+        font-size: 11px;
+        opacity: 0.5;
+        background: rgba(255,255,255,0.08);
+        padding: 1px 5px;
+        border-radius: 4px;
+      }
+
       /* Start Screen */
       #start-screen {
         position: absolute;
@@ -165,6 +210,7 @@
         font-weight: 900;
         background: linear-gradient(45deg, #00d4ff, #7b2fff, #ff2d95);
         -webkit-background-clip: text;
+        background-clip: text;
         -webkit-text-fill-color: transparent;
         margin-bottom: 10px;
         letter-spacing: 3px;
@@ -291,14 +337,48 @@
       <div id="crosshair"></div>
       <div id="capture-hint">Click to lock cursor</div>
 
+      <!-- Block Inventory Panel -->
+      <div id="block-inventory">
+        <div class="inv-card" id="inv-card-grass">
+          <span class="inv-key">1</span>
+          <span class="inv-icon">🌿</span>
+          <span class="inv-label">Grass</span>
+          <span class="inv-count" id="inv-count-grass">4</span>
+        </div>
+        <div class="inv-card" id="inv-card-stone">
+          <span class="inv-key">2</span>
+          <span class="inv-icon">🪨</span>
+          <span class="inv-label">Stone</span>
+          <span class="inv-count" id="inv-count-stone">4</span>
+        </div>
+        <div class="inv-card" id="inv-card-wood">
+          <span class="inv-key">3</span>
+          <span class="inv-icon">🪵</span>
+          <span class="inv-label">Wood</span>
+          <span class="inv-count" id="inv-count-wood">3</span>
+        </div>
+        <div class="inv-card" id="inv-card-ice">
+          <span class="inv-key">4</span>
+          <span class="inv-icon">🧊</span>
+          <span class="inv-label">Ice</span>
+          <span class="inv-count" id="inv-count-ice">3</span>
+        </div>
+        <div class="inv-card" id="inv-card-bounce">
+          <span class="inv-key">5</span>
+          <span class="inv-icon">🎾</span>
+          <span class="inv-label">Bounce</span>
+          <span class="inv-count" id="inv-count-bounce">2</span>
+        </div>
+      </div>
+
       <!-- Hotbar -->
       <div id="hotbar">
-        <div class="hotbar-slot" id="slot-1"><div class="key-hint">1</div><div class="item-icon">📦</div></div>
-        <div class="hotbar-slot" id="slot-2"><div class="key-hint">2</div><div class="item-icon">⚽</div></div>
-        <div class="hotbar-slot" id="slot-3"><div class="key-hint">3</div><div class="item-icon">🔺</div></div>
-        <div class="hotbar-slot" id="slot-4"><div class="key-hint">4</div><div class="item-icon">🛢️</div></div>
-        <div class="hotbar-slot" id="slot-5"><div class="key-hint">5</div><div class="item-icon">🍩</div></div>
-        <div class="hotbar-slot" id="slot-6"><div class="key-hint">6</div><div class="item-icon">🫖</div></div>
+        <div class="hotbar-slot" id="slot-1"><div class="key-hint">1</div><div class="item-icon">🌿</div></div>
+        <div class="hotbar-slot" id="slot-2"><div class="key-hint">2</div><div class="item-icon">🪨</div></div>
+        <div class="hotbar-slot" id="slot-3"><div class="key-hint">3</div><div class="item-icon">🪵</div></div>
+        <div class="hotbar-slot" id="slot-4"><div class="key-hint">4</div><div class="item-icon">🧊</div></div>
+        <div class="hotbar-slot" id="slot-5"><div class="key-hint">5</div><div class="item-icon">🎾</div></div>
+        <div class="hotbar-slot" id="slot-6"><div class="key-hint">6</div><div class="item-icon">🍩</div></div>
         <div class="hotbar-slot" id="slot-7"><div class="key-hint">7</div><div class="item-icon">🥨</div></div>
         <div class="hotbar-slot" id="slot-8"><div class="key-hint">8</div><div class="item-icon"></div></div>
         <div class="hotbar-slot" id="slot-9"><div class="key-hint">9</div><div class="item-icon"></div></div>
@@ -318,9 +398,11 @@
         <kbd>Mouse</kbd> - Look Around &nbsp;|&nbsp;
         <kbd>P</kbd> - Pause &nbsp;|&nbsp;
         <kbd>G</kbd> - Toggle Debug GUI<br/>
+        <kbd>1-5</kbd> - Select Block (Grass/Stone/Wood/Ice/Bounce) &nbsp;|&nbsp;
+        <kbd>Left Click</kbd> - Place Block<br/>
+        <kbd>6-7</kbd> - Debug Shapes &nbsp;|&nbsp;
         <kbd>R</kbd> - Restart &nbsp;|&nbsp;
-        <kbd>1-7</kbd> - Place Solid Shapes &nbsp;|&nbsp;
-        <kbd>Backspace</kbd> - Clear Placed Shapes
+        <kbd>Backspace</kbd> - Clear All Placed Blocks
       </div>
     </div>
 
