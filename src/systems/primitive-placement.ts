@@ -43,8 +43,10 @@ export class PrimitivePlacementSystem {
   // ------------- Ghost preview state ---------------
   private ghostObject: THREE.Object3D | null = null;
   private selectedBlockType: BlockType | null = null;
-  /** Distance in front of the camera where the ghost is projected */
-  private readonly GHOST_DISTANCE = 5;
+  /** Distance in front of the player where the ghost is projected (adjustable via scroll) */
+  private ghostDistance = 5;
+  private readonly GHOST_DISTANCE_MIN = 2;
+  private readonly GHOST_DISTANCE_MAX = 15;
 
   constructor(engine: Engine, physics: PhysicsWorld) {
     this.engine = engine;
@@ -98,18 +100,51 @@ export class PrimitivePlacementSystem {
   }
 
   /**
-   * Called every frame: repositions the ghost in front of the camera.
-   * Must be called from the game loop if a block is selected.
+   * Adjust the ghost placement distance via scroll wheel.
+   * Positive delta = farther, negative = closer.
    */
-  updateGhost(camera: THREE.Camera): void {
+  adjustGhostDistance(delta: number): void {
+    this.ghostDistance = Math.max(
+      this.GHOST_DISTANCE_MIN,
+      Math.min(this.GHOST_DISTANCE_MAX, this.ghostDistance + delta),
+    );
+  }
+
+  getGhostDistance(): number {
+    return this.ghostDistance;
+  }
+
+  /**
+   * Called every frame: repositions the ghost in front of the player aimed at the crosshair.
+   *
+   * We derive the horizontal aim direction from `camera.getWorldDirection()` and project
+   * it from the player's feet position (not camera position). This ensures the ghost always
+   * appears in front of the character regardless of 1st/3rd-person camera mode.
+   */
+  updateGhost(camera: THREE.Camera, playerPosition: THREE.Vector3): void {
     if (!this.ghostObject) return;
 
-    const forward = new THREE.Vector3(0, -0.15, -1).normalize();
-    forward.applyQuaternion(camera.quaternion);
-    forward.multiplyScalar(this.GHOST_DISTANCE);
+    // camera.getWorldDirection() returns the unit vector the camera is looking toward.
+    // In 1st-person this is exactly where the player aims.
+    // In 3rd-person (lookAt) this also points from camera toward the player, which is
+    // the same direction we want (player's forward direction).
+    const dir = new THREE.Vector3();
+    camera.getWorldDirection(dir);
 
-    this.ghostObject.position.copy(camera.position).add(forward);
-    this.ghostObject.rotation.y = camera.rotation.y;
+    // Flatten to horizontal plane so placed block stays at player height.
+    dir.y = 0;
+    if (dir.lengthSq() < 0.001) dir.set(0, 0, -1); // fallback if looking straight up/down
+    dir.normalize();
+
+    // Project from player position (not camera) so block appears in front of character
+    this.ghostObject.position
+      .copy(playerPosition)
+      .addScaledVector(dir, this.ghostDistance);
+    // Keep ghost at player's standing height (slightly above feet)
+    this.ghostObject.position.y = playerPosition.y;
+
+    // Rotate ghost to face the same direction as placement
+    this.ghostObject.rotation.y = Math.atan2(dir.x, dir.z);
   }
 
   /**
@@ -118,6 +153,7 @@ export class PrimitivePlacementSystem {
    */
   confirmPlace(
     camera: THREE.Camera,
+    playerPosition: THREE.Vector3,
     textureManager: TextureManager,
     blockInventory: BlockInventory,
   ): THREE.Object3D | null {
@@ -126,19 +162,24 @@ export class PrimitivePlacementSystem {
 
     const blockType = this.selectedBlockType;
 
-    // Determine placement position from ghost (or fall back to camera projection)
-    const position = this.ghostObject
+    // Determine placement position from the live ghost position
+    const pos = this.ghostObject
       ? this.ghostObject.position.clone()
       : (() => {
-          const fwd = new THREE.Vector3(0, -0.15, -1).normalize();
-          fwd.applyQuaternion(camera.quaternion);
-          fwd.multiplyScalar(this.GHOST_DISTANCE);
-          return camera.position.clone().add(fwd);
+          const dir = new THREE.Vector3();
+          camera.getWorldDirection(dir);
+          dir.y = 0;
+          dir.normalize();
+          return playerPosition.clone().addScaledVector(dir, this.ghostDistance);
         })();
 
     const object = this.createVisualObject(blockType.shape, textureManager, blockType.texture);
-    object.position.copy(position);
-    object.rotation.y = camera.rotation.y;
+    object.position.copy(pos);
+    const dir = new THREE.Vector3();
+    camera.getWorldDirection(dir);
+    dir.y = 0;
+    dir.normalize();
+    object.rotation.y = Math.atan2(dir.x, dir.z);
 
     const placed = this.addToWorld(object, blockType);
     blockInventory.use(blockType);
@@ -326,7 +367,7 @@ export class PrimitivePlacementSystem {
     return { object, body, lastSize: size.clone() };
   }
 
-  /** Create a Three.js object for a typed block with its texture */
+  /** Create a Three.js object for a typed block with its texture applied */
   private createVisualObject(
     shape: PrimitiveType,
     textureManager: TextureManager,
@@ -334,18 +375,25 @@ export class PrimitivePlacementSystem {
   ): THREE.Object3D {
     const object = this.createLegacyObject(shape);
 
-    // Apply texture to all meshes in the object
     const tex = textureManager.getTexture(textureName);
     if (tex) {
       object.traverse((child) => {
         if (child instanceof THREE.Mesh) {
           const cloned = tex.clone();
+          // Procedural CanvasTextures must be sRGB so they display correctly
+          // under the renderer's ACES tonemapping
+          cloned.colorSpace = THREE.SRGBColorSpace;
           cloned.needsUpdate = true;
-          if (child.material instanceof THREE.MeshStandardMaterial) {
-            child.material = child.material.clone();
-            (child.material as THREE.MeshStandardMaterial).map = cloned;
-            child.material.needsUpdate = true;
-          }
+
+          // Clone the material so we don't mutate the shared ShapeFactory material
+          const mat = (child.material as THREE.MeshStandardMaterial).clone();
+          mat.map = cloned;
+          // Reset tint to white so the texture colours show through unmodified
+          mat.color.setHex(0xffffff);
+          mat.roughness = 0.7;
+          mat.metalness = 0.1;
+          mat.needsUpdate = true;
+          child.material = mat;
         }
       });
     }

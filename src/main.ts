@@ -179,6 +179,7 @@ class Game {
       ) {
         const placed = this.primitivePlacement.confirmPlace(
           this.engine.camera,
+          this.player.getPosition(),
           this.textureManager,
           this.blockInventory,
         );
@@ -188,6 +189,17 @@ class Game {
         }
       }
     });
+
+    // Scroll wheel → adjust ghost placement distance
+    this.engine.renderer.domElement.addEventListener('wheel', (e) => {
+      if (this.isStarted && this.isRunning && this.input.isPointerLocked) {
+        // deltaY > 0 = scroll down = farther; < 0 = scroll up = closer
+        const step = e.deltaY > 0 ? 0.5 : -0.5;
+        this.primitivePlacement.adjustGhostDistance(step);
+        this.showDistanceHint();
+        e.preventDefault();
+      }
+    }, { passive: false });
 
     document.addEventListener('pointerlockchange', () => {
       const shouldShowHint =
@@ -378,7 +390,7 @@ class Game {
     this.levelManager.update(dt);
 
     // Update ghost preview position every frame
-    this.primitivePlacement.updateGhost(this.engine.camera);
+    this.primitivePlacement.updateGhost(this.engine.camera, this.player.getPosition());
 
     const playerPos = this.player.getPosition();
     this.lighting.updateSunPosition(playerPos.x, playerPos.z);
@@ -416,6 +428,17 @@ class Game {
     this.timeEl.textContent = `Time: ${this.elapsedTime.toFixed(1)}s`;
     this.speedEl.textContent = `Speed: ${this.player.getSpeed().toFixed(1)}`;
     this.deathsEl.textContent = `Deaths: ${this.deathCount}`;
+  }
+
+  /** Flash the placement-distance hint briefly when scroll wheel is used */
+  private distanceHintTimeout: ReturnType<typeof setTimeout> | null = null;
+  private showDistanceHint(): void {
+    const el = document.getElementById('placement-distance');
+    if (!el) return;
+    el.textContent = `📏 Distance: ${this.primitivePlacement.getGhostDistance().toFixed(1)}`;
+    el.classList.add('visible');
+    if (this.distanceHintTimeout) clearTimeout(this.distanceHintTimeout);
+    this.distanceHintTimeout = setTimeout(() => el.classList.remove('visible'), 1200);
   }
 
   /** Update the block inventory HUD panel */

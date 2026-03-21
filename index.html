@@ -94,6 +94,27 @@
         transform: translateY(-50%);
       }
 
+      /* Placement distance hint */
+      #placement-distance {
+        position: absolute;
+        left: 50%;
+        top: calc(50% + 28px);
+        transform: translateX(-50%);
+        color: #fff;
+        background: rgba(0,0,0,0.55);
+        border: 1px solid rgba(255,255,255,0.2);
+        padding: 4px 14px;
+        border-radius: 999px;
+        font-size: 13px;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.15s ease;
+        white-space: nowrap;
+      }
+      #placement-distance.visible {
+        opacity: 1;
+      }
+
       /* Hotbar / Inventory */
       #hotbar {
         position: fixed;
@@ -336,6 +357,7 @@
       </div>
       <div id="crosshair"></div>
       <div id="capture-hint">Click to lock cursor</div>
+      <div id="placement-distance"></div>
 
       <!-- Block Inventory Panel -->
       <div id="block-inventory">
