@@ -35,26 +35,24 @@ export const LEVEL_PARKOUR_CITY: LevelConfig = {
     },
 
     // === FIRST JUMP SEQUENCE - Stepping stones ===
+    // NOTE: Gaps at z≈-14 and z≈-24 are intentionally missing – players must
+    //       place a block (key 1-5, then left-click) to cross these spans.
     {
       position: [0, 0, -9],
       size: [3, 1, 3],
       color: 0x667788,
       texture: 'stone',
     },
-    {
-      position: [3, 0.5, -14],
-      size: [2.5, 1, 2.5],
-      color: 0x778899,
-      texture: 'stone',
-    },
+    // GAP here (~5 units) – requires a placed block to cross
     {
       position: [-1, 1, -19],
       size: [2.5, 1, 2.5],
       color: 0x889900,
       texture: 'stone',
     },
+    // GAP here (~5 units) – requires a placed block to cross
     {
-      position: [3, 1.5, -24],
+      position: [3, 1.5, -27],
       size: [2, 1, 2],
       color: 0x778899,
       texture: 'stone',
