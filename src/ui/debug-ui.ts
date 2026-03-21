@@ -4,12 +4,14 @@ import type { Engine } from '../core/engine';
 import type { LightingSystem } from '../systems/lighting-system';
 import { AffineTransforms, TransformMode } from '../systems/affine-transforms';
 import type { TextureManager } from '../systems/texture-manager';
+import type { PrimitivePlacementSystem } from '../systems/primitive-placement';
 
 export class DebugGUI {
   private gui: GUI;
   private engine: Engine;
   private lighting: LightingSystem;
   private textureManager: TextureManager;
+  private primitivePlacement: PrimitivePlacementSystem;
   private spawnShape: (type: string) => THREE.Object3D;
   private clearShapes: () => void;
   private selectedObject: THREE.Object3D | null = null;
@@ -27,16 +29,21 @@ export class DebugGUI {
     scaleZ: 1,
   };
 
+  /** The spawn position of the currently selected object – used by reset. */
+  private spawnedPosition = new THREE.Vector3();
+
   constructor(
     engine: Engine,
     lighting: LightingSystem,
     textureManager: TextureManager,
+    primitivePlacement: PrimitivePlacementSystem,
     spawnShape: (type: string) => THREE.Object3D,
     clearShapes: () => void,
   ) {
     this.engine = engine;
     this.lighting = lighting;
     this.textureManager = textureManager;
+    this.primitivePlacement = primitivePlacement;
     this.spawnShape = spawnShape;
     this.clearShapes = clearShapes;
 
@@ -129,10 +136,11 @@ export class DebugGUI {
       })
       .name('Mode');
 
+    // Clamp ranges to prevent extreme imbalanced transforms
     const transFolder = folder.addFolder('Translation');
-    transFolder.add(state, 'translateX', -50, 50, 0.1).name('X').onChange(() => this.applyTransform());
-    transFolder.add(state, 'translateY', -50, 50, 0.1).name('Y').onChange(() => this.applyTransform());
-    transFolder.add(state, 'translateZ', -50, 50, 0.1).name('Z').onChange(() => this.applyTransform());
+    transFolder.add(state, 'translateX', -30, 30, 0.1).name('X').onChange(() => this.applyTransform());
+    transFolder.add(state, 'translateY', -30, 30, 0.1).name('Y').onChange(() => this.applyTransform());
+    transFolder.add(state, 'translateZ', -30, 30, 0.1).name('Z').onChange(() => this.applyTransform());
 
     const rotFolder = folder.addFolder('Rotation (degrees)');
     rotFolder.add(state, 'rotateX', -180, 180, 1).name('X').onChange(() => this.applyTransform());
@@ -140,9 +148,9 @@ export class DebugGUI {
     rotFolder.add(state, 'rotateZ', -180, 180, 1).name('Z').onChange(() => this.applyTransform());
 
     const scaleFolder = folder.addFolder('Scale');
-    scaleFolder.add(state, 'scaleX', 0.1, 5, 0.1).name('X').onChange(() => this.applyTransform());
-    scaleFolder.add(state, 'scaleY', 0.1, 5, 0.1).name('Y').onChange(() => this.applyTransform());
-    scaleFolder.add(state, 'scaleZ', 0.1, 5, 0.1).name('Z').onChange(() => this.applyTransform());
+    scaleFolder.add(state, 'scaleX', 0.1, 3, 0.05).name('X').onChange(() => this.applyTransform());
+    scaleFolder.add(state, 'scaleY', 0.1, 3, 0.05).name('Y').onChange(() => this.applyTransform());
+    scaleFolder.add(state, 'scaleZ', 0.1, 3, 0.05).name('Z').onChange(() => this.applyTransform());
 
     folder.add({ reset: () => this.resetTransform() }, 'reset').name('Reset Transform');
     folder.close();
@@ -202,6 +210,9 @@ export class DebugGUI {
 
   selectObject(obj: THREE.Object3D): void {
     this.selectedObject = obj;
+    // Record where it was spawned (used by resetTransform)
+    this.spawnedPosition.copy(obj.position);
+
     this.transformState.translateX = obj.position.x;
     this.transformState.translateY = obj.position.y;
     this.transformState.translateZ = obj.position.z;
@@ -226,12 +237,18 @@ export class DebugGUI {
       THREE.MathUtils.degToRad(s.rotateZ),
     );
     AffineTransforms.setScale(this.selectedObject, s.scaleX, s.scaleY, s.scaleZ);
+
+    // --- PHYSICS SYNC ---
+    // Propagate the visual transform changes to the Cannon body so collisions
+    // always match what the player sees.
+    this.primitivePlacement.syncBodyToObject(this.selectedObject);
   }
 
   private resetTransform(): void {
-    this.transformState.translateX = 0;
-    this.transformState.translateY = 3;
-    this.transformState.translateZ = 0;
+    // Reset to the actual spawn position captured when the object was selected
+    this.transformState.translateX = this.spawnedPosition.x;
+    this.transformState.translateY = this.spawnedPosition.y;
+    this.transformState.translateZ = this.spawnedPosition.z;
     this.transformState.rotateX = 0;
     this.transformState.rotateY = 0;
     this.transformState.rotateZ = 0;

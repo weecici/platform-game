@@ -12,6 +12,7 @@ import {
   PrimitivePlacementSystem,
   type PrimitiveType,
 } from './systems/primitive-placement';
+import { BLOCK_CATALOGUE, BlockInventory } from './systems/block-system';
 
 class Game {
   private engine: Engine;
@@ -23,6 +24,7 @@ class Game {
   private levelManager: LevelManager;
   private debugGUI: DebugGUI;
   private primitivePlacement: PrimitivePlacementSystem;
+  private blockInventory: BlockInventory;
 
   private isRunning = false;
   private isPaused = false;
@@ -81,10 +83,13 @@ class Game {
       this.physics,
     );
 
+    this.blockInventory = new BlockInventory();
+
     this.debugGUI = new DebugGUI(
       this.engine,
       this.lighting,
       this.textureManager,
+      this.primitivePlacement,
       (type) => this.primitivePlacement.place(type as PrimitiveType, this.engine.camera),
       () => this.primitivePlacement.clear(),
     );
@@ -164,6 +169,26 @@ class Game {
       }
     });
 
+    // Left mouse click → place block at ghost position
+    this.engine.renderer.domElement.addEventListener('mousedown', (e) => {
+      if (
+        e.button === 0 &&
+        this.isStarted &&
+        this.isRunning &&
+        this.input.isPointerLocked
+      ) {
+        const placed = this.primitivePlacement.confirmPlace(
+          this.engine.camera,
+          this.textureManager,
+          this.blockInventory,
+        );
+        if (placed) {
+          this.debugGUI.selectObject(placed);
+          this.updateInventoryHUD();
+        }
+      }
+    });
+
     document.addEventListener('pointerlockchange', () => {
       const shouldShowHint =
         this.isStarted &&
@@ -191,27 +216,35 @@ class Game {
       }
     });
 
-    const shapeKeys: Record<string, PrimitiveType | null> = {
-      '1': 'box',
-      '2': 'sphere',
-      '3': 'cone',
-      '4': 'cylinder',
-      '5': 'wheel',
-      '6': 'teapot',
+    // Keys 1-5: select typed block for placement (ghost preview)
+    // Keys 6-7: legacy debug-mode shape placement
+    const blockKeys: Record<string, number> = {
+      '1': 0, '2': 1, '3': 2, '4': 3, '5': 4,
+    };
+    const legacyShapeKeys: Record<string, PrimitiveType | null> = {
+      '6': 'wheel',
       '7': 'torusknot',
       '8': null,
       '9': null,
       '0': null,
     };
 
-    for (const [key, shape] of Object.entries(shapeKeys)) {
+    for (const [key, idx] of Object.entries(blockKeys)) {
       this.input.onKeyPress(key, () => {
         if (this.isStarted && this.isRunning) {
-          // Update UI
-          document.querySelectorAll('.hotbar-slot').forEach(el => el.classList.remove('active'));
-          const slot = document.getElementById(`slot-${key}`);
-          if (slot) slot.classList.add('active');
+          this.activateHotbarSlot(key);
+          const blockType = BLOCK_CATALOGUE[idx];
+          this.primitivePlacement.selectBlock(blockType, this.textureManager);
+        }
+      });
+    }
 
+    for (const [key, shape] of Object.entries(legacyShapeKeys)) {
+      this.input.onKeyPress(key, () => {
+        if (this.isStarted && this.isRunning) {
+          this.activateHotbarSlot(key);
+          // Deselect typed block when switching to legacy keys
+          this.primitivePlacement.deselectBlock();
           if (shape) {
             this.debugGUI.spawnShapeAtCamera(shape);
           }
@@ -221,9 +254,19 @@ class Game {
 
     this.input.onKeyPress('backspace', () => {
       if (this.isStarted) {
+        this.primitivePlacement.deselectBlock();
         this.primitivePlacement.clear();
+        this.blockInventory.reset();
+        this.updateInventoryHUD();
+        document.querySelectorAll('.hotbar-slot').forEach(el => el.classList.remove('active'));
       }
     });
+  }
+
+  private activateHotbarSlot(key: string): void {
+    document.querySelectorAll('.hotbar-slot').forEach(el => el.classList.remove('active'));
+    const slot = document.getElementById(`slot-${key}`);
+    if (slot) slot.classList.add('active');
   }
 
   private startGame(): void {
@@ -271,7 +314,9 @@ class Game {
     this.cancelLoop();
     this.player.isDead = false;
     this.player.respawn(this.levelManager.getSpawnPosition());
+    this.primitivePlacement.deselectBlock();
     this.primitivePlacement.clear();
+    this.blockInventory.reset();
     this.score = 0;
     this.elapsedTime = 0;
     this.isRunning = true;
@@ -283,6 +328,9 @@ class Game {
     this.deathScreen.classList.remove('active');
     this.pauseScreen.classList.remove('active');
     this.hudEl.style.display = '';
+
+    this.updateInventoryHUD();
+    document.querySelectorAll('.hotbar-slot').forEach(el => el.classList.remove('active'));
 
     this.input.requestPointerLock();
     this.engine.clock.start();
@@ -329,6 +377,9 @@ class Game {
     this.input.resetMouseDelta();
     this.levelManager.update(dt);
 
+    // Update ghost preview position every frame
+    this.primitivePlacement.updateGhost(this.engine.camera);
+
     const playerPos = this.player.getPosition();
     this.lighting.updateSunPosition(playerPos.x, playerPos.z);
 
@@ -365,6 +416,22 @@ class Game {
     this.timeEl.textContent = `Time: ${this.elapsedTime.toFixed(1)}s`;
     this.speedEl.textContent = `Speed: ${this.player.getSpeed().toFixed(1)}`;
     this.deathsEl.textContent = `Deaths: ${this.deathCount}`;
+  }
+
+  /** Update the block inventory HUD panel */
+  updateInventoryHUD(): void {
+    for (const bt of BLOCK_CATALOGUE) {
+      const countEl = document.getElementById(`inv-count-${bt.id}`);
+      if (countEl) {
+        const rem = this.blockInventory.remaining(bt);
+        countEl.textContent = `${rem}`;
+        // Dim if depleted
+        const card = document.getElementById(`inv-card-${bt.id}`);
+        if (card) {
+          card.classList.toggle('depleted', rem === 0);
+        }
+      }
+    }
   }
 
   private cancelLoop(): void {
