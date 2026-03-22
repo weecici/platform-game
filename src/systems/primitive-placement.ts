@@ -115,35 +115,22 @@ export class PrimitivePlacementSystem {
   }
 
   /**
-   * Called every frame: repositions the ghost in front of the player aimed at the crosshair.
+   * Called every frame: repositions the ghost in front of the player.
    *
-   * We derive the horizontal aim direction from `camera.getWorldDirection()` and project
-   * it from the player's feet position (not camera position). This ensures the ghost always
-   * appears in front of the character regardless of 1st/3rd-person camera mode.
+   * Uses the player's yaw + pitch (the same angles driving both camera modes)
+   * so the ghost correctly moves up/down when aiming vertically, in both
+   * 1st-person and 3rd-person view.
    */
-  updateGhost(camera: THREE.Camera, playerPosition: THREE.Vector3): void {
+  updateGhost(playerPosition: THREE.Vector3, aimYaw: number, aimPitch: number): void {
     if (!this.ghostObject) return;
 
-    // camera.getWorldDirection() returns the unit vector the camera is looking toward.
-    // In 1st-person this is exactly where the player aims.
-    // In 3rd-person (lookAt) this also points from camera toward the player, which is
-    // the same direction we want (player's forward direction).
-    const dir = new THREE.Vector3();
-    camera.getWorldDirection(dir);
+    const dir = aimDirection(aimYaw, aimPitch);
 
-    // Flatten to horizontal plane so placed block stays at player height.
-    dir.y = 0;
-    if (dir.lengthSq() < 0.001) dir.set(0, 0, -1); // fallback if looking straight up/down
-    dir.normalize();
-
-    // Project from player position (not camera) so block appears in front of character
     this.ghostObject.position
       .copy(playerPosition)
       .addScaledVector(dir, this.ghostDistance);
-    // Keep ghost at player's standing height (slightly above feet)
-    this.ghostObject.position.y = playerPosition.y;
 
-    // Rotate ghost to face the same direction as placement
+    // Rotate ghost to match horizontal aim (yaw only — no need to tilt the mesh)
     this.ghostObject.rotation.y = Math.atan2(dir.x, dir.z);
   }
 
@@ -154,6 +141,8 @@ export class PrimitivePlacementSystem {
   confirmPlace(
     camera: THREE.Camera,
     playerPosition: THREE.Vector3,
+    aimYaw: number,
+    aimPitch: number,
     textureManager: TextureManager,
     blockInventory: BlockInventory,
   ): THREE.Object3D | null {
@@ -161,24 +150,15 @@ export class PrimitivePlacementSystem {
     if (!blockInventory.canPlace(this.selectedBlockType)) return null;
 
     const blockType = this.selectedBlockType;
+    const dir = aimDirection(aimYaw, aimPitch);
 
-    // Determine placement position from the live ghost position
+    // Use live ghost position if available, otherwise compute from player + aim
     const pos = this.ghostObject
       ? this.ghostObject.position.clone()
-      : (() => {
-          const dir = new THREE.Vector3();
-          camera.getWorldDirection(dir);
-          dir.y = 0;
-          dir.normalize();
-          return playerPosition.clone().addScaledVector(dir, this.ghostDistance);
-        })();
+      : playerPosition.clone().addScaledVector(dir, this.ghostDistance);
 
     const object = this.createVisualObject(blockType.shape, textureManager, blockType.texture);
     object.position.copy(pos);
-    const dir = new THREE.Vector3();
-    camera.getWorldDirection(dir);
-    dir.y = 0;
-    dir.normalize();
     object.rotation.y = Math.atan2(dir.x, dir.z);
 
     const placed = this.addToWorld(object, blockType);
@@ -425,7 +405,7 @@ export class PrimitivePlacementSystem {
 }
 
 // ================================================================
-// Disposal helper (not a method so it can be called on non-class objects)
+// Helpers
 // ================================================================
 
 function position(object: THREE.Object3D, pos: THREE.Vector3): void {
@@ -441,4 +421,26 @@ function disposeObject(obj: THREE.Object3D): void {
       else mat?.dispose();
     }
   });
+}
+
+/**
+ * Compute the world-space unit aim direction from the player's yaw and pitch.
+ *
+ * Derived from the camera's YXZ Euler convention (rotation.y = yaw, rotation.x = pitch):
+ *   Applying (yaw, pitch, 0, 'YXZ') to the default forward vector (0, 0, -1) gives:
+ *
+ *     x = -sin(yaw)
+ *     y =  cos(yaw) * sin(pitch)
+ *     z = -cos(yaw) * cos(pitch)
+ *
+ * This is always a unit vector so no normalize() is needed.
+ * Works identically in 1st-person and 3rd-person because both camera modes
+ * use the same yaw/pitch values.
+ */
+function aimDirection(yaw: number, pitch: number): THREE.Vector3 {
+  return new THREE.Vector3(
+    -Math.sin(yaw),
+    Math.cos(yaw) * Math.sin(pitch),
+    -Math.cos(yaw) * Math.cos(pitch),
+  );
 }

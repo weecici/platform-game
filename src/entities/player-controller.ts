@@ -419,4 +419,20 @@ export class PlayerController {
       this.body.position.z,
     );
   }
+
+  /**
+   * The horizontal yaw angle (radians) used for both camera and player facing.
+   * Shared between 1st-person and 3rd-person camera modes.
+   */
+  get aimYaw(): number {
+    return this.yaw;
+  }
+
+  /**
+   * The vertical pitch angle (radians) used for both camera modes.
+   * Positive = looking up, negative = looking down.
+   */
+  get aimPitch(): number {
+    return this.pitch;
+  }
 }

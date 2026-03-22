@@ -180,6 +180,8 @@ class Game {
         const placed = this.primitivePlacement.confirmPlace(
           this.engine.camera,
           this.player.getPosition(),
+          this.player.aimYaw,
+          this.player.aimPitch,
           this.textureManager,
           this.blockInventory,
         );
@@ -390,7 +392,11 @@ class Game {
     this.levelManager.update(dt);
 
     // Update ghost preview position every frame
-    this.primitivePlacement.updateGhost(this.engine.camera, this.player.getPosition());
+    this.primitivePlacement.updateGhost(
+      this.player.getPosition(),
+      this.player.aimYaw,
+      this.player.aimPitch,
+    );
 
     const playerPos = this.player.getPosition();
     this.lighting.updateSunPosition(playerPos.x, playerPos.z);
