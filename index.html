@@ -342,6 +342,28 @@
       @keyframes spin {
         to { transform: rotate(360deg); }
       }
+      /* Pickup notification */
+      #pickup-notification {
+        position: absolute;
+        left: 50%;
+        top: calc(50% - 50px);
+        transform: translateX(-50%);
+        color: #00ff88;
+        background: rgba(0,0,0,0.6);
+        border: 1px solid rgba(0,255,136,0.3);
+        padding: 6px 18px;
+        border-radius: 999px;
+        font-size: 15px;
+        font-weight: 700;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        white-space: nowrap;
+        z-index: 20;
+      }
+      #pickup-notification.visible {
+        opacity: 1;
+      }
     </style>
   </head>
   <body>
@@ -358,53 +380,56 @@
       <div id="crosshair"></div>
       <div id="capture-hint">Click to lock cursor</div>
       <div id="placement-distance"></div>
+      <div id="pickup-notification"></div>
 
       <!-- Block Inventory Panel -->
       <div id="block-inventory">
-        <div class="inv-card" id="inv-card-grass">
+        <div class="inv-card" id="inv-card-box">
           <span class="inv-key">1</span>
-          <span class="inv-icon">🌿</span>
-          <span class="inv-label">Grass</span>
-          <span class="inv-count" id="inv-count-grass">4</span>
+          <span class="inv-icon">📦</span>
+          <span class="inv-label">Box</span>
+          <span class="inv-count" id="inv-count-box">0</span>
         </div>
-        <div class="inv-card" id="inv-card-stone">
+        <div class="inv-card" id="inv-card-sphere">
           <span class="inv-key">2</span>
-          <span class="inv-icon">🪨</span>
-          <span class="inv-label">Stone</span>
-          <span class="inv-count" id="inv-count-stone">4</span>
+          <span class="inv-icon">⚽</span>
+          <span class="inv-label">Sphere</span>
+          <span class="inv-count" id="inv-count-sphere">0</span>
         </div>
-        <div class="inv-card" id="inv-card-wood">
+        <div class="inv-card" id="inv-card-cone">
           <span class="inv-key">3</span>
-          <span class="inv-icon">🪵</span>
-          <span class="inv-label">Wood</span>
-          <span class="inv-count" id="inv-count-wood">3</span>
+          <span class="inv-icon">🔺</span>
+          <span class="inv-label">Cone</span>
+          <span class="inv-count" id="inv-count-cone">0</span>
         </div>
-        <div class="inv-card" id="inv-card-ice">
+        <div class="inv-card" id="inv-card-cylinder">
           <span class="inv-key">4</span>
-          <span class="inv-icon">🧊</span>
-          <span class="inv-label">Ice</span>
-          <span class="inv-count" id="inv-count-ice">3</span>
+          <span class="inv-icon">🛢️</span>
+          <span class="inv-label">Cylinder</span>
+          <span class="inv-count" id="inv-count-cylinder">0</span>
         </div>
-        <div class="inv-card" id="inv-card-bounce">
+        <div class="inv-card" id="inv-card-wheel">
           <span class="inv-key">5</span>
-          <span class="inv-icon">🎾</span>
-          <span class="inv-label">Bounce</span>
-          <span class="inv-count" id="inv-count-bounce">2</span>
+          <span class="inv-icon">🍩</span>
+          <span class="inv-label">Wheel</span>
+          <span class="inv-count" id="inv-count-wheel">0</span>
+        </div>
+        <div class="inv-card" id="inv-card-teapot">
+          <span class="inv-key">6</span>
+          <span class="inv-icon">🫖</span>
+          <span class="inv-label">Teapot</span>
+          <span class="inv-count" id="inv-count-teapot">0</span>
         </div>
       </div>
 
       <!-- Hotbar -->
       <div id="hotbar">
-        <div class="hotbar-slot" id="slot-1"><div class="key-hint">1</div><div class="item-icon">🌿</div></div>
-        <div class="hotbar-slot" id="slot-2"><div class="key-hint">2</div><div class="item-icon">🪨</div></div>
-        <div class="hotbar-slot" id="slot-3"><div class="key-hint">3</div><div class="item-icon">🪵</div></div>
-        <div class="hotbar-slot" id="slot-4"><div class="key-hint">4</div><div class="item-icon">🧊</div></div>
-        <div class="hotbar-slot" id="slot-5"><div class="key-hint">5</div><div class="item-icon">🎾</div></div>
-        <div class="hotbar-slot" id="slot-6"><div class="key-hint">6</div><div class="item-icon">🍩</div></div>
-        <div class="hotbar-slot" id="slot-7"><div class="key-hint">7</div><div class="item-icon">🥨</div></div>
-        <div class="hotbar-slot" id="slot-8"><div class="key-hint">8</div><div class="item-icon"></div></div>
-        <div class="hotbar-slot" id="slot-9"><div class="key-hint">9</div><div class="item-icon"></div></div>
-        <div class="hotbar-slot" id="slot-0"><div class="key-hint">0</div><div class="item-icon"></div></div>
+        <div class="hotbar-slot" id="slot-1"><div class="key-hint">1</div><div class="item-icon">📦</div></div>
+        <div class="hotbar-slot" id="slot-2"><div class="key-hint">2</div><div class="item-icon">⚽</div></div>
+        <div class="hotbar-slot" id="slot-3"><div class="key-hint">3</div><div class="item-icon">🔺</div></div>
+        <div class="hotbar-slot" id="slot-4"><div class="key-hint">4</div><div class="item-icon">🛢️</div></div>
+        <div class="hotbar-slot" id="slot-5"><div class="key-hint">5</div><div class="item-icon">🍩</div></div>
+        <div class="hotbar-slot" id="slot-6"><div class="key-hint">6</div><div class="item-icon">🫖</div></div>
       </div>
     </div>
 
@@ -418,13 +443,13 @@
         <kbd>Space</kbd> - Jump &nbsp;|&nbsp;
         <kbd>Shift</kbd> - Sprint<br/>
         <kbd>Mouse</kbd> - Look Around &nbsp;|&nbsp;
-        <kbd>P</kbd> - Pause &nbsp;|&nbsp;
-        <kbd>G</kbd> - Toggle Debug GUI<br/>
-        <kbd>1-5</kbd> - Select Block (Grass/Stone/Wood/Ice/Bounce) &nbsp;|&nbsp;
+        <kbd>Scroll</kbd> - Adjust Placement Distance<br/>
+        <kbd>1-6</kbd> - Select Shape (Box/Sphere/Cone/Cylinder/Wheel/Teapot) &nbsp;|&nbsp;
         <kbd>Left Click</kbd> - Place Block<br/>
-        <kbd>6-7</kbd> - Debug Shapes &nbsp;|&nbsp;
+        <kbd>P</kbd> - Pause &nbsp;|&nbsp;
+        <kbd>G</kbd> - Toggle Debug GUI &nbsp;|&nbsp;
         <kbd>R</kbd> - Restart &nbsp;|&nbsp;
-        <kbd>Backspace</kbd> - Clear All Placed Blocks
+        <kbd>Backspace</kbd> - Clear Placed Blocks
       </div>
     </div>
 

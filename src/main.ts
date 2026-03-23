@@ -10,7 +10,6 @@ import { LEVEL_PARKOUR_CITY } from './levels/level-data';
 import { DebugGUI } from './ui/debug-ui';
 import {
   PrimitivePlacementSystem,
-  type PrimitiveType,
 } from './systems/primitive-placement';
 import { BLOCK_CATALOGUE, BlockInventory } from './systems/block-system';
 
@@ -90,7 +89,7 @@ class Game {
       this.lighting,
       this.textureManager,
       this.primitivePlacement,
-      (type) => this.primitivePlacement.place(type as PrimitiveType, this.engine.camera),
+      (type) => this.primitivePlacement.place(type as any, this.engine.camera),
       () => this.primitivePlacement.clear(),
     );
     this.debugGUI.hide();
@@ -230,17 +229,10 @@ class Game {
       }
     });
 
-    // Keys 1-5: select typed block for placement (ghost preview)
-    // Keys 6-7: legacy debug-mode shape placement
+    // Keys 1-6: select block type for placement (ghost preview)
+    // Each key maps to one unique shape in the catalogue.
     const blockKeys: Record<string, number> = {
-      '1': 0, '2': 1, '3': 2, '4': 3, '5': 4,
-    };
-    const legacyShapeKeys: Record<string, PrimitiveType | null> = {
-      '6': 'wheel',
-      '7': 'torusknot',
-      '8': null,
-      '9': null,
-      '0': null,
+      '1': 0, '2': 1, '3': 2, '4': 3, '5': 4, '6': 5,
     };
 
     for (const [key, idx] of Object.entries(blockKeys)) {
@@ -249,19 +241,6 @@ class Game {
           this.activateHotbarSlot(key);
           const blockType = BLOCK_CATALOGUE[idx];
           this.primitivePlacement.selectBlock(blockType, this.textureManager);
-        }
-      });
-    }
-
-    for (const [key, shape] of Object.entries(legacyShapeKeys)) {
-      this.input.onKeyPress(key, () => {
-        if (this.isStarted && this.isRunning) {
-          this.activateHotbarSlot(key);
-          // Deselect typed block when switching to legacy keys
-          this.primitivePlacement.deselectBlock();
-          if (shape) {
-            this.debugGUI.spawnShapeAtCamera(shape);
-          }
         }
       });
     }
@@ -401,6 +380,14 @@ class Game {
     const playerPos = this.player.getPosition();
     this.lighting.updateSunPosition(playerPos.x, playerPos.z);
 
+    // Check for collectible pickups
+    const collected = this.levelManager.checkCollectibles(playerPos);
+    for (const blockId of collected) {
+      this.blockInventory.add(blockId);
+      this.updateInventoryHUD();
+      this.showPickupNotification(blockId);
+    }
+
     this.engine.perspectiveParams.positionX = this.engine.camera.position.x;
     this.engine.perspectiveParams.positionY = this.engine.camera.position.y;
     this.engine.perspectiveParams.positionZ = this.engine.camera.position.z;
@@ -447,6 +434,19 @@ class Game {
     this.distanceHintTimeout = setTimeout(() => el.classList.remove('visible'), 1200);
   }
 
+  /** Show a brief pickup notification */
+  private pickupNotificationTimeout: ReturnType<typeof setTimeout> | null = null;
+  private showPickupNotification(blockId: string): void {
+    const bt = BLOCK_CATALOGUE.find(b => b.id === blockId);
+    if (!bt) return;
+    const el = document.getElementById('pickup-notification');
+    if (!el) return;
+    el.textContent = `${bt.icon} +1 ${bt.label}`;
+    el.classList.add('visible');
+    if (this.pickupNotificationTimeout) clearTimeout(this.pickupNotificationTimeout);
+    this.pickupNotificationTimeout = setTimeout(() => el.classList.remove('visible'), 1500);
+  }
+
   /** Update the block inventory HUD panel */
   updateInventoryHUD(): void {
     for (const bt of BLOCK_CATALOGUE) {
@@ -454,7 +454,6 @@ class Game {
       if (countEl) {
         const rem = this.blockInventory.remaining(bt);
         countEl.textContent = `${rem}`;
-        // Dim if depleted
         const card = document.getElementById(`inv-card-${bt.id}`);
         if (card) {
           card.classList.toggle('depleted', rem === 0);

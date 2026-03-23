@@ -65,7 +65,7 @@ export class PrimitivePlacementSystem {
     this.deselectBlock();
     this.selectedBlockType = blockType;
 
-    const ghost = this.createVisualObject(blockType.shape, textureManager, blockType.texture);
+    const ghost = this.createVisualObject(blockType.shape, textureManager, 'stone');
 
     // Make it semi-transparent to clearly indicate "preview"
     ghost.traverse((child) => {
@@ -157,7 +157,7 @@ export class PrimitivePlacementSystem {
       ? this.ghostObject.position.clone()
       : playerPosition.clone().addScaledVector(dir, this.ghostDistance);
 
-    const object = this.createVisualObject(blockType.shape, textureManager, blockType.texture);
+    const object = this.createVisualObject(blockType.shape, textureManager, 'stone');
     object.position.copy(pos);
     object.rotation.y = Math.atan2(dir.x, dir.z);
 

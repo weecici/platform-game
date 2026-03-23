@@ -1,105 +1,112 @@
 import type { PrimitiveType } from './primitive-placement';
 
 /**
- * BlockSystem – defines typed block catalogue with texture + physics properties.
- * Each block is a combination of a Shape and a Texture, and carries unique
- * physics interaction parameters.
+ * BlockSystem – one block type per primitive shape.
+ * Texture is selected separately via the Debug GUI per-object.
+ * Inventory starts at 0; player must collect pickups on the map.
  */
 export interface BlockType {
   id: string;
   label: string;
-  /** Emoji icon shown in hotbar */
+  /** Emoji icon shown in hotbar & inventory */
   icon: string;
   /** Three.js primitive shape key */
   shape: PrimitiveType;
-  /** Key into TextureManager */
-  texture: string;
   physics: {
-    /** Coulomb friction coefficient */
     friction: number;
-    /** Coefficient of restitution (bounciness) */
     restitution: number;
   };
-  /** Maximum number of this block type that can be placed in one run */
-  maxCount: number;
 }
 
-/** The five block types the player can choose from (keys 1-5). */
+/**
+ * The six block types mapped to keys 1-6.
+ * One shape per slot — texture is orthogonal and can be changed in the debug UI.
+ */
 export const BLOCK_CATALOGUE: BlockType[] = [
   {
-    id: 'grass',
-    label: 'Grass',
-    icon: '🌿',
+    id: 'box',
+    label: 'Box',
+    icon: '📦',
     shape: 'box',
-    texture: 'grass',
-    physics: { friction: 0.8, restitution: 0.1 },
-    maxCount: 4,
+    physics: { friction: 0.6, restitution: 0.0 },
   },
   {
-    id: 'stone',
-    label: 'Stone',
-    icon: '🪨',
-    shape: 'box',
-    texture: 'stone',
-    physics: { friction: 0.5, restitution: 0.0 },
-    maxCount: 4,
-  },
-  {
-    id: 'wood',
-    label: 'Wood',
-    icon: '🪵',
-    shape: 'cylinder',
-    texture: 'wood',
-    physics: { friction: 0.7, restitution: 0.2 },
-    maxCount: 3,
-  },
-  {
-    id: 'ice',
-    label: 'Ice',
-    icon: '🧊',
-    shape: 'box',
-    texture: 'metal',
-    physics: { friction: 0.05, restitution: 0.05 },
-    maxCount: 3,
-  },
-  {
-    id: 'bounce',
-    label: 'Bounce',
-    icon: '🎾',
+    id: 'sphere',
+    label: 'Sphere',
+    icon: '⚽',
     shape: 'sphere',
-    texture: 'checkerboard',
-    physics: { friction: 0.3, restitution: 0.85 },
-    maxCount: 2,
+    physics: { friction: 0.4, restitution: 0.3 },
+  },
+  {
+    id: 'cone',
+    label: 'Cone',
+    icon: '🔺',
+    shape: 'cone',
+    physics: { friction: 0.5, restitution: 0.1 },
+  },
+  {
+    id: 'cylinder',
+    label: 'Cylinder',
+    icon: '🛢️',
+    shape: 'cylinder',
+    physics: { friction: 0.6, restitution: 0.1 },
+  },
+  {
+    id: 'wheel',
+    label: 'Wheel',
+    icon: '🍩',
+    shape: 'wheel',
+    physics: { friction: 0.5, restitution: 0.2 },
+  },
+  {
+    id: 'teapot',
+    label: 'Teapot',
+    icon: '🫖',
+    shape: 'teapot',
+    physics: { friction: 0.4, restitution: 0.15 },
   },
 ];
 
 /**
- * BlockInventory tracks how many of each block type the player has used.
+ * BlockInventory – tracks how many of each block type the player has collected.
+ * Starts at ZERO; the player collects blocks from pickups on the map.
  */
 export class BlockInventory {
-  private used: Map<string, number> = new Map();
+  private counts: Map<string, number> = new Map();
 
   constructor() {
     this.reset();
   }
 
+  /** Reset all counts to 0 (start of run). */
   reset(): void {
-    this.used.clear();
+    this.counts.clear();
     for (const bt of BLOCK_CATALOGUE) {
-      this.used.set(bt.id, 0);
+      this.counts.set(bt.id, 0);
     }
   }
 
+  /** Can the player place one of this block type? */
   canPlace(blockType: BlockType): boolean {
-    return (this.used.get(blockType.id) ?? 0) < blockType.maxCount;
+    return (this.counts.get(blockType.id) ?? 0) > 0;
   }
 
+  /** How many of this block type does the player currently hold? */
   remaining(blockType: BlockType): number {
-    return blockType.maxCount - (this.used.get(blockType.id) ?? 0);
+    return this.counts.get(blockType.id) ?? 0;
   }
 
+  /** Spend one block (on placement). */
   use(blockType: BlockType): void {
-    const current = this.used.get(blockType.id) ?? 0;
-    this.used.set(blockType.id, current + 1);
+    const current = this.counts.get(blockType.id) ?? 0;
+    if (current > 0) {
+      this.counts.set(blockType.id, current - 1);
+    }
+  }
+
+  /** Gain one block (on collectible pickup). */
+  add(blockTypeId: string): void {
+    const current = this.counts.get(blockTypeId) ?? 0;
+    this.counts.set(blockTypeId, current + 1);
   }
 }
