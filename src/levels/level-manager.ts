@@ -41,6 +41,8 @@ export interface DecorationDef {
     bobSpeed?: number;
     bobHeight?: number;
   };
+  /** If set, this decoration is a collectible that grants the named block type id. */
+  collectible?: string;
 }
 
 interface PlatformRuntime {
@@ -57,6 +59,8 @@ interface DecorationRuntime {
   def: DecorationDef;
   initialY: number;
   time: number;
+  /** Has the player already collected this pickup? */
+  collected: boolean;
 }
 
 export class LevelManager {
@@ -200,6 +204,7 @@ export class LevelManager {
       def,
       initialY: def.position[1],
       time: Math.random() * Math.PI * 2,
+      collected: false,
     });
   }
 
@@ -251,6 +256,7 @@ export class LevelManager {
     }
 
     for (const dec of this.decorations) {
+      if (dec.collected) continue;
       dec.time += dt;
       if (dec.def.animate) {
         if (dec.def.animate.rotateY) {
@@ -264,6 +270,53 @@ export class LevelManager {
         }
       }
     }
+  }
+
+  /**
+   * Check if player is close enough to collect any collectible decorations.
+   * Returns an array of block type IDs that were just collected.
+   */
+  checkCollectibles(playerPos: THREE.Vector3): string[] {
+    const collected: string[] = [];
+    const PICKUP_RADIUS = 2.0;
+    const PICKUP_RADIUS_SQ = PICKUP_RADIUS * PICKUP_RADIUS;
+
+    for (const dec of this.decorations) {
+      if (dec.collected || !dec.def.collectible) continue;
+
+      const dx = playerPos.x - dec.mesh.position.x;
+      const dy = playerPos.y - dec.mesh.position.y;
+      const dz = playerPos.z - dec.mesh.position.z;
+      const distSq = dx * dx + dy * dy + dz * dz;
+
+      if (distSq < PICKUP_RADIUS_SQ) {
+        dec.collected = true;
+        collected.push(dec.def.collectible);
+
+        // Quick shrink-away animation then remove from scene
+        const mesh = dec.mesh;
+        const startScale = mesh.scale.clone();
+        let t = 0;
+        const shrink = () => {
+          t += 0.05;
+          if (t >= 1) {
+            this.engine.scene.remove(mesh);
+            return;
+          }
+          const s = 1 - t;
+          mesh.scale.set(
+            startScale.x * s,
+            startScale.y * s,
+            startScale.z * s,
+          );
+          mesh.position.y += 0.08; // float upward
+          requestAnimationFrame(shrink);
+        };
+        shrink();
+      }
+    }
+
+    return collected;
   }
 
   clearLevel(): void {
