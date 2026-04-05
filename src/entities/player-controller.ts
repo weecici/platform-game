@@ -105,7 +105,7 @@ export class PlayerController {
     this.engine.scene.add(this.modelGroup);
 
     const loader = new GLTFLoader();
-    loader.load("/src/assets/characters/Ninja.gltf", (gltf) => {
+    loader.load("/assets/characters/Ninja.gltf", (gltf) => {
       console.log(gltf.animations);
       const model = gltf.scene;
 
