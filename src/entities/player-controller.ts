@@ -13,6 +13,14 @@ export interface PlayerConfig {
   playerHeight: number;
   playerRadius: number;
   maxPitchAngle: number;
+  /** Per-frame lerp factor toward target speed (0-1). Higher = snappier. 0.15 ≈ 0.2s ramp */
+  groundAccel: number;
+  /** Per-frame lerp factor toward zero when no input (0-1). Higher = faster stop */
+  groundDecel: number;
+  /** Fraction of groundAccel available while airborne (0-1) */
+  airControl: number;
+  /** Per-second drag retention while airborne. Lower = more drag. Applied via pow(airDrag, time) */
+  airDrag: number;
 }
 
 export class PlayerController {
@@ -65,6 +73,11 @@ export class PlayerController {
       playerHeight: 1.8,
       playerRadius: 0.4,
       maxPitchAngle: Math.PI / 2 - 0.1,
+      // Momentum — these are per-frame lerp factors (0-1)
+      groundAccel: 0.2,
+      groundDecel: 0.2,
+      airControl: 1.0,   // percentage of ground acceleration while airborne
+      airDrag: 0.8,      // percentage of speed after 1s airborne
     };
 
     const shape = new CANNON.Sphere(this.config.playerRadius);
@@ -205,7 +218,6 @@ export class PlayerController {
         nextAction = "Jump";
       } else if (this.predictLanding()) {
         // Falling & close to ground -> Landing anticipation
-        console.log("Jump_Land");
         nextAction = "Jump_Land";
       } else {
         // Airborne (mid-air, apex, or falling far from ground) -> Airborne loop
@@ -280,15 +292,29 @@ export class PlayerController {
     }
   }
 
-  private handleMovement(_dt: number): void {
-    this.isSprinting = this.input.isKeyDown("shift");
-    const speed =
+  /**
+   * Momentum-based movement.
+   *
+   * Uses fixed per-frame interpolation factors instead of dt-based math
+   * to avoid oscillation from tiny/unstable delta values.
+   *
+   * Ground + input  → lerp velocity vector toward target at groundAccel rate
+   * Ground + no key → lerp velocity vector toward zero at groundDecel rate
+   * Air    + input  → lerp at reduced rate (airControl fraction)
+   * Air    + no key → drag via pow(airDrag, ungroundedTimer)  [accumulates over time]
+   *
+   * Diagonal: works on the velocity VECTOR, not per-component, so W+A gives
+   * the exact same speed magnitude as W alone.
+   */
+  private handleMovement(dt: number): void {
+    this.isSprinting = this.input.isKeyDown('shift');
+    const targetSpeed =
       this.config.moveSpeed *
       (this.isSprinting ? this.config.sprintMultiplier : 1);
 
+    // Compute desired horizontal direction
     this.frontVector.set(0, 0, -1);
     this.sideVector.set(1, 0, 0);
-
     const yawQuat = new THREE.Quaternion().setFromAxisAngle(
       new THREE.Vector3(0, 1, 0),
       this.yaw,
@@ -297,23 +323,61 @@ export class PlayerController {
     this.sideVector.applyQuaternion(yawQuat);
 
     this.direction.set(0, 0, 0);
-    if (this.input.isKeyDown("w")) this.direction.add(this.frontVector);
-    if (this.input.isKeyDown("s")) this.direction.sub(this.frontVector);
-    if (this.input.isKeyDown("d")) this.direction.add(this.sideVector);
-    if (this.input.isKeyDown("a")) this.direction.sub(this.sideVector);
+    if (this.input.isKeyDown('w')) this.direction.add(this.frontVector);
+    if (this.input.isKeyDown('s')) this.direction.sub(this.frontVector);
+    if (this.input.isKeyDown('d')) this.direction.add(this.sideVector);
+    if (this.input.isKeyDown('a')) this.direction.sub(this.sideVector);
 
-    if (this.direction.lengthSq() > 0) {
-      this.direction.normalize();
-      const airControl = this.isGrounded ? 1 : 0.35;
-      this.body.velocity.x +=
-        (this.direction.x * speed - this.body.velocity.x) * airControl;
-      this.body.velocity.z +=
-        (this.direction.z * speed - this.body.velocity.z) * airControl;
-    } else {
-      const damping = this.isGrounded ? 0.78 : 0.96;
-      this.body.velocity.x *= damping;
-      this.body.velocity.z *= damping;
+    const hasInput = this.direction.lengthSq() > 0;
+    let vx = this.body.velocity.x;
+    let vz = this.body.velocity.z;
+
+    // ------------------------------------------------------------------
+    // Step 1: Air drag (applied FIRST whenever airborne)
+    // Uses ungroundedTimer which accumulates real time while in the air,
+    // so it's stable regardless of per-frame dt fluctuations.
+    // ------------------------------------------------------------------
+    if (!this.isGrounded) {
+      const dragFactor = Math.pow(this.config.airDrag, this.ungroundedTimer);
+      vx *= dragFactor;
+      vz *= dragFactor;
     }
+
+    // ------------------------------------------------------------------
+    // Step 2: Acceleration / deceleration
+    // ------------------------------------------------------------------
+    if (hasInput) {
+      this.direction.normalize();
+
+      // Target velocity vector
+      const tvx = this.direction.x * targetSpeed;
+      const tvz = this.direction.z * targetSpeed;
+
+      const accel = this.isGrounded
+        ? this.config.groundAccel
+        : this.config.groundAccel * this.config.airControl;
+
+      // Smoothly approach target velocity
+      vx += (tvx - vx) * accel;
+      vz += (tvz - vz) * accel;
+    } else {
+      // No input → decelerate
+      if (this.isGrounded) {
+        vx *= (1 - this.config.groundDecel);
+        vz *= (1 - this.config.groundDecel);
+        if (vx * vx + vz * vz < 0.001) {
+          vx = 0;
+          vz = 0;
+        }
+      }
+    }
+    // console.log(dt)
+
+    // MUST use .set() for CANNON.Body velocity updates to reliably propagate,
+    // assigning to .x and .z directly can fail to trigger internal sleep state wakeups
+    // or proxy updates depending on CANNON configuration.
+    // console.log("Old:", vx, vz)
+    this.body.velocity.set(vx, this.body.velocity.y, vz);
   }
 
   private handleJump(): void {
