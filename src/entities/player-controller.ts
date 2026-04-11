@@ -74,10 +74,10 @@ export class PlayerController {
       playerRadius: 0.4,
       maxPitchAngle: Math.PI / 2 - 0.1,
       // Momentum — these are per-frame lerp factors (0-1)
-      groundAccel: 0.2,
+      groundAccel: 2.0,
       groundDecel: 0.2,
       airControl: 1.0,   // percentage of ground acceleration while airborne
-      airDrag: 0.8,      // percentage of speed after 1s airborne
+      airDrag: 0.9,      // percentage of speed after 1s airborne
     };
 
     const shape = new CANNON.Sphere(this.config.playerRadius);
@@ -358,20 +358,22 @@ export class PlayerController {
         : this.config.groundAccel * this.config.airControl;
 
       // Smoothly approach target velocity
-      vx += (tvx - vx) * accel;
-      vz += (tvz - vz) * accel;
+      const dvx = Math.abs(tvx - vx) >= 1.0 ? (tvx - vx) * accel * dt : (tvx - vx) * 0.2
+      const dvz = Math.abs(tvz - vz) >= 1.0 ? (tvz - vz) * accel * dt : (tvz - vz) * 0.2
+
+      vx += dvx;
+      vz += dvz;
     } else {
       // No input → decelerate
       if (this.isGrounded) {
         vx *= (1 - this.config.groundDecel);
         vz *= (1 - this.config.groundDecel);
-        if (vx * vx + vz * vz < 0.001) {
+        if (vx * vx + vz * vz < 0.01) {
           vx = 0;
           vz = 0;
         }
       }
     }
-    // console.log(dt)
 
     // MUST use .set() for CANNON.Body velocity updates to reliably propagate,
     // assigning to .x and .z directly can fail to trigger internal sleep state wakeups
