@@ -307,7 +307,12 @@ export class PlayerController {
    * the exact same speed magnitude as W alone.
    */
   private handleMovement(dt: number): void {
-    this.isSprinting = this.input.isKeyDown('shift');
+    if (this.isGrounded) {
+      this.isSprinting = this.input.isKeyDown('shift');
+    } else if (!this.input.isKeyDown('shift')) {
+      this.isSprinting = false;
+    }
+
     const targetSpeed =
       this.config.moveSpeed *
       (this.isSprinting ? this.config.sprintMultiplier : 1);
@@ -331,6 +336,8 @@ export class PlayerController {
     const hasInput = this.direction.lengthSq() > 0;
     let vx = this.body.velocity.x;
     let vz = this.body.velocity.z;
+
+    console.log(vx, vz)
 
     // ------------------------------------------------------------------
     // Step 1: Air drag (applied FIRST whenever airborne)
@@ -396,10 +403,6 @@ export class PlayerController {
       }
     }
 
-    // MUST use .set() for CANNON.Body velocity updates to reliably propagate,
-    // assigning to .x and .z directly can fail to trigger internal sleep state wakeups
-    // or proxy updates depending on CANNON configuration.
-    // console.log("Old:", vx, vz)
     this.body.velocity.set(vx, this.body.velocity.y, vz);
   }
 
