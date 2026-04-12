@@ -306,6 +306,10 @@ class Game {
   private restartGame(): void {
     this.cancelLoop();
     this.player.isDead = false;
+
+    // Reload the map so that all collectible floating objects reappear
+    this.levelManager.loadLevel(LEVEL_PARKOUR_CITY);
+
     this.player.respawn(this.levelManager.getSpawnPosition());
     this.primitivePlacement.deselectBlock();
     this.primitivePlacement.clear();
@@ -407,8 +411,8 @@ class Game {
       this.score,
       Math.floor(
         Math.abs(playerPos.z) +
-          playerPos.y * 2 +
-          this.primitivePlacement.getCount() * 5,
+        playerPos.y * 2 +
+        this.primitivePlacement.getCount() * 5,
       ),
     );
 
