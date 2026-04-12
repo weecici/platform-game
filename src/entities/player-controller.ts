@@ -13,6 +13,14 @@ export interface PlayerConfig {
   playerHeight: number;
   playerRadius: number;
   maxPitchAngle: number;
+  /** Percentage of max speed achieved per second (e.g. 0.99 = 99% speed in 1s) */
+  groundAccel: number;
+  /** Percentage of speed lost per second when braking (e.g. 0.95 = 95% speed lost in 1s) */
+  groundDecel: number;
+  /** Fraction of groundAccel available while airborne (0-1) */
+  airControl: number;
+  /** Per-second drag retention while airborne. Lower = more drag. Applied via pow(airDrag, time) */
+  airDrag: number;
 }
 
 export class PlayerController {
@@ -65,6 +73,11 @@ export class PlayerController {
       playerHeight: 1.8,
       playerRadius: 0.4,
       maxPitchAngle: Math.PI / 2 - 0.1,
+      // Momentum — these are percentages per second (0-0.99)
+      groundAccel: 0.99, // 99% of top speed reached in 1 second
+      groundDecel: 0.95, // 95% of current speed lost in 1 second (simulates friction/inertia)
+      airControl: 1.0,   // percentage of ground acceleration while airborne
+      airDrag: 0.9,      // percentage of speed after 1s airborne
     };
 
     const shape = new CANNON.Sphere(this.config.playerRadius);
@@ -205,7 +218,6 @@ export class PlayerController {
         nextAction = "Jump";
       } else if (this.predictLanding()) {
         // Falling & close to ground -> Landing anticipation
-        console.log("Jump_Land");
         nextAction = "Jump_Land";
       } else {
         // Airborne (mid-air, apex, or falling far from ground) -> Airborne loop
@@ -280,15 +292,29 @@ export class PlayerController {
     }
   }
 
-  private handleMovement(_dt: number): void {
-    this.isSprinting = this.input.isKeyDown("shift");
-    const speed =
+  /**
+   * Momentum-based movement.
+   *
+   * Uses fixed per-frame interpolation factors instead of dt-based math
+   * to avoid oscillation from tiny/unstable delta values.
+   *
+   * Ground + input  → lerp velocity vector toward target at groundAccel rate
+   * Ground + no key → lerp velocity vector toward zero at groundDecel rate
+   * Air    + input  → lerp at reduced rate (airControl fraction)
+   * Air    + no key → drag via pow(airDrag, ungroundedTimer)  [accumulates over time]
+   *
+   * Diagonal: works on the velocity VECTOR, not per-component, so W+A gives
+   * the exact same speed magnitude as W alone.
+   */
+  private handleMovement(dt: number): void {
+    this.isSprinting = this.input.isKeyDown('shift');
+    const targetSpeed =
       this.config.moveSpeed *
       (this.isSprinting ? this.config.sprintMultiplier : 1);
 
+    // Compute desired horizontal direction
     this.frontVector.set(0, 0, -1);
     this.sideVector.set(1, 0, 0);
-
     const yawQuat = new THREE.Quaternion().setFromAxisAngle(
       new THREE.Vector3(0, 1, 0),
       this.yaw,
@@ -297,23 +323,84 @@ export class PlayerController {
     this.sideVector.applyQuaternion(yawQuat);
 
     this.direction.set(0, 0, 0);
-    if (this.input.isKeyDown("w")) this.direction.add(this.frontVector);
-    if (this.input.isKeyDown("s")) this.direction.sub(this.frontVector);
-    if (this.input.isKeyDown("d")) this.direction.add(this.sideVector);
-    if (this.input.isKeyDown("a")) this.direction.sub(this.sideVector);
+    if (this.input.isKeyDown('w')) this.direction.add(this.frontVector);
+    if (this.input.isKeyDown('s')) this.direction.sub(this.frontVector);
+    if (this.input.isKeyDown('d')) this.direction.add(this.sideVector);
+    if (this.input.isKeyDown('a')) this.direction.sub(this.sideVector);
 
-    if (this.direction.lengthSq() > 0) {
-      this.direction.normalize();
-      const airControl = this.isGrounded ? 1 : 0.35;
-      this.body.velocity.x +=
-        (this.direction.x * speed - this.body.velocity.x) * airControl;
-      this.body.velocity.z +=
-        (this.direction.z * speed - this.body.velocity.z) * airControl;
-    } else {
-      const damping = this.isGrounded ? 0.78 : 0.96;
-      this.body.velocity.x *= damping;
-      this.body.velocity.z *= damping;
+    const hasInput = this.direction.lengthSq() > 0;
+    let vx = this.body.velocity.x;
+    let vz = this.body.velocity.z;
+
+    // ------------------------------------------------------------------
+    // Step 1: Air drag (applied FIRST whenever airborne)
+    // ------------------------------------------------------------------
+    if (!this.isGrounded) {
+      // airDrag is the percentage of speed retained per second.
+      // E.g., 0.8 means 80% speed retained after 1 second in the air.
+      const dragFactor = Math.pow(this.config.airDrag, this.ungroundedTimer);
+      vx *= dragFactor;
+      vz *= dragFactor;
     }
+
+    // ------------------------------------------------------------------
+    // Step 2: Acceleration / deceleration
+    // ------------------------------------------------------------------
+    if (hasInput) {
+      this.direction.normalize();
+
+      // Target velocity vector
+      const tvx = this.direction.x * targetSpeed;
+      const tvz = this.direction.z * targetSpeed;
+
+      const accelP = this.isGrounded
+        ? this.config.groundAccel
+        : this.config.groundAccel * this.config.airControl;
+
+
+      // Math.pow expects base > 0. Valid parameter range is 0 to 0.9999.
+      const validAccel = Math.max(0, Math.min(accelP, 0.9999));
+
+      // lerpFactor applies the "percentage reached per second" scaled dynamically by dt.
+      // This is mathematically frame-rate independent!
+      const lerpFactor = 1 - Math.pow(1 - validAccel, dt);
+
+      if (Math.abs(tvx - vx) > Math.abs(tvx) * 0.2) {
+        vx += (tvx - vx) * lerpFactor;
+      } else if (this.isGrounded) {
+        vx = tvx;
+      }
+
+      if (Math.abs(tvz - vz) > Math.abs(tvz) * 0.2) {
+        vz += (tvz - vz) * lerpFactor;
+      } else if (this.isGrounded) {
+        vz = tvz;
+      }
+
+    } else {
+      // No input → decelerate
+      if (this.isGrounded) {
+        // groundDecel is the percentage of speed lost per second.
+        const validDecel = Math.max(0, Math.min(this.config.groundDecel, 0.9999));
+
+        // Compute how much velocity remains after dt seconds.
+        const dampFactor = Math.pow(1 - validDecel, dt);
+
+        vx *= dampFactor;
+        vz *= dampFactor;
+
+        if (Math.sqrt(vx * vx + vz * vz) < this.config.moveSpeed / 4.0) {
+          vx = 0;
+          vz = 0;
+        }
+      }
+    }
+
+    // MUST use .set() for CANNON.Body velocity updates to reliably propagate,
+    // assigning to .x and .z directly can fail to trigger internal sleep state wakeups
+    // or proxy updates depending on CANNON configuration.
+    // console.log("Old:", vx, vz)
+    this.body.velocity.set(vx, this.body.velocity.y, vz);
   }
 
   private handleJump(): void {
