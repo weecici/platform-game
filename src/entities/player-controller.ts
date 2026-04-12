@@ -13,9 +13,9 @@ export interface PlayerConfig {
   playerHeight: number;
   playerRadius: number;
   maxPitchAngle: number;
-  /** Per-frame lerp factor toward target speed (0-1). Higher = snappier. 0.15 ≈ 0.2s ramp */
+  /** Percentage of max speed achieved per second (e.g. 0.99 = 99% speed in 1s) */
   groundAccel: number;
-  /** Per-frame lerp factor toward zero when no input (0-1). Higher = faster stop */
+  /** Percentage of speed lost per second when braking (e.g. 0.95 = 95% speed lost in 1s) */
   groundDecel: number;
   /** Fraction of groundAccel available while airborne (0-1) */
   airControl: number;
@@ -73,9 +73,9 @@ export class PlayerController {
       playerHeight: 1.8,
       playerRadius: 0.4,
       maxPitchAngle: Math.PI / 2 - 0.1,
-      // Momentum — these are per-frame lerp factors (0-1)
-      groundAccel: 2.0,
-      groundDecel: 0.2,
+      // Momentum — these are percentages per second (0-0.99)
+      groundAccel: 0.99, // 99% of top speed reached in 1 second
+      groundDecel: 0.95, // 95% of current speed lost in 1 second (simulates friction/inertia)
       airControl: 1.0,   // percentage of ground acceleration while airborne
       airDrag: 0.9,      // percentage of speed after 1s airborne
     };
@@ -334,10 +334,10 @@ export class PlayerController {
 
     // ------------------------------------------------------------------
     // Step 1: Air drag (applied FIRST whenever airborne)
-    // Uses ungroundedTimer which accumulates real time while in the air,
-    // so it's stable regardless of per-frame dt fluctuations.
     // ------------------------------------------------------------------
     if (!this.isGrounded) {
+      // airDrag is the percentage of speed retained per second.
+      // E.g., 0.8 means 80% speed retained after 1 second in the air.
       const dragFactor = Math.pow(this.config.airDrag, this.ungroundedTimer);
       vx *= dragFactor;
       vz *= dragFactor;
@@ -353,22 +353,43 @@ export class PlayerController {
       const tvx = this.direction.x * targetSpeed;
       const tvz = this.direction.z * targetSpeed;
 
-      const accel = this.isGrounded
+      const accelP = this.isGrounded
         ? this.config.groundAccel
         : this.config.groundAccel * this.config.airControl;
 
-      // Smoothly approach target velocity
-      const dvx = Math.abs(tvx - vx) >= 1.0 ? (tvx - vx) * accel * dt : (tvx - vx) * 0.2
-      const dvz = Math.abs(tvz - vz) >= 1.0 ? (tvz - vz) * accel * dt : (tvz - vz) * 0.2
 
-      vx += dvx;
-      vz += dvz;
+      // Math.pow expects base > 0. Valid parameter range is 0 to 0.9999.
+      const validAccel = Math.max(0, Math.min(accelP, 0.9999));
+
+      // lerpFactor applies the "percentage reached per second" scaled dynamically by dt.
+      // This is mathematically frame-rate independent!
+      const lerpFactor = 1 - Math.pow(1 - validAccel, dt);
+
+      if (Math.abs(tvx - vx) > Math.abs(tvx) * 0.2) {
+        vx += (tvx - vx) * lerpFactor;
+      } else if (this.isGrounded) {
+        vx = tvx;
+      }
+
+      if (Math.abs(tvz - vz) > Math.abs(tvz) * 0.2) {
+        vz += (tvz - vz) * lerpFactor;
+      } else if (this.isGrounded) {
+        vz = tvz;
+      }
+
     } else {
       // No input → decelerate
       if (this.isGrounded) {
-        vx *= (1 - this.config.groundDecel);
-        vz *= (1 - this.config.groundDecel);
-        if (vx * vx + vz * vz < 0.01) {
+        // groundDecel is the percentage of speed lost per second.
+        const validDecel = Math.max(0, Math.min(this.config.groundDecel, 0.9999));
+
+        // Compute how much velocity remains after dt seconds.
+        const dampFactor = Math.pow(1 - validDecel, dt);
+
+        vx *= dampFactor;
+        vz *= dampFactor;
+
+        if (Math.sqrt(vx * vx + vz * vz) < this.config.moveSpeed / 4.0) {
           vx = 0;
           vz = 0;
         }
