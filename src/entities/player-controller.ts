@@ -80,7 +80,7 @@ export class PlayerController {
       groundAccel: 0.99, // 99% of top speed reached in 1 second
       groundDecel: 0.95, // 95% of current speed lost in 1 second (simulates friction/inertia)
       airControl: 1.0,   // percentage of ground acceleration while airborne
-      airDrag: 0.9,      // percentage of speed after 1s airborne
+      airDrag: 0.92,      // percentage of speed after 1s airborne
     };
 
     const shape = new CANNON.Sphere(this.config.playerRadius);
@@ -163,7 +163,7 @@ export class PlayerController {
   public changeModel(modelPath: string): void {
     if (this.modelPath === modelPath) return; // Ignore if identical
     this.modelPath = modelPath;
-    
+
     // Cleanup previous model
     if (this.modelGroup) {
       this.engine.scene.remove(this.modelGroup);
@@ -176,7 +176,7 @@ export class PlayerController {
     this.actions.clear();
     this.currentActionName = "";
     this.isModelLoaded = false;
-    
+
     // Load new model
     this.loadModel();
   }
