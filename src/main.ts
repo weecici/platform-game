@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import * as THREE from 'three';
 import { Engine } from './core/engine';
 import { InputManager } from './core/input-manager';
@@ -12,6 +13,7 @@ import {
   PrimitivePlacementSystem,
 } from './systems/primitive-placement';
 import { BLOCK_CATALOGUE, BlockInventory } from './systems/block-system';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 class Game {
   private engine: Engine;
@@ -46,6 +48,22 @@ class Game {
   private pauseScreen: HTMLElement;
   private loadingScreen: HTMLElement;
   private captureHintEl: HTMLElement;
+
+  // Character Selection UI & Preview Scene
+  private charSelectScreen!: HTMLElement;
+  private charListContainer!: HTMLElement;
+  private btnSelectPlay!: HTMLButtonElement;
+  private charPreviewCanvas!: HTMLCanvasElement;
+  private selectedCharacterPath: string = '/assets/characters/Astronaut_RaeTheRedPanda.gltf';
+
+  private previewRenderer!: THREE.WebGLRenderer;
+  private previewScene!: THREE.Scene;
+  private previewCamera!: THREE.PerspectiveCamera;
+  private previewMixer: THREE.AnimationMixer | null = null;
+  private previewModel: THREE.Group | null = null;
+  private previewRAF: number | null = null;
+  private previewClock!: THREE.Clock;
+  private previewActions: Map<string, THREE.AnimationAction> = new Map();
 
   constructor() {
     const canvas = document.getElementById('game-canvas') as HTMLCanvasElement;
@@ -105,6 +123,12 @@ class Game {
     this.loadingScreen = document.getElementById('loading')!;
     this.captureHintEl = document.getElementById('capture-hint')!;
 
+    // Character selection UI bindings
+    this.charSelectScreen = document.getElementById('character-select-screen')!;
+    this.charListContainer = document.getElementById('char-list-container')!;
+    this.btnSelectPlay = document.getElementById('btn-select-play') as HTMLButtonElement;
+    this.charPreviewCanvas = document.getElementById('char-preview-canvas') as HTMLCanvasElement;
+
     this.setupEventListeners();
     this.setupSkybox();
 
@@ -151,6 +175,10 @@ class Game {
 
   private setupEventListeners(): void {
     document.getElementById('btn-start')!.addEventListener('click', () => {
+      this.showCharacterSelection();
+    });
+
+    this.btnSelectPlay.addEventListener('click', () => {
       this.startGame();
     });
 
@@ -283,7 +311,118 @@ class Game {
     if (slot) slot.classList.add('active');
   }
 
+  private showCharacterSelection(): void {
+    this.startScreen.style.display = 'none';
+    this.charSelectScreen.classList.add('active');
+    this.setupPreviewScene();
+
+    // Glob characters dynamically
+    const models = import.meta.glob('/public/assets/characters/*.{gltf,glb}', { query: '?url' });
+    this.charListContainer.innerHTML = '';
+
+    const paths = Object.keys(models).map(p => p.replace('/public', ''));
+    if (paths.length > 0 && !paths.includes(this.selectedCharacterPath)) {
+      this.selectedCharacterPath = paths[0];
+    }
+
+    paths.forEach(path => {
+      const name = path.split('/').pop()?.replace(/\.(gltf|glb)$/, '') || 'Character';
+      const prettyName = name.replace(/_/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2');
+
+      const btn = document.createElement('button');
+      btn.className = 'char-btn';
+      if (path === this.selectedCharacterPath) btn.classList.add('selected');
+      btn.innerHTML = `<span>${prettyName}</span> <span>></span>`;
+
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.char-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        this.selectedCharacterPath = path;
+        this.loadPreviewModel(path);
+      });
+
+      this.charListContainer.appendChild(btn);
+    });
+
+    this.btnSelectPlay.disabled = false;
+    this.loadPreviewModel(this.selectedCharacterPath);
+  }
+
+  private setupPreviewScene(): void {
+    if (this.previewRenderer) return; // Already setup
+
+    this.previewRenderer = new THREE.WebGLRenderer({ canvas: this.charPreviewCanvas, alpha: true, antialias: true });
+    const rect = this.charPreviewCanvas.parentElement!.getBoundingClientRect();
+    this.previewRenderer.setSize(rect.width, rect.height, false);
+    this.previewRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    this.previewRenderer.outputColorSpace = THREE.SRGBColorSpace;
+
+    this.previewScene = new THREE.Scene();
+    this.previewCamera = new THREE.PerspectiveCamera(45, rect.width / rect.height, 0.1, 100);
+    this.previewCamera.position.set(0, 0.8, 3.5);
+    this.previewCamera.lookAt(0, 0.3, 0);
+
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    this.previewScene.add(ambientLight);
+
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
+    dirLight.position.set(5, 5, 5);
+    this.previewScene.add(dirLight);
+
+    this.previewClock = new THREE.Clock();
+  }
+
+  private loadPreviewModel(path: string): void {
+    if (this.previewModel) {
+      this.previewScene.remove(this.previewModel);
+    }
+    if (this.previewMixer) {
+      this.previewMixer.stopAllAction();
+    }
+    this.previewActions.clear();
+
+    const loader = new GLTFLoader();
+    loader.load(path, (gltf) => {
+      this.previewModel = gltf.scene;
+      this.previewModel.position.y = -0.6; // Center model's waist
+      this.previewModel.scale.setScalar(0.7);
+      this.previewScene.add(this.previewModel);
+
+      this.previewMixer = new THREE.AnimationMixer(this.previewModel);
+      gltf.animations.forEach((clip) => {
+        const action = this.previewMixer!.clipAction(clip);
+        this.previewActions.set(clip.name, action);
+      });
+
+      if (this.previewActions.has("Idle")) {
+        this.previewActions.get("Idle")!.play();
+      } else if (gltf.animations.length > 0) {
+        this.previewActions.get(gltf.animations[0].name)!.play();
+      }
+
+      if (!this.previewRAF) {
+        const loop = () => {
+          this.previewRAF = requestAnimationFrame(loop);
+          const dt = this.previewClock.getDelta();
+          if (this.previewMixer) this.previewMixer.update(dt);
+          if (this.previewModel) this.previewModel.rotation.y += dt * 0.5; // slowly spin
+          this.previewRenderer.render(this.previewScene, this.previewCamera);
+        };
+        this.previewClock.start();
+        loop();
+      }
+    });
+  }
+
   private startGame(): void {
+    this.charSelectScreen.classList.remove('active');
+    if (this.previewRAF) {
+      cancelAnimationFrame(this.previewRAF);
+      this.previewRAF = null;
+    }
+
+    this.player.changeModel(this.selectedCharacterPath);
+
     this.cancelLoop();
     this.isStarted = true;
     this.isRunning = true;

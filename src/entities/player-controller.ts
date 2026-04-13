@@ -54,16 +54,19 @@ export class PlayerController {
   private cameraOffset = new THREE.Vector3(0, 1.5, 4); // 3rd person offset
   private viewMode: "first" | "third" = "third";
   private thirdPersonView: "back" | "front" = "back";
+  private modelPath: string;
 
   constructor(
     engine: Engine,
     input: InputManager,
     physics: PhysicsWorld,
     spawnPosition: THREE.Vector3 = new THREE.Vector3(0, 5, 0),
+    modelPath: string = '/assets/characters/Astronaut_RaeTheRedPanda.gltf',
   ) {
     this.engine = engine;
     this.input = input;
     this.physics = physics;
+    this.modelPath = modelPath;
 
     this.config = {
       moveSpeed: 7,
@@ -118,7 +121,7 @@ export class PlayerController {
     this.engine.scene.add(this.modelGroup);
 
     const loader = new GLTFLoader();
-    loader.load("/assets/characters/Ninja.gltf", (gltf) => {
+    loader.load(this.modelPath, (gltf) => {
       console.log(gltf.animations);
       const model = gltf.scene;
 
@@ -147,9 +150,35 @@ export class PlayerController {
         this.actions.set(clip.name, action);
       });
 
-      this.playAnimation("Idle");
+      // Fallback: If 'Idle' exists, play it. Otherwise play the first available clip.
+      if (this.actions.has("Idle")) {
+        this.playAnimation("Idle");
+      } else if (gltf.animations.length > 0) {
+        this.playAnimation(gltf.animations[0].name);
+      }
       this.isModelLoaded = true;
     });
+  }
+
+  public changeModel(modelPath: string): void {
+    if (this.modelPath === modelPath) return; // Ignore if identical
+    this.modelPath = modelPath;
+    
+    // Cleanup previous model
+    if (this.modelGroup) {
+      this.engine.scene.remove(this.modelGroup);
+      // NOTE: Strictly speaking, we should dispose of geometries/materials, 
+      // but for a quick swap in browser this garbage collection overhead is acceptable.
+    }
+    if (this.mixer) {
+      this.mixer.stopAllAction();
+    }
+    this.actions.clear();
+    this.currentActionName = "";
+    this.isModelLoaded = false;
+    
+    // Load new model
+    this.loadModel();
   }
 
   private playAnimation(name: string, crossfadeTime = 0.2): void {
@@ -337,7 +366,6 @@ export class PlayerController {
     let vx = this.body.velocity.x;
     let vz = this.body.velocity.z;
 
-    console.log(vx, vz)
 
     // ------------------------------------------------------------------
     // Step 1: Air drag (applied FIRST whenever airborne)

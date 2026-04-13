@@ -274,6 +274,117 @@
         font-family: monospace;
       }
 
+      /* Character Select Screen */
+      #character-select-screen {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        display: none; /* activated explicitly */
+        background: linear-gradient(135deg, #050518 0%, #101030 100%);
+        z-index: 95;
+        color: #fff;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 5vh;
+      }
+      #character-select-screen.active {
+        display: flex;
+      }
+      #character-select-screen h1 {
+        font-size: 48px;
+        background: linear-gradient(45deg, #00d4ff, #7b2fff, #ff2d95);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 30px;
+        font-weight: 800;
+        letter-spacing: 2px;
+      }
+      .char-layout {
+        display: flex;
+        width: 80%;
+        max-width: 1000px;
+        height: 60vh;
+        gap: 30px;
+      }
+      .char-list-col {
+        flex: 1;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 20px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        overflow-y: auto;
+      }
+      .char-btn {
+        background: rgba(255,255,255,0.1);
+        border: 1px solid transparent;
+        color: #fff;
+        padding: 15px 20px;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        text-align: left;
+        transition: all 0.2s;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .char-btn:hover {
+        background: rgba(255,255,255,0.15);
+        transform: translateX(5px);
+      }
+      .char-btn.selected {
+        background: linear-gradient(90deg, rgba(123, 47, 255, 0.4), rgba(0, 212, 255, 0.3));
+        border-color: #00d4ff;
+        box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+      }
+      .char-preview-col {
+        flex: 2;
+        background: radial-gradient(circle at center, rgba(123, 47, 255, 0.15) 0%, rgba(0, 0, 0, 0.5) 100%);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 20px;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      #char-preview-canvas {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        outline: none;
+      }
+      .char-controls {
+        margin-top: 40px;
+      }
+      .btn-play {
+        padding: 15px 80px;
+        font-size: 24px;
+        font-weight: 800;
+        color: #fff;
+        background: linear-gradient(45deg, #7b2fff, #00d4ff);
+        border: none;
+        border-radius: 50px;
+        cursor: pointer;
+        letter-spacing: 2px;
+        transition: transform 0.2s, box-shadow 0.2s;
+        box-shadow: 0 0 30px rgba(123, 47, 255, 0.4);
+      }
+      .btn-play:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 50px rgba(123, 47, 255, 0.6);
+      }
+      .btn-play:disabled {
+        background: #555;
+        color: #888;
+        box-shadow: none;
+        cursor: not-allowed;
+        transform: none;
+      }
+
       /* Pause / Death overlay */
       .overlay-screen {
         position: absolute;
@@ -435,21 +546,37 @@
 
     <!-- Start Screen -->
     <div id="start-screen">
-      <h1>PARKOUR RUNNER</h1>
-      <p class="subtitle">CS105 - Computer Graphics Project</p>
+      <h1>BLOCK PARKOUR</h1>
+      <div class="subtitle">A 3D Platforming Toolkit Adventure</div>
       <button class="btn" id="btn-start">START GAME</button>
+      
       <div class="controls-info">
-        <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> - Move &nbsp;|&nbsp;
-        <kbd>Space</kbd> - Jump &nbsp;|&nbsp;
-        <kbd>Shift</kbd> - Sprint<br/>
-        <kbd>Mouse</kbd> - Look Around &nbsp;|&nbsp;
-        <kbd>Scroll</kbd> - Adjust Placement Distance<br/>
-        <kbd>1-6</kbd> - Select Shape (Box/Sphere/Cone/Cylinder/Wheel/Teapot) &nbsp;|&nbsp;
-        <kbd>Left Click</kbd> - Place Block<br/>
-        <kbd>P</kbd> - Pause &nbsp;|&nbsp;
-        <kbd>G</kbd> - Toggle Debug GUI &nbsp;|&nbsp;
-        <kbd>R</kbd> - Restart &nbsp;|&nbsp;
-        <kbd>Backspace</kbd> - Clear Placed Blocks
+        <b>Controls:</b><br/>
+        <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> - Move &nbsp; | &nbsp; 
+        <kbd>Space</kbd> - Jump &nbsp; | &nbsp; 
+        <kbd>Shift</kbd> - Sprint &nbsp; | &nbsp; 
+        <kbd>Mouse</kbd> - Look<br/>
+        <kbd>V</kbd> - Toggle View &nbsp; | &nbsp;
+        <kbd>Left Click</kbd> - Place Block &nbsp; | &nbsp;
+        <kbd>Scroll</kbd> - Distance<br/>
+        <kbd>1</kbd>-<kbd>6</kbd> - Select Shape &nbsp; | &nbsp;
+        <kbd>Backspace</kbd> - Clear Map
+      </div>
+    </div>
+
+    <!-- Character Select Screen -->
+    <div id="character-select-screen">
+      <h1>Select Your Character</h1>
+      <div class="char-layout">
+        <div class="char-list-col" id="char-list-container">
+          <!-- Dynamic buttons go here -->
+        </div>
+        <div class="char-preview-col">
+          <canvas id="char-preview-canvas"></canvas>
+        </div>
+      </div>
+      <div class="char-controls">
+        <button class="btn-play" id="btn-select-play" disabled>PLAY</button>
       </div>
     </div>
 
