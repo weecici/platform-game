@@ -233,6 +233,7 @@ class Game {
     // Each key maps to one unique shape in the catalogue.
     const blockKeys: Record<string, number> = {
       '1': 0, '2': 1, '3': 2, '4': 3, '5': 4, '6': 5,
+      '!': 0, '@': 1, '#': 2, '$': 3, '%': 4, '^': 5,
     };
 
     for (const [key, idx] of Object.entries(blockKeys)) {
@@ -257,6 +258,26 @@ class Game {
   }
 
   private activateHotbarSlot(key: string): void {
+    switch (key) {
+      case '!':
+        key = '1';
+        break;
+      case '@':
+        key = '2'
+        break;
+      case '#':
+        key = '3'
+        break;
+      case '$':
+        key = '4'
+        break;
+      case '%':
+        key = '5'
+        break;
+      case '^':
+        key = '6'
+        break;
+    }
     document.querySelectorAll('.hotbar-slot').forEach(el => el.classList.remove('active'));
     const slot = document.getElementById(`slot-${key}`);
     if (slot) slot.classList.add('active');
