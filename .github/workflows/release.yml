@@ -1,0 +1,142 @@
+name: Release
+
+# Handles the edge case where the version in package.json has no GitHub Release.
+# Common scenarios:
+#   • Fresh repo with an initial version (e.g. 1.0.0) that was never released.
+#   • Version bumped manually without going through pump_version.
+#
+# The normal flow (version bumped by pump_version) is handled entirely
+# inside pump_version.yml — this workflow is the safety net only.
+#
+# Skips "[skip ci]" commits so it never races with pump_version's bump commit.
+#
+# Actions used:
+#   pnpm/action-setup@v5          — PNPM setup
+#   orhun/git-cliff-action@v4     — changelog generation from git history
+#   softprops/action-gh-release@v2 — GitHub Release creation
+
+on:
+  push:
+    branches: ["main"]
+
+permissions:
+  contents: write
+
+jobs:
+  check-and-release:
+    name: Release unreleased version (if any)
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+
+    steps:
+      # ── 1. Full history (needed by git-cliff) ───────────────────────────────
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      # ── 2. PNPM ─────────────────────────────────────────────────────────────
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v5
+
+      # ── 3. Check whether the current package.json version has a release ──────
+      - name: Check release status
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          CURRENT_VERSION="v$(node -p "require('./package.json').version")"
+          echo "package.json version: $CURRENT_VERSION"
+
+          if gh release view "$CURRENT_VERSION" > /dev/null 2>&1; then
+            echo "✔ Release $CURRENT_VERSION already exists — nothing to do."
+            echo "should_release=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "✘ No release for $CURRENT_VERSION — will create one."
+            echo "should_release=true"      >> "$GITHUB_OUTPUT"
+            echo "version=$CURRENT_VERSION" >> "$GITHUB_OUTPUT"
+          fi
+
+      # ── 4. Create the git tag if it doesn't exist yet ───────────────────────
+      - name: Ensure git tag exists
+        if: steps.check.outputs.should_release == 'true'
+        env:
+          TAG: ${{ steps.check.outputs.version }}
+        run: |
+          if git rev-parse "$TAG" > /dev/null 2>&1; then
+            echo "Tag $TAG already present."
+          else
+            echo "Creating tag $TAG at HEAD…"
+            git config user.name  "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git tag "$TAG"
+            git push origin "$TAG"
+          fi
+
+      # ── 5. Build ─────────────────────────────────────────────────────────────
+      - name: Install dependencies
+        if: steps.check.outputs.should_release == 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        if: steps.check.outputs.should_release == 'true'
+        run: pnpm build
+
+      # ── 6. Generate release notes with git-cliff ─────────────────────────────
+      #        --latest  → commits from the previous tag to this one
+      #        --strip header → omit the optional [changelog] header block
+      - name: Generate changelog
+        if: steps.check.outputs.should_release == 'true'
+        id: cliff
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: .github/cliff.toml
+          args: --latest --strip header
+        env:
+          OUTPUT: /tmp/release_notes.md
+          GITHUB_REPO: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # ── 7. Append contributors (GitHub usernames + avatars) ──────────────────
+      - name: Append contributors
+        if: steps.check.outputs.should_release == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.check.outputs.version }}
+          REPO: ${{ github.repository }}
+        run: |
+          PREV=$(git describe --tags --abbrev=0 "${TAG}^" 2>/dev/null || echo "")
+          RANGE="${PREV:+${PREV}..}${TAG}"
+
+          USERS=$(git log "$RANGE" --format="%H" --no-merges \
+            | while read -r sha; do
+                gh api "repos/${REPO}/commits/${sha}" \
+                  --jq '.author.login // empty' 2>/dev/null
+              done \
+            | grep -v '^$' | sort -u)
+
+          if [ -n "$USERS" ]; then
+            printf '\n### Contributors\n' >> /tmp/release_notes.md
+            while IFS= read -r username; do
+              printf '[![@%s](https://github.com/%s.png?size=32)](https://github.com/%s) [@%s](https://github.com/%s)\n' \
+                "$username" "$username" "$username" "$username" "$username" \
+                >> /tmp/release_notes.md
+            done <<< "$USERS"
+          fi
+
+      # ── 8. Zip dist/ as a release asset ──────────────────────────────────────
+      - name: Package dist
+        if: steps.check.outputs.should_release == 'true'
+        env:
+          TAG: ${{ steps.check.outputs.version }}
+        run: zip -r "cs105-${TAG}.zip" dist/
+
+      # ── 9. Create GitHub Release ──────────────────────────────────────────────
+      - name: Create GitHub Release
+        if: steps.check.outputs.should_release == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.check.outputs.version }}
+          name: ${{ steps.check.outputs.version }}
+          body_path: /tmp/release_notes.md
+          files: cs105-${{ steps.check.outputs.version }}.zip
