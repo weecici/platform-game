@@ -6,7 +6,7 @@
 | ---------- | ---------------- | --------------------------------------------- |
 | 23520199   | Nguyễn Chí Cường | [weecici](https://github.com/weecici)         |
 | 23520623   | Ngô Minh Huy     | [MinhHuy1507](https://github.com/MinhHuy1507) |
-| 23520713   | Vũ Gia Khang     |                                               |
+| 23520713   | Vũ Gia Khang     | [bayvai20kg](https://github.com/bayvai20kg)   |
 | 23521734   | Dương Thông Tuệ  | [tueduong05](https://github.com/tueduong05)   |
 
 ## 2. Project Overview
