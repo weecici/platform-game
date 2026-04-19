@@ -118,20 +118,30 @@ export class LevelManager {
       metalness: 0.2,
     });
 
+    const mesh = new THREE.Mesh(geometry, material);
+
     if (def.texture) {
-      const tex = this.textureManager.getTexture(def.texture);
-      if (tex) {
-        const cloned = tex.clone();
-        cloned.repeat.set(
-          def.textureRepeat?.[0] || sx / 2,
-          def.textureRepeat?.[1] || sz / 2,
-        );
-        cloned.needsUpdate = true;
-        material.map = cloned;
+      const repeatX = def.textureRepeat?.[0] || sx / 2;
+      const repeatY = def.textureRepeat?.[1] || sz / 2;
+
+      const appliedSet = this.textureManager.applyTextureSet(
+        mesh,
+        def.texture,
+        repeatX,
+        repeatY,
+      );
+
+      if (!appliedSet) {
+        const tex = this.textureManager.getTexture(def.texture);
+        if (tex) {
+          const cloned = tex.clone();
+          cloned.repeat.set(repeatX, repeatY);
+          cloned.needsUpdate = true;
+          material.map = cloned;
+        }
       }
     }
 
-    const mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(px, py, pz);
     mesh.castShadow = def.solid !== false;
     mesh.receiveShadow = true;
@@ -266,7 +276,7 @@ export class LevelManager {
           dec.mesh.position.y =
             dec.initialY +
             Math.sin(dec.time * dec.def.animate.bobSpeed) *
-              dec.def.animate.bobHeight;
+            dec.def.animate.bobHeight;
         }
       }
     }
