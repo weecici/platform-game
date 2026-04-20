@@ -226,7 +226,7 @@ export const LEVEL_PARKOUR_CITY: LevelConfig = {
       color: 0x1a1a2e,
       texture: 'asphalt',
       textureRepeat: [24, 36],
-      solid: false,
+      solid: true,
     },
   ],
 

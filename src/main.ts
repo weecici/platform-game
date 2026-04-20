@@ -34,9 +34,12 @@ class Game {
   private score = 0;
   private elapsedTime = 0;
   private deathCount = 0;
-  private deathY = -10;
+  private deathY = -4.5;
   private isStarted = false;
   private animationFrameId: number | null = null;
+  private deathSequenceTimer = 0;
+  private readonly deathSequenceDuration = 1.2;
+  private deathReason = 'You fell out of the course.';
 
   private hudEl: HTMLElement;
   private scoreEl: HTMLElement;
@@ -476,6 +479,9 @@ class Game {
     this.isPaused = false;
     this.isDead = false;
     this.isFinished = false;
+    this.deathSequenceTimer = 0;
+    this.deathReason = 'You fell out of the course.';
+    this.player.isDead = false;
     this.score = 0;
     this.elapsedTime = 0;
     this.input.setGameplayActive(true);
@@ -527,6 +533,8 @@ class Game {
     this.isPaused = false;
     this.isDead = false;
     this.isFinished = false;
+    this.deathSequenceTimer = 0;
+    this.deathReason = 'You fell out of the course.';
     this.input.setGameplayActive(true);
 
     this.deathScreen.classList.remove('active');
@@ -544,15 +552,20 @@ class Game {
   private playerDied(reason = 'You fell out of the course.'): void {
     if (this.isDead) return;
 
-    this.cancelLoop();
-    this.isRunning = false;
     this.isDead = true;
+    this.player.isDead = true;
     this.deathCount += 1;
+    this.deathSequenceTimer = 0;
+    this.deathReason = reason;
     this.input.setGameplayActive(false);
     this.input.exitPointerLock();
+  }
 
+  private finalizeDeathScreen(): void {
+    this.cancelLoop();
+    this.isRunning = false;
     const deathScoreEl = document.getElementById('death-score')!;
-    deathScoreEl.textContent = `${reason} Score: ${this.score} | Time: ${this.elapsedTime.toFixed(1)}s`;
+    deathScoreEl.textContent = `${this.deathReason} Score: ${this.score} | Time: ${this.elapsedTime.toFixed(1)}s`;
     this.deathScreen.classList.add('active');
   }
 
@@ -603,7 +616,19 @@ class Game {
     this.engine.perspectiveParams.positionY = this.engine.camera.position.y;
     this.engine.perspectiveParams.positionZ = this.engine.camera.position.z;
 
-    if (playerPos.y < this.deathY) {
+    if (this.isDead) {
+      this.deathSequenceTimer += dt;
+      this.updateHUD();
+      this.engine.render();
+
+      if (this.deathSequenceTimer >= this.deathSequenceDuration) {
+        this.finalizeDeathScreen();
+      }
+      return;
+    }
+
+    const playerFeetY = playerPos.y - this.player.config.playerRadius;
+    if (playerFeetY < this.deathY) {
       this.playerDied();
       return;
     }
