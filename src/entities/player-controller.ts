@@ -49,6 +49,8 @@ export class PlayerController {
   private isModelLoaded = false;
 
   public isDead = false;
+  private deadBodyFrozen = false;
+  private readonly normalLinearDamping = 0.05;
 
   // Camera Settings
   private cameraOffset = new THREE.Vector3(0, 1.5, 4); // 3rd person offset
@@ -92,7 +94,7 @@ export class PlayerController {
         spawnPosition.y,
         spawnPosition.z,
       ),
-      linearDamping: 0.05,
+      linearDamping: this.normalLinearDamping,
       angularDamping: 1,
       fixedRotation: true,
     });
@@ -219,8 +221,22 @@ export class PlayerController {
     // Sync position
     this.modelGroup.position.copy(this.getPosition());
 
+    if (this.isDead) {
+      const laydownQuat = new THREE.Quaternion().setFromEuler(
+        new THREE.Euler(0, 0, 0),
+      );
+      this.modelGroup.quaternion.slerp(laydownQuat, Math.min(1, dt * 12));
+      if (this.isGrounded) {
+        this.modelGroup.quaternion.copy(laydownQuat);
+      }
+    } else {
+      this.modelGroup.rotation.x +=
+        (0 - this.modelGroup.rotation.x) *
+        Math.min(1, dt * 12);
+    }
+
     // Smoothly rotate model to face movement direction
-    if (this.direction.lengthSq() > 0.01) {
+    if (!this.isDead && this.direction.lengthSq() > 0.01) {
       // Math.atan2(x, z) gives rotation around Y axis.
       // A typical GLTF model faces +Z by default.
       // If we move forward (-Z), direction is (0, 0, -1). atan2(0, -1) = PI or -PI.
@@ -300,6 +316,10 @@ export class PlayerController {
   }
 
   private handleMouseLook(): void {
+    if (this.isDead) {
+      return;
+    }
+
     if (!this.input.isPointerLocked) {
       return;
     }
@@ -336,6 +356,42 @@ export class PlayerController {
    * the exact same speed magnitude as W alone.
    */
   private handleMovement(dt: number): void {
+    if (this.isDead) {
+      let vx = this.body.velocity.x;
+      let vy = this.body.velocity.y;
+      let vz = this.body.velocity.z;
+
+      const deadDamping = Math.pow(0.02, dt);
+      vx *= deadDamping;
+      vz *= deadDamping;
+
+      if (this.isGrounded) {
+        vy = Math.min(vy, 0);
+
+        if (!this.deadBodyFrozen) {
+          this.body.velocity.set(0, 0, 0);
+          this.body.angularVelocity.set(0, 0, 0);
+          this.body.type = CANNON.Body.KINEMATIC;
+          this.body.updateMassProperties();
+          this.body.linearDamping = 1;
+          this.deadBodyFrozen = true;
+        }
+      } else {
+        this.deadBodyFrozen = false;
+      }
+
+      if (!this.deadBodyFrozen) {
+        this.body.velocity.set(vx, vy, vz);
+      }
+      return;
+    }
+
+    if (this.body.type !== CANNON.Body.DYNAMIC) {
+      this.body.type = CANNON.Body.DYNAMIC;
+      this.body.updateMassProperties();
+      this.body.linearDamping = this.normalLinearDamping;
+    }
+
     if (this.isGrounded) {
       this.isSprinting = this.input.isKeyDown('shift');
     } else if (!this.input.isKeyDown('shift')) {
@@ -435,6 +491,8 @@ export class PlayerController {
   }
 
   private handleJump(): void {
+    if (this.isDead) return;
+
     if (this.input.isKeyDown(" ") && this.isGrounded) {
       this.body.velocity.y = this.config.jumpForce;
       this.isGrounded = false;
@@ -515,12 +573,23 @@ export class PlayerController {
   }
 
   respawn(position: THREE.Vector3): void {
+    this.isDead = false;
+    this.deadBodyFrozen = false;
+    this.body.type = CANNON.Body.DYNAMIC;
+    this.body.updateMassProperties();
+    this.body.linearDamping = this.normalLinearDamping;
     this.body.position.set(position.x, position.y, position.z);
     this.body.velocity.set(0, 0, 0);
     this.body.angularVelocity.set(0, 0, 0);
     this.yaw = 0;
     this.pitch = 0;
     this.isGrounded = false;
+
+    if (this.isModelLoaded) {
+      this.modelGroup.rotation.x = 0;
+      this.modelGroup.rotation.z = 0;
+    }
+
     this.syncCameraToBody();
   }
 
