@@ -1,6 +1,6 @@
 {
   "name": "cs105",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "3D Parkour Game - CS105 Computer Graphics Project",
   "type": "module",
   "scripts": {
