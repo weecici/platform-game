@@ -159,6 +159,7 @@ export const LEVEL_PARKOUR_CITY: LevelConfig = {
       position: [15, 10, -92],
       size: [6, 0.5, 6],
       color: 0x8888cc,
+      texture: 'metal',
       type: 'rotating',
       rotateAxis: 'y',
       rotateSpeed: 0.5,
@@ -222,7 +223,9 @@ export const LEVEL_PARKOUR_CITY: LevelConfig = {
     {
       position: [10, -5, -60],
       size: [200, 0.5, 300],
-      color: 0xffffff,
+      color: 0x1a1a2e,
+      texture: 'asphalt',
+      textureRepeat: [24, 36],
       solid: true,
     },
   ],
@@ -233,55 +236,55 @@ export const LEVEL_PARKOUR_CITY: LevelConfig = {
     // Each collectible grants one unit of the named block type.
 
     // --- Starting area ---
-    { type: 'torusknot', position: [2, 2, 3],     scale: [0.35, 0.35, 0.35], color: 0xffdd00, emissive: 0xffaa00, animate: { rotateY: 2, bobSpeed: 2, bobHeight: 0.25 }, collectible: 'box' },
-    { type: 'torusknot', position: [-2, 2, 3],    scale: [0.35, 0.35, 0.35], color: 0x44ddff, emissive: 0x22aadd, animate: { rotateY: 2, bobSpeed: 2.5, bobHeight: 0.25 }, collectible: 'cylinder' },
-    { type: 'torusknot', position: [0, 2, -3],    scale: [0.35, 0.35, 0.35], color: 0xff44ff, emissive: 0xdd22dd, animate: { rotateY: 1.5, bobSpeed: 2, bobHeight: 0.25 }, collectible: 'box' },
+    { type: 'torusknot', position: [2, 2, 3], scale: [0.35, 0.35, 0.35], color: 0xffdd00, emissive: 0xffaa00, animate: { rotateY: 2, bobSpeed: 2, bobHeight: 0.25 }, collectible: 'box' },
+    { type: 'torusknot', position: [-2, 2, 3], scale: [0.35, 0.35, 0.35], color: 0x44ddff, emissive: 0x22aadd, animate: { rotateY: 2, bobSpeed: 2.5, bobHeight: 0.25 }, collectible: 'cylinder' },
+    { type: 'torusknot', position: [0, 2, -3], scale: [0.35, 0.35, 0.35], color: 0xff44ff, emissive: 0xdd22dd, animate: { rotateY: 1.5, bobSpeed: 2, bobHeight: 0.25 }, collectible: 'box' },
 
     // --- First jump sequence ---
-    { type: 'sphere', position: [0, 3, -9],       scale: [0.4, 0.4, 0.4], color: 0xffdd00, emissive: 0xffaa00, animate: { rotateY: 2, bobSpeed: 2, bobHeight: 0.3 }, collectible: 'box' },
-    { type: 'torus', position: [-1, 4, -19],      scale: [0.35, 0.35, 0.35], color: 0x44ddff, emissive: 0x22aadd, animate: { rotateY: 2, bobSpeed: 2.5, bobHeight: 0.3 }, collectible: 'sphere' },
-    { type: 'sphere', position: [3, 4.5, -27],    scale: [0.4, 0.4, 0.4], color: 0xff4444, emissive: 0xff2222, animate: { rotateY: 1, bobSpeed: 1.5, bobHeight: 0.4 }, collectible: 'cone' },
+    { type: 'sphere', position: [0, 3, -9], scale: [0.4, 0.4, 0.4], color: 0xffdd00, emissive: 0xffaa00, animate: { rotateY: 2, bobSpeed: 2, bobHeight: 0.3 }, collectible: 'box' },
+    { type: 'torus', position: [-1, 4, -19], scale: [0.35, 0.35, 0.35], color: 0x44ddff, emissive: 0x22aadd, animate: { rotateY: 2, bobSpeed: 2.5, bobHeight: 0.3 }, collectible: 'sphere' },
+    { type: 'sphere', position: [3, 4.5, -27], scale: [0.4, 0.4, 0.4], color: 0xff4444, emissive: 0xff2222, animate: { rotateY: 1, bobSpeed: 1.5, bobHeight: 0.4 }, collectible: 'cone' },
 
     // --- Moving platform section ---
-    { type: 'torusknot', position: [0, 5, -30],   scale: [0.35, 0.35, 0.35], color: 0x44ddff, emissive: 0x22aadd, animate: { rotateY: 3, bobSpeed: 2, bobHeight: 0.4 }, collectible: 'box' },
-    { type: 'torus', position: [0, 4.5, -37],     scale: [0.35, 0.35, 0.35], color: 0xffdd00, emissive: 0xffaa00, animate: { rotateY: 2, bobSpeed: 2, bobHeight: 0.3 }, collectible: 'wheel' },
+    { type: 'torusknot', position: [0, 5, -30], scale: [0.35, 0.35, 0.35], color: 0x44ddff, emissive: 0x22aadd, animate: { rotateY: 3, bobSpeed: 2, bobHeight: 0.4 }, collectible: 'box' },
+    { type: 'torus', position: [0, 4.5, -37], scale: [0.35, 0.35, 0.35], color: 0xffdd00, emissive: 0xffaa00, animate: { rotateY: 2, bobSpeed: 2, bobHeight: 0.3 }, collectible: 'wheel' },
 
     // --- Ascending staircase ---
-    { type: 'sphere', position: [4, 5.5, -42],    scale: [0.35, 0.35, 0.35], color: 0xff44ff, emissive: 0xdd22dd, animate: { rotateY: 2, bobSpeed: 2, bobHeight: 0.25 }, collectible: 'cylinder' },
-    { type: 'torusknot', position: [4, 7, -50],   scale: [0.35, 0.35, 0.35], color: 0xffdd00, emissive: 0xffaa00, animate: { rotateY: 1.5, bobSpeed: 2, bobHeight: 0.3 }, collectible: 'box' },
-    { type: 'torus', position: [0, 8, -54],       scale: [0.35, 0.35, 0.35], color: 0x44ffaa, emissive: 0x22dd88, animate: { rotateY: 2, bobSpeed: 2, bobHeight: 0.3 }, collectible: 'teapot' },
+    { type: 'sphere', position: [4, 5.5, -42], scale: [0.35, 0.35, 0.35], color: 0xff44ff, emissive: 0xdd22dd, animate: { rotateY: 2, bobSpeed: 2, bobHeight: 0.25 }, collectible: 'cylinder' },
+    { type: 'torusknot', position: [4, 7, -50], scale: [0.35, 0.35, 0.35], color: 0xffdd00, emissive: 0xffaa00, animate: { rotateY: 1.5, bobSpeed: 2, bobHeight: 0.3 }, collectible: 'box' },
+    { type: 'torus', position: [0, 8, -54], scale: [0.35, 0.35, 0.35], color: 0x44ffaa, emissive: 0x22dd88, animate: { rotateY: 2, bobSpeed: 2, bobHeight: 0.3 }, collectible: 'teapot' },
 
     // --- High platform & narrow bridge ---
-    { type: 'sphere', position: [0, 9, -60],      scale: [0.4, 0.4, 0.4], color: 0xff4444, emissive: 0xff2222, animate: { rotateY: 1, bobSpeed: 1.5, bobHeight: 0.4 }, collectible: 'box' },
-    { type: 'torusknot', position: [0, 9, -68],   scale: [0.35, 0.35, 0.35], color: 0xff44ff, emissive: 0xdd22dd, animate: { rotateY: 1.5, bobSpeed: 2, bobHeight: 0.5 }, collectible: 'sphere' },
-    { type: 'torus', position: [0, 9, -76],       scale: [0.35, 0.35, 0.35], color: 0x44ddff, emissive: 0x22aadd, animate: { rotateY: 2, bobSpeed: 2, bobHeight: 0.3 }, collectible: 'cone' },
+    { type: 'sphere', position: [0, 9, -60], scale: [0.4, 0.4, 0.4], color: 0xff4444, emissive: 0xff2222, animate: { rotateY: 1, bobSpeed: 1.5, bobHeight: 0.4 }, collectible: 'box' },
+    { type: 'torusknot', position: [0, 9, -68], scale: [0.35, 0.35, 0.35], color: 0xff44ff, emissive: 0xdd22dd, animate: { rotateY: 1.5, bobSpeed: 2, bobHeight: 0.5 }, collectible: 'sphere' },
+    { type: 'torus', position: [0, 9, -76], scale: [0.35, 0.35, 0.35], color: 0x44ddff, emissive: 0x22aadd, animate: { rotateY: 2, bobSpeed: 2, bobHeight: 0.3 }, collectible: 'cone' },
 
     // --- Vertical moving platforms ---
-    { type: 'sphere', position: [7, 10, -82],     scale: [0.35, 0.35, 0.35], color: 0xffdd00, emissive: 0xffaa00, animate: { rotateY: 2, bobSpeed: 2, bobHeight: 0.3 }, collectible: 'cylinder' },
+    { type: 'sphere', position: [7, 10, -82], scale: [0.35, 0.35, 0.35], color: 0xffdd00, emissive: 0xffaa00, animate: { rotateY: 2, bobSpeed: 2, bobHeight: 0.3 }, collectible: 'cylinder' },
 
     // --- Rotating platform section ---
     { type: 'torusknot', position: [15, 13, -92], scale: [0.35, 0.35, 0.35], color: 0xff44ff, emissive: 0xdd22dd, animate: { rotateY: 1.5, bobSpeed: 2, bobHeight: 0.3 }, collectible: 'wheel' },
-    { type: 'torus', position: [15, 13, -102],    scale: [0.35, 0.35, 0.35], color: 0x44ffaa, emissive: 0x22dd88, animate: { rotateY: 2, bobSpeed: 2, bobHeight: 0.3 }, collectible: 'box' },
+    { type: 'torus', position: [15, 13, -102], scale: [0.35, 0.35, 0.35], color: 0x44ffaa, emissive: 0x22dd88, animate: { rotateY: 2, bobSpeed: 2, bobHeight: 0.3 }, collectible: 'box' },
 
     // --- Zigzag platforms ---
     { type: 'sphere', position: [10, 13.5, -108], scale: [0.35, 0.35, 0.35], color: 0xffdd00, emissive: 0xffaa00, animate: { rotateY: 2, bobSpeed: 2, bobHeight: 0.3 }, collectible: 'teapot' },
-    { type: 'torusknot', position: [18, 14, -120],scale: [0.35, 0.35, 0.35], color: 0x44ddff, emissive: 0x22aadd, animate: { rotateY: 2, bobSpeed: 2, bobHeight: 0.3 }, collectible: 'box' },
+    { type: 'torusknot', position: [18, 14, -120], scale: [0.35, 0.35, 0.35], color: 0x44ddff, emissive: 0x22aadd, animate: { rotateY: 2, bobSpeed: 2, bobHeight: 0.3 }, collectible: 'box' },
 
     // --- Final approach ---
-    { type: 'torus', position: [15, 16, -128],    scale: [0.4, 0.4, 0.4], color: 0xff4444, emissive: 0xff2222, animate: { rotateY: 2, bobSpeed: 2, bobHeight: 0.3 }, collectible: 'sphere' },
+    { type: 'torus', position: [15, 16, -128], scale: [0.4, 0.4, 0.4], color: 0xff4444, emissive: 0xff2222, animate: { rotateY: 2, bobSpeed: 2, bobHeight: 0.3 }, collectible: 'sphere' },
 
     // === VICTORY DECORATION (not collectible) ===
     { type: 'torusknot', position: [15, 16, -136], scale: [1.2, 1.2, 1.2], color: 0xffdd00, emissive: 0xffaa00, animate: { rotateY: 1, bobSpeed: 1, bobHeight: 0.5 } },
-    { type: 'torus', position: [15, 17.5, -136],   scale: [0.8, 0.8, 0.8], color: 0x44ffaa, emissive: 0x22dd88, animate: { rotateY: -1.5, bobSpeed: 1.5, bobHeight: 0.3 } },
+    { type: 'torus', position: [15, 17.5, -136], scale: [0.8, 0.8, 0.8], color: 0x44ffaa, emissive: 0x22dd88, animate: { rotateY: -1.5, bobSpeed: 1.5, bobHeight: 0.3 } },
 
     // === STATIC DECORATIONS (not collectible) ===
     // Pillars along the narrow bridge
     { type: 'cylinder', position: [-1.5, 8, -64], scale: [0.3, 3, 0.3], color: 0x888899 },
-    { type: 'cylinder', position: [1.5, 8, -64],  scale: [0.3, 3, 0.3], color: 0x888899 },
+    { type: 'cylinder', position: [1.5, 8, -64], scale: [0.3, 3, 0.3], color: 0x888899 },
     { type: 'cylinder', position: [-1.5, 8, -72], scale: [0.3, 3, 0.3], color: 0x888899 },
-    { type: 'cylinder', position: [1.5, 8, -72],  scale: [0.3, 3, 0.3], color: 0x888899 },
+    { type: 'cylinder', position: [1.5, 8, -72], scale: [0.3, 3, 0.3], color: 0x888899 },
     // Cones as warning markers near edges
-    { type: 'cone', position: [5.5, 1.2, -5.5],   scale: [0.3, 0.6, 0.3], color: 0xff6600, emissive: 0xff3300 },
-    { type: 'cone', position: [5.5, 1.2, 5.5],    scale: [0.3, 0.6, 0.3], color: 0xff6600, emissive: 0xff3300 },
+    { type: 'cone', position: [5.5, 1.2, -5.5], scale: [0.3, 0.6, 0.3], color: 0xff6600, emissive: 0xff3300 },
+    { type: 'cone', position: [5.5, 1.2, 5.5], scale: [0.3, 0.6, 0.3], color: 0xff6600, emissive: 0xff3300 },
   ],
 };

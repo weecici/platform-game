@@ -90,6 +90,7 @@ class Game {
       this.textureManager,
     );
     this.levelManager.loadLevel(LEVEL_PARKOUR_CITY);
+    void this.loadExternalTextureSets();
 
     this.player = new PlayerController(
       this.engine,
@@ -139,6 +140,52 @@ class Game {
     setTimeout(() => {
       this.loadingScreen.style.display = 'none';
     }, 500);
+  }
+
+  private async loadExternalTextureSets(): Promise<void> {
+    try {
+      await Promise.all([
+        this.textureManager.loadTextureSet('stone', {
+          baseColor: '/assets/textures/stone-city/basecolor.jpg',
+          normal: '/assets/textures/stone-city/normal.jpg',
+          roughness: '/assets/textures/stone-city/roughness.jpg',
+          ao: '/assets/textures/stone-city/ao.jpg',
+        }),
+        this.textureManager.loadTextureSet('metal', {
+          baseColor: '/assets/textures/metal-industrial/basecolor.jpg',
+          normal: '/assets/textures/metal-industrial/normal.jpg',
+          roughness: '/assets/textures/metal-industrial/roughness.jpg',
+          ao: '/assets/textures/metal-industrial/ao.jpg',
+          metallic: '/assets/textures/metal-industrial/metallic.jpg',
+        }),
+        this.textureManager.loadTextureSet('brick', {
+          baseColor: '/assets/textures/brick-weathered/basecolor.jpg',
+          normal: '/assets/textures/brick-weathered/normal.jpg',
+          roughness: '/assets/textures/brick-weathered/roughness.jpg',
+          ao: '/assets/textures/brick-weathered/ao.jpg',
+        }),
+        this.textureManager.loadTextureSet('wood', {
+          baseColor: '/assets/textures/wood-aged-planks/basecolor.jpg',
+          normal: '/assets/textures/wood-aged-planks/normal.jpg',
+          roughness: '/assets/textures/wood-aged-planks/roughness.jpg',
+          ao: '/assets/textures/wood-aged-planks/ao.jpg',
+        }),
+        this.textureManager.loadTextureSet('asphalt', {
+          baseColor: '/assets/textures/asphalt-dark/basecolor.jpg',
+          normal: '/assets/textures/asphalt-dark/normal.jpg',
+          roughness: '/assets/textures/asphalt-dark/roughness.jpg',
+          ao: '/assets/textures/asphalt-dark/ao.jpg',
+        }),
+      ]);
+
+      // Refresh level so all already-created platform materials receive PBR maps.
+      this.levelManager.loadLevel(LEVEL_PARKOUR_CITY);
+    } catch (error) {
+      console.warn(
+        'Failed to load external texture sets. Falling back to procedural textures.',
+        error,
+      );
+    }
   }
 
   private setupSkybox(): void {

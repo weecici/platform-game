@@ -355,28 +355,37 @@ export class PrimitivePlacementSystem {
   ): THREE.Object3D {
     const object = this.createLegacyObject(shape);
 
-    const tex = textureManager.getTexture(textureName);
-    if (tex) {
-      object.traverse((child) => {
-        if (child instanceof THREE.Mesh) {
-          const cloned = tex.clone();
-          // Procedural CanvasTextures must be sRGB so they display correctly
-          // under the renderer's ACES tonemapping
-          cloned.colorSpace = THREE.SRGBColorSpace;
-          cloned.needsUpdate = true;
+    const fallbackTexture = textureManager.getTexture(textureName);
+    object.traverse((child) => {
+      if (!(child instanceof THREE.Mesh)) return;
+      if (!(child.material instanceof THREE.MeshStandardMaterial)) return;
 
-          // Clone the material so we don't mutate the shared ShapeFactory material
-          const mat = (child.material as THREE.MeshStandardMaterial).clone();
-          mat.map = cloned;
-          // Reset tint to white so the texture colours show through unmodified
-          mat.color.setHex(0xffffff);
-          mat.roughness = 0.7;
-          mat.metalness = 0.1;
-          mat.needsUpdate = true;
-          child.material = mat;
-        }
-      });
-    }
+      // Clone material so each placed object can have independent maps/repeats.
+      child.material = child.material.clone();
+
+      const appliedSet = textureManager.applyTextureSet(child, textureName, 1, 1);
+      if (appliedSet) {
+        child.material.roughness = child.material.roughnessMap ? 1.0 : 0.7;
+        child.material.metalness = child.material.metalnessMap ? 1.0 : 0.1;
+        child.material.needsUpdate = true;
+        return;
+      }
+
+      if (fallbackTexture) {
+        const cloned = fallbackTexture.clone();
+        // Procedural CanvasTextures must be sRGB so they display correctly
+        // under the renderer's ACES tonemapping.
+        cloned.colorSpace = THREE.SRGBColorSpace;
+        cloned.needsUpdate = true;
+
+        child.material.map = cloned;
+        // Reset tint to white so the texture colours show through unmodified.
+        child.material.color.setHex(0xffffff);
+        child.material.roughness = 0.7;
+        child.material.metalness = 0.1;
+        child.material.needsUpdate = true;
+      }
+    });
 
     return object;
   }
