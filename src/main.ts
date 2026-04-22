@@ -151,6 +151,12 @@ class Game {
           roughness: '/assets/textures/stone-city/roughness.jpg',
           ao: '/assets/textures/stone-city/ao.jpg',
         }),
+        this.textureManager.loadTextureSet('concrete-moss', {
+          baseColor: '/assets/textures/concrete-moss/textures/concrete_moss_diff_1k.jpg',
+          normal: '/assets/textures/concrete-moss/textures/concrete_moss_nor_gl_1k.jpg',
+          roughness: '/assets/textures/concrete-moss/textures/concrete_moss_arm_1k.jpg',
+          ao: '/assets/textures/concrete-moss/textures/concrete_moss_arm_1k.jpg',
+        }),
         this.textureManager.loadTextureSet('metal', {
           baseColor: '/assets/textures/metal-industrial/basecolor.jpg',
           normal: '/assets/textures/metal-industrial/normal.jpg',
@@ -158,11 +164,22 @@ class Game {
           ao: '/assets/textures/metal-industrial/ao.jpg',
           metallic: '/assets/textures/metal-industrial/metallic.jpg',
         }),
+        this.textureManager.loadTextureSet('metal-plate', {
+          baseColor: '/assets/textures/metal-plate/textures/metal_plate_diff_1k.jpg',
+          normal: '/assets/textures/metal-plate/textures/metal_plate_nor_gl_1k.jpg',
+          roughness: '/assets/textures/metal-plate/textures/metal_plate_rough_1k.jpg',
+        }),
         this.textureManager.loadTextureSet('brick', {
           baseColor: '/assets/textures/brick-weathered/basecolor.jpg',
           normal: '/assets/textures/brick-weathered/normal.jpg',
           roughness: '/assets/textures/brick-weathered/roughness.jpg',
           ao: '/assets/textures/brick-weathered/ao.jpg',
+        }),
+        this.textureManager.loadTextureSet('grass-rock', {
+          baseColor: '/assets/textures/grass-rock/basecolor.jpg',
+          normal: '/assets/textures/grass-rock/normal.jpg',
+          roughness: '/assets/textures/grass-rock/roughness.jpg',
+          ao: '/assets/textures/grass-rock/ao.jpg',
         }),
         this.textureManager.loadTextureSet('wood', {
           baseColor: '/assets/textures/wood-aged-planks/basecolor.jpg',

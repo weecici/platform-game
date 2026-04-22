@@ -3,6 +3,7 @@ import * as CANNON from 'cannon-es';
 import type { Engine } from '../core/engine';
 import type { PhysicsWorld } from '../core/physics-world';
 import type { TextureManager } from '../systems/texture-manager';
+import { ModelLoader } from '../entities/model-loader';
 
 export interface PlatformDef {
   position: [number, number, number];
@@ -31,11 +32,13 @@ export interface LevelConfig {
 }
 
 export interface DecorationDef {
-  type: 'sphere' | 'cone' | 'cylinder' | 'torus' | 'torusknot';
+  type: 'sphere' | 'cone' | 'cylinder' | 'torus' | 'torusknot' | 'model';
   position: [number, number, number];
   scale?: [number, number, number];
+  rotation?: [number, number, number];
   color?: number;
   emissive?: number;
+  modelPath?: string;
   animate?: {
     rotateY?: number;
     bobSpeed?: number;
@@ -67,9 +70,11 @@ export class LevelManager {
   private engine: Engine;
   private physics: PhysicsWorld;
   private textureManager: TextureManager;
+  private modelLoader: ModelLoader;
   private platforms: PlatformRuntime[] = [];
   private decorations: DecorationRuntime[] = [];
   private currentConfig: LevelConfig | null = null;
+  private levelGeneration = 0;
 
   constructor(
     engine: Engine,
@@ -79,10 +84,13 @@ export class LevelManager {
     this.engine = engine;
     this.physics = physics;
     this.textureManager = textureManager;
+    this.modelLoader = new ModelLoader();
   }
 
   loadLevel(config: LevelConfig): void {
     this.clearLevel();
+    this.levelGeneration += 1;
+    const generation = this.levelGeneration;
     this.currentConfig = config;
 
     if (config.skyColor !== undefined) {
@@ -102,7 +110,7 @@ export class LevelManager {
 
     if (config.decorations) {
       for (const decDef of config.decorations) {
-        this.createDecoration(decDef);
+        this.createDecoration(decDef, generation);
       }
     }
   }
@@ -173,7 +181,47 @@ export class LevelManager {
     });
   }
 
-  private createDecoration(def: DecorationDef): void {
+  private createDecoration(def: DecorationDef, generation: number): void {
+    if (def.type === 'model') {
+      if (!def.modelPath) {
+        console.warn('Decoration of type "model" is missing modelPath.', def);
+        return;
+      }
+
+      const anchor = new THREE.Group();
+      anchor.position.set(...def.position);
+      if (def.scale) anchor.scale.set(...def.scale);
+      if (def.rotation) anchor.rotation.set(...def.rotation);
+      this.engine.scene.add(anchor);
+
+      this.decorations.push({
+        mesh: anchor,
+        def,
+        initialY: def.position[1],
+        time: Math.random() * Math.PI * 2,
+        collected: false,
+      });
+
+      void this.modelLoader
+        .load(def.modelPath)
+        .then((model) => {
+          if (generation !== this.levelGeneration) {
+            disposeObject3D(model);
+            return;
+          }
+
+          // Align model base to the anchor so y position stays intuitive.
+          const bounds = new THREE.Box3().setFromObject(model);
+          model.position.y -= bounds.min.y;
+          anchor.add(model);
+        })
+        .catch((error) => {
+          console.warn(`Failed to load decoration model: ${def.modelPath}`, error);
+        });
+
+      return;
+    }
+
     let geometry: THREE.BufferGeometry;
     switch (def.type) {
       case 'sphere':
@@ -345,14 +393,7 @@ export class LevelManager {
 
     for (const dec of this.decorations) {
       this.engine.scene.remove(dec.mesh);
-      if (dec.mesh instanceof THREE.Mesh) {
-        dec.mesh.geometry.dispose();
-        if (Array.isArray(dec.mesh.material)) {
-          dec.mesh.material.forEach((material) => material.dispose());
-        } else {
-          dec.mesh.material.dispose();
-        }
-      }
+      disposeObject3D(dec.mesh);
     }
 
     this.platforms = [];
@@ -376,4 +417,16 @@ export class LevelManager {
       position.y >= 12
     );
   }
+}
+
+function disposeObject3D(object: THREE.Object3D): void {
+  object.traverse((child) => {
+    if (!(child instanceof THREE.Mesh)) return;
+    child.geometry.dispose();
+    if (Array.isArray(child.material)) {
+      child.material.forEach((material) => material.dispose());
+    } else {
+      child.material.dispose();
+    }
+  });
 }
