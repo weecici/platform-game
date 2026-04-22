@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
+import { USDZLoader } from 'three/addons/loaders/USDZLoader.js';
 
 /**
  * ModelLoader - Loads 3D models from files (GLTF/GLB, OBJ, FBX)
@@ -10,12 +11,14 @@ export class ModelLoader {
   private gltfLoader: GLTFLoader;
   private objLoader: OBJLoader;
   private fbxLoader: FBXLoader;
+  private usdzLoader: USDZLoader;
   private loadedModels: Map<string, THREE.Group> = new Map();
 
   constructor() {
     this.gltfLoader = new GLTFLoader();
     this.objLoader = new OBJLoader();
     this.fbxLoader = new FBXLoader();
+    this.usdzLoader = new USDZLoader();
   }
 
   /**
@@ -89,6 +92,29 @@ export class ModelLoader {
   }
 
   /**
+   * Load a USDZ model
+   */
+  async loadUSDZ(url: string, name?: string): Promise<THREE.Group> {
+    return new Promise((resolve, reject) => {
+      this.usdzLoader.load(
+        url,
+        (usdz) => {
+          usdz.traverse((child) => {
+            if (child instanceof THREE.Mesh) {
+              child.castShadow = true;
+              child.receiveShadow = true;
+            }
+          });
+          if (name) this.loadedModels.set(name, usdz);
+          resolve(usdz);
+        },
+        undefined,
+        (error) => reject(error),
+      );
+    });
+  }
+
+  /**
    * Auto-detect format and load
    */
   async load(url: string, name?: string): Promise<THREE.Group> {
@@ -101,6 +127,8 @@ export class ModelLoader {
         return this.loadOBJ(url, name);
       case 'fbx':
         return this.loadFBX(url, name);
+      case 'usdz':
+        return this.loadUSDZ(url, name);
       default:
         throw new Error(`Unsupported model format: ${ext}`);
     }

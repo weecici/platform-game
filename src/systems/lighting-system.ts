@@ -34,8 +34,8 @@ export class LightingSystem {
     this.engine = engine;
 
     this.config = {
-      ambientColor: 0x404060,
-      ambientIntensity: 0.4,
+      ambientColor: 0x7c8fb0,
+      ambientIntensity: 0.82,
       directionalColor: 0xfff4e6,
       directionalIntensity: 1.5,
       directionalPosition: { x: 50, y: 80, z: 30 },
@@ -55,7 +55,7 @@ export class LightingSystem {
     engine.scene.add(this.ambientLight);
 
     // Hemisphere light for subtle sky/ground coloring
-    this.hemisphereLight = new THREE.HemisphereLight(0x87ceeb, 0x362907, 0.3);
+    this.hemisphereLight = new THREE.HemisphereLight(0x87ceeb, 0x362907, 0.45);
     engine.scene.add(this.hemisphereLight);
 
     // Directional light - sun-like, with shadow mapping
