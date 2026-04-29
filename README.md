@@ -52,5 +52,7 @@ Follow these instructions to run the game locally on your machine.
 
 I want to express my gratitude to:
 
-- **Farhad Guli** (https://sketchfab.com/farhad.Guli) for his high-quality models for scenes.
-- **Quaternius** (https://quaternius.com/https://quaternius.com) for his excellent models for characters.
+- **Quaternius** (https://quaternius.com/https://quaternius.com)
+- **Farhad Guli** (https://sketchfab.com/farhad.Guli)
+- **Zhuier** (https://sketchfab.com/Zhuier)
+- **Polyscan** (https://sketchfab.com/POLYSCAN3D)
