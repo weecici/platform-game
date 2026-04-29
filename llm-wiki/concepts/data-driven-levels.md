@@ -1,0 +1,16 @@
+---
+tags: [concept, levels, config]
+source_files: ["src/levels/level-data.ts"]
+last_updated: 2026-04-29
+---
+
+# Data-Driven Levels
+
+The game has no visual map editor. Instead, the [Level Manager](../entities/level-manager.md) parses massive JSON/object arrays located in `level-data.ts`.
+
+## Structure
+
+A `LevelConfig` (e.g. `LEVEL_PARKOUR_CITY`) is composed of:
+
+1. **Platforms:** Defines solid (`solid: true`) rectangular prisms (`[sx, sy, sz]`). Allows mapping physical string identifiers to PBR textures (e.g., `concrete-moss`, `metal-plate`) which are parsed by the [Asset Pipeline](../infrastructure/asset-pipeline.md). It also supports kinematic behaviors like `type: "moving"` or `type: "rotating"` along a designated axis.
+2. **Decorations:** Defines decorative or functional primitives/models placed freely in space. If a decoration config maps a `collectible: "cylinder"`, it acts as a floating, spinning pickup that grants the player a [Block Inventory](../entities/block-inventory.md) item.
