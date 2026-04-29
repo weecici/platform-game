@@ -47,3 +47,10 @@ Follow these instructions to run the game locally on your machine.
    pnpm dev
    ```
 5. Open your web browser and navigate to the local URL provided in the terminal (typically `http://localhost:3000`).
+
+## Credits
+
+I want to express my gratitude to:
+
+- **Farhad Guli** (https://sketchfab.com/farhad.Guli) for his high-quality models for scenes.
+- **Quaternius** (https://quaternius.com/https://quaternius.com) for his excellent models for characters.
