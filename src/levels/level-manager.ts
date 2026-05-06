@@ -93,16 +93,6 @@ export class LevelManager {
     const generation = this.levelGeneration;
     this.currentConfig = config;
 
-//     if (config.skyColor !== undefined) {
-//         this.engine.scene.background = new THREE.Color(config.skyColor);
-//  }
-    // if (config.fogColor !== undefined) {
-    //   this.engine.scene.fog = new THREE.Fog(
-    //     config.fogColor,
-    //     config.fogNear || 20,
-    //     config.fogFar || 150,
-    //   );
-    // }
 
     for (const platDef of config.platforms) {
       this.createPlatform(platDef);
