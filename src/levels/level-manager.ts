@@ -93,16 +93,16 @@ export class LevelManager {
     const generation = this.levelGeneration;
     this.currentConfig = config;
 
-    if (config.skyColor !== undefined) {
-      this.engine.scene.background = new THREE.Color(config.skyColor);
-    }
-    if (config.fogColor !== undefined) {
-      this.engine.scene.fog = new THREE.Fog(
-        config.fogColor,
-        config.fogNear || 20,
-        config.fogFar || 150,
-      );
-    }
+//     if (config.skyColor !== undefined) {
+//         this.engine.scene.background = new THREE.Color(config.skyColor);
+//  }
+    // if (config.fogColor !== undefined) {
+    //   this.engine.scene.fog = new THREE.Fog(
+    //     config.fogColor,
+    //     config.fogNear || 20,
+    //     config.fogFar || 150,
+    //   );
+    // }
 
     for (const platDef of config.platforms) {
       this.createPlatform(platDef);
@@ -213,6 +213,22 @@ export class LevelManager {
           // Align model base to the anchor so y position stays intuitive.
           const bounds = new THREE.Box3().setFromObject(model);
           model.position.y -= bounds.min.y;
+
+          // Override cloud model to bright white
+          if (def.modelPath && def.modelPath.includes('clouds')) {
+            model.traverse((child) => {
+              if (child instanceof THREE.Mesh) {
+                child.material = new THREE.MeshStandardMaterial({
+                  color: 0xffffff,
+                  roughness: 0.9,
+                  metalness: 0.0,
+                  emissive: new THREE.Color(0xddeeFF),
+                  emissiveIntensity: 0.18,
+                });
+              }
+            });
+          }
+
           anchor.add(model);
         })
         .catch((error) => {
