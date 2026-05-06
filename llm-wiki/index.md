@@ -12,6 +12,7 @@ Catalog of all knowledge pages in the `llm-wiki/`.
 
 ## Concepts
 
+- [Exact Mesh Collision](./concepts/mesh-collision.md) - Translating GLTF geometry into accurate CANNON.Trimesh colliders.
 - [Momentum Physics](./concepts/momentum-physics.md) - Percentage-based friction and acceleration system for tight controls.
 - [Data-Driven Levels](./concepts/data-driven-levels.md) - Structure of `LEVEL_PARKOUR_CITY` and platform definitions.
 

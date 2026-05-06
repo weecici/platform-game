@@ -46,6 +46,8 @@ export interface DecorationDef {
   };
   /** If set, this decoration is a collectible that grants the named block type id. */
   collectible?: string;
+  /** Whether the decoration acts as a solid physical obstacle */
+  solid?: boolean;
 }
 
 interface PlatformRuntime {
@@ -64,6 +66,7 @@ interface DecorationRuntime {
   time: number;
   /** Has the player already collected this pickup? */
   collected: boolean;
+  bodies: CANNON.Body[];
 }
 
 export class LevelManager {
@@ -184,13 +187,15 @@ export class LevelManager {
       if (def.rotation) anchor.rotation.set(...def.rotation);
       this.engine.scene.add(anchor);
 
-      this.decorations.push({
+      const decRuntime: DecorationRuntime = {
         mesh: anchor,
         def,
         initialY: def.position[1],
         time: Math.random() * Math.PI * 2,
         collected: false,
-      });
+        bodies: [],
+      };
+      this.decorations.push(decRuntime);
 
       void this.modelLoader
         .load(def.modelPath)
@@ -220,6 +225,47 @@ export class LevelManager {
           }
 
           anchor.add(model);
+
+          if (def.solid) {
+            // Update matrices to get correct world coordinates
+            anchor.updateMatrixWorld(true);
+
+            model.traverse((child) => {
+              if (child instanceof THREE.Mesh) {
+                const geometry = child.geometry as THREE.BufferGeometry;
+                if (!geometry.attributes.position) return;
+
+                const positions = geometry.attributes.position.array;
+                const indices = geometry.index ? geometry.index.array : null;
+
+                const vertices: number[] = [];
+                const faces: number[] = [];
+
+                const vertex = new THREE.Vector3();
+                for (let i = 0; i < positions.length; i += 3) {
+                  vertex.set(positions[i], positions[i + 1], positions[i + 2]);
+                  vertex.applyMatrix4(child.matrixWorld);
+                  vertices.push(vertex.x, vertex.y, vertex.z);
+                }
+
+                if (indices) {
+                  for (let i = 0; i < indices.length; i++) {
+                    faces.push(indices[i]);
+                  }
+                } else {
+                  for (let i = 0; i < positions.length / 3; i++) {
+                    faces.push(i);
+                  }
+                }
+
+                const trimeshShape = new CANNON.Trimesh(vertices, faces);
+                const body = new CANNON.Body({ mass: 0, type: CANNON.Body.STATIC });
+                body.addShape(trimeshShape);
+                this.physics.addBody(body);
+                decRuntime.bodies.push(body);
+              }
+            });
+          }
         })
         .catch((error) => {
           console.warn(`Failed to load decoration model: ${def.modelPath}`, error);
@@ -269,6 +315,7 @@ export class LevelManager {
       initialY: def.position[1],
       time: Math.random() * Math.PI * 2,
       collected: false,
+      bodies: [],
     });
   }
 
@@ -400,6 +447,9 @@ export class LevelManager {
     for (const dec of this.decorations) {
       this.engine.scene.remove(dec.mesh);
       disposeObject3D(dec.mesh);
+      for (const body of dec.bodies) {
+        this.physics.removeBody(body);
+      }
     }
 
     this.platforms = [];

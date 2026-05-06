@@ -282,9 +282,9 @@ export const LEVEL_PARKOUR_CITY: LevelConfig = {
     {
       type: "model",
       modelPath: "/assets/models/uia_cat.usdz",
-      position: [4.5, 0.5, 2.9],
+      position: [4.0, 0.5, 2.9],
       scale: [0.03, 0.03, 0.03],
-      animate: { rotateY: -0.4, bobSpeed: 1.3, bobHeight: 0.05 },
+      solid: true,
     },
 
     // Trees around spawn area
@@ -294,6 +294,7 @@ export const LEVEL_PARKOUR_CITY: LevelConfig = {
       position: [-4.2, 0.5, -3.9],
       scale: [0.0108, 0.0108, 0.0108],
       rotation: [0, 0.2, 0],
+      solid: true,
     },
     {
       type: "model",
@@ -315,6 +316,7 @@ export const LEVEL_PARKOUR_CITY: LevelConfig = {
       position: [4.2, 0.5, -3.8],
       scale: [0.0106, 0.0106, 0.0106],
       rotation: [0, -0.35, 0],
+      solid: true,
     },
     {
       type: "model",
@@ -322,6 +324,7 @@ export const LEVEL_PARKOUR_CITY: LevelConfig = {
       position: [-4.7, 0.5, 0.8],
       scale: [0.0109, 0.0109, 0.0109],
       rotation: [0, 1.2, 0],
+      solid: true,
     },
     {
       type: "model",
@@ -329,6 +332,7 @@ export const LEVEL_PARKOUR_CITY: LevelConfig = {
       position: [4.0, 0.5, 3.5],
       scale: [0.0109, 0.0109, 0.0109],
       rotation: [0, -0.9, 0],
+      solid: true,
     },
     {
       type: "model",
@@ -336,6 +340,7 @@ export const LEVEL_PARKOUR_CITY: LevelConfig = {
       position: [0.8, 0.5, 4.1],
       scale: [0.0105, 0.0105, 0.0105],
       rotation: [0, 0.5, 0],
+      solid: true,
     },
 
     {
