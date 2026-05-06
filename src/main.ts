@@ -205,74 +205,40 @@ class Game {
     }
   }
 
-  // private setupSkybox(): void {
-  //   const skyGeo = new THREE.SphereGeometry(400, 32, 15);
-  //   const skyMat = new THREE.ShaderMaterial({
-  //     uniforms: {
-  //       topColor: { value: new THREE.Color(0x0077ff) },
-  //       bottomColor: { value: new THREE.Color(0xc8ddf0) },
-  //       offset: { value: 20 },
-  //       exponent: { value: 0.4 },
-  //     },
-  //     vertexShader: `
-  //       varying vec3 vWorldPosition;
-  //       void main() {
-  //         vec4 worldPosition = modelMatrix * vec4(position, 1.0);
-  //         vWorldPosition = worldPosition.xyz;
-  //         gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-  //       }
-  //     `,
-  //     fragmentShader: `
-  //       uniform vec3 topColor;
-  //       uniform vec3 bottomColor;
-  //       uniform float offset;
-  //       uniform float exponent;
-  //       varying vec3 vWorldPosition;
-  //       void main() {
-  //         float h = normalize(vWorldPosition + vec3(0.0, offset, 0.0)).y;
-  //         gl_FragColor = vec4(mix(bottomColor, topColor, max(pow(max(h, 0.0), exponent), 0.0)), 1.0);
-  //       }
-  //     `,
-  //     side: THREE.BackSide,
-  //     depthWrite: false,
-  //   });
-  //   const sky = new THREE.Mesh(skyGeo, skyMat);
-  //   this.engine.scene.add(sky);
-  // }
-private setupSkybox(): void {
-  const cubeLoader = new THREE.CubeTextureLoader();
-  const texturePaths = [
-    '/assets/textures/sky-box/px.png',
-    '/assets/textures/sky-box/nx.png',
-    '/assets/textures/sky-box/py.png',
-    '/assets/textures/sky-box/ny.png',
-    '/assets/textures/sky-box/pz.png',
-    '/assets/textures/sky-box/nz.png',
-  ];
+  private setupSkybox(): void {
+    const cubeLoader = new THREE.CubeTextureLoader();
+    const texturePaths = [
+      '/assets/textures/sky-box/px.png',
+      '/assets/textures/sky-box/nx.png',
+      '/assets/textures/sky-box/py.png',
+      '/assets/textures/sky-box/ny.png',
+      '/assets/textures/sky-box/pz.png',
+      '/assets/textures/sky-box/nz.png',
+    ];
 
-  const skyboxTexture = cubeLoader.load(
-    texturePaths,
-    (texture) => {
-      console.log('Skybox loaded successfully', texture);
-    },
-    undefined,
-    (err) => {
-      console.error('Skybox failed to load:', err);
+    const skyboxTexture = cubeLoader.load(
+      texturePaths,
+      (texture) => {
+        console.log('Skybox loaded successfully', texture);
+      },
+      undefined,
+      (err) => {
+        console.error('Skybox failed to load:', err);
+      }
+    );
+
+    skyboxTexture.colorSpace = THREE.SRGBColorSpace;
+    this.engine.scene.background = skyboxTexture;
+    // Tăng cường độ phát sáng của riêng bầu trời (Cách hiệu quả nhất)
+    // Bạn có thể thay đổi số này thành 1.5, 2.0 hoặc 3.0 để test độ sáng
+    this.engine.scene.backgroundIntensity = 1.5;
+
+    // Kéo độ phơi sáng của toàn bộ Game Engine lên (Làm sáng cả bầu trời lẫn bệ đỡ)
+    if (this.engine.renderer) {
+      // Giá trị mặc định là 1.0, tăng lên để ảnh rực rỡ hơn
+      this.engine.renderer.toneMappingExposure = 1.5;
     }
-  );
-
-  skyboxTexture.colorSpace = THREE.SRGBColorSpace;
-  this.engine.scene.background = skyboxTexture;
-  // Tăng cường độ phát sáng của riêng bầu trời (Cách hiệu quả nhất)
-  // Bạn có thể thay đổi số này thành 1.5, 2.0 hoặc 3.0 để test độ sáng
-  this.engine.scene.backgroundIntensity = 1.5; 
-
-  // Kéo độ phơi sáng của toàn bộ Game Engine lên (Làm sáng cả bầu trời lẫn bệ đỡ)
-  if (this.engine.renderer) {
-    // Giá trị mặc định là 1.0, tăng lên để ảnh rực rỡ hơn
-    this.engine.renderer.toneMappingExposure = 1.5; 
   }
-}
   private setupEventListeners(): void {
     document.getElementById('btn-start')!.addEventListener('click', () => {
       this.showCharacterSelection();
