@@ -8,3 +8,9 @@ Append-only chronological log of operations on the wiki.
 - Created `AGENTS.md` schema to formalize LLM Wiki pattern.
 - Replaced flat markdown files with a structured entity/concept graph.
 - Wrote pages detailing `PlayerController` momentum, `LevelManager` operations, `Game` orchestration, and rendering toolchain.
+
+## [2026-05-06] ingest | Added Exact Mesh Collision (Trimesh) for Scene Models
+
+- Updated `LevelManager` to generate `CANNON.Trimesh` bodies for `DecorationDef` models with `solid: true`.
+- Created `llm-wiki/concepts/mesh-collision.md` detailing the Trimesh mechanism and its limitation of only colliding with Spheres.
+- Updated `llm-wiki/entities/level-manager.md` and `llm-wiki/index.md`.
