@@ -276,14 +276,14 @@ export const LEVEL_PARKOUR_CITY: LevelConfig = {
     },
   ],
 
-  decorations: [
+decorations: [
     // === LOW POLY TREES — mỗi entry dùng 1 cây con riêng (childIndex) ===
     // File low_poly_tree.usdz chứa nhiều cây → childIndex chọn từng cây lẻ
     // Scale 0.05 (lớn hơn cũ ~4x). Nếu cây quá to/nhỏ hãy báo để điều chỉnh.
     {
       type: "model",
       modelPath: "/assets/models/low_poly_tree.usdz",
-      position: [-12, -4.5, -2],
+      position: [-25, -4.5, -2],
       scale: [2, 2, 2],
       rotation: [0, 0.3, 0],
       childIndex: 0,
@@ -291,7 +291,7 @@ export const LEVEL_PARKOUR_CITY: LevelConfig = {
     {
       type: "model",
       modelPath: "/assets/models/low_poly_tree.usdz",
-      position: [-4, -4.5, -2],
+      position: [-15, -4.5, -2],
       scale: [2, 2, 2],
       rotation: [0, 0.8, 0],
       childIndex: 1,
@@ -780,6 +780,38 @@ export const LEVEL_PARKOUR_CITY: LevelConfig = {
       animate: { rotateY: -1.5, bobSpeed: 1.5, bobHeight: 0.3 },
     },
 
+    // Sun — high above the map center
+    {
+      type: "model",
+      modelPath: "/assets/models/Low_poly_sun.usdz",
+      position: [0, 65, 0],
+      scale: [0.05, 0.05, 0.05],
+      animate: { rotateY: 0.15, bobSpeed: 0.08, bobHeight: 0.2 },
+    },
+
+    // === FLYING PLANES — orbit around the map below the clouds ===
+    {
+      type: "model",
+      modelPath: "/assets/models/SBD-3.usdz",
+      position: [0, 40, -60],
+      scale: [0.025, 0.025, 0.025],
+      animate: { orbitRadius: 100, orbitSpeed: 0.2, bobSpeed: 0.3, bobHeight: 1.5, orbitRotationOffset: -Math.PI / 2 },
+    },
+    {
+      type: "model",
+      modelPath: "/assets/models/blue_plane.usdz",
+      position: [0, 50, -60],
+      scale: [0.025, 0.025, 0.025],
+      animate: { orbitRadius: 100, orbitSpeed: 0.2, bobSpeed: 0.25, bobHeight: 2.0, orbitRotationOffset: 0 },
+    },
+    {
+      type: "model",
+      modelPath: "/assets/models/fly_plane.usdz",
+      position: [0, 35, -60],
+      scale: [0.025, 0.025, 0.025],
+      animate: { orbitRadius: 100, orbitSpeed: 0.2, bobSpeed: 0.35, bobHeight: 1.2, orbitRotationOffset: 0},
+    },
+
     // === STATIC DECORATIONS (not collectible) ===
     // Pillars along the narrow bridge
     {
@@ -823,3 +855,4 @@ export const LEVEL_PARKOUR_CITY: LevelConfig = {
     },
   ],
 };
+
