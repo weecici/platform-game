@@ -277,6 +277,106 @@ export const LEVEL_PARKOUR_CITY: LevelConfig = {
   ],
 
   decorations: [
+    // === LOW POLY TREES — mỗi entry dùng 1 cây con riêng (childIndex) ===
+    // File low_poly_tree.usdz chứa nhiều cây → childIndex chọn từng cây lẻ
+    // Scale 0.05 (lớn hơn cũ ~4x). Nếu cây quá to/nhỏ hãy báo để điều chỉnh.
+    {
+      type: "model",
+      modelPath: "/assets/models/low_poly_tree.usdz",
+      position: [-12, -4.5, -2],
+      scale: [2, 2, 2],
+      rotation: [0, 0.3, 0],
+      childIndex: 0,
+    },
+    {
+      type: "model",
+      modelPath: "/assets/models/low_poly_tree.usdz",
+      position: [-4, -4.5, -2],
+      scale: [2, 2, 2],
+      rotation: [0, 0.8, 0],
+      childIndex: 1,
+    },
+    {
+      type: "model",
+      modelPath: "/assets/models/low_poly_tree.usdz",
+      position: [-16, -4.5, -2],
+      scale: [2, 2, 2],
+      rotation: [0, 1.5, 0],
+      childIndex: 2,
+    },
+    {
+      type: "model",
+      modelPath: "/assets/models/low_poly_tree.usdz",
+      position: [-20, -4.5, -15],
+      scale: [2, 2, 2],
+      rotation: [0, 0.5, 0],
+      childIndex: 3,
+    },
+    {
+      type: "model",
+      modelPath: "/assets/models/low_poly_tree.usdz",
+      position: [22, -4.5, -20],
+      scale: [2, 2, 2],
+      rotation: [0, 1.2, 0],
+      childIndex: 4,
+    },
+    {
+      type: "model",
+      modelPath: "/assets/models/low_poly_tree.usdz",
+      position: [-28, -4.5, -35],
+      scale: [2, 2, 2],
+      rotation: [0, 2.0, 0],
+      childIndex: 0,
+    },
+    {
+      type: "model",
+      modelPath: "/assets/models/low_poly_tree.usdz",
+      position: [30, -4.5, -50],
+      scale: [2, 2, 2],
+      rotation: [0, 0.7, 0],
+      childIndex: 1,
+    },
+    {
+      type: "model",
+      modelPath: "/assets/models/low_poly_tree.usdz",
+      position: [-25, -4.5, -68],
+      scale: [2, 2, 2],
+      rotation: [0, 1.8, 0],
+      childIndex: 2,
+    },
+    {
+      type: "model",
+      modelPath: "/assets/models/low_poly_tree.usdz",
+      position: [28, -4.5, -82],
+      scale: [2, 2, 2],
+      rotation: [0, 0.4, 0],
+      childIndex: 3,
+    },
+    {
+      type: "model",
+      modelPath: "/assets/models/low_poly_tree.usdz",
+      position: [-22, -4.5, -100],
+      scale: [2, 2, 2],
+      rotation: [0, 2.5, 0],
+      childIndex: 4,
+    },
+    {
+      type: "model",
+      modelPath: "/assets/models/low_poly_tree.usdz",
+      position: [32, -4.5, -120],
+      scale: [2, 2, 2],
+      rotation: [0, 0.9, 0],
+      childIndex: 0,
+    },
+    {
+      type: "model",
+      modelPath: "/assets/models/low_poly_tree.usdz",
+      position: [-18, -4.5, -138],
+      scale: [2, 2, 2],
+      rotation: [0, 1.4, 0],
+      childIndex: 1,
+    },
+
     // === MODEL DECORATIONS ===
     // Spawn focal props
     {
@@ -291,7 +391,7 @@ export const LEVEL_PARKOUR_CITY: LevelConfig = {
     {
       type: "model",
       modelPath: "/assets/models/tree.usdz",
-      position: [-4.2, 0.5, -3.9],
+      position: [-5, 0.5, -3.9],
       scale: [0.0108, 0.0108, 0.0108],
       rotation: [0, 0.2, 0],
       solid: true,
