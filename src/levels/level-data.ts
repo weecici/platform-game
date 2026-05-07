@@ -783,7 +783,7 @@ decorations: [
     // Sun — high above the map center
     {
       type: "model",
-      modelPath: "/assets/models/Low_poly_sun.usdz",
+      modelPath: "/assets/models/low_poly_sun.usdz",
       position: [0, 65, 0],
       scale: [0.05, 0.05, 0.05],
       animate: { rotateY: 0.15, bobSpeed: 0.08, bobHeight: 0.2 },
@@ -792,7 +792,7 @@ decorations: [
     // === FLYING PLANES — orbit around the map below the clouds ===
     {
       type: "model",
-      modelPath: "/assets/models/SBD-3.usdz",
+      modelPath: "/assets/models/sbd_3.usdz",
       position: [0, 40, -60],
       scale: [0.025, 0.025, 0.025],
       animate: { orbitRadius: 100, orbitSpeed: 0.2, bobSpeed: 0.3, bobHeight: 1.5, orbitRotationOffset: -Math.PI / 2 },
