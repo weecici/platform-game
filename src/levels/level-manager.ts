@@ -51,6 +51,12 @@ export interface DecorationDef {
     rotateY?: number;
     bobSpeed?: number;
     bobHeight?: number;
+    /** Orbit radius — makes the decoration fly in a circle on the XZ plane */
+    orbitRadius?: number;
+    /** Orbit speed in radians per second */
+    orbitSpeed?: number;
+    /** Offset rotation for orbiting models (e.g. to fix moonwalking or sideways models) */
+    orbitRotationOffset?: number;
   };
   /** If set, this decoration is a collectible that grants the named block type id. */
   collectible?: string;
@@ -70,6 +76,7 @@ interface PlatformRuntime {
 interface DecorationRuntime {
   mesh: THREE.Object3D;
   def: DecorationDef;
+  initialPosition: THREE.Vector3;
   initialY: number;
   time: number;
   /** Has the player already collected this pickup? */
@@ -198,6 +205,7 @@ export class LevelManager {
       const decRuntime: DecorationRuntime = {
         mesh: anchor,
         def,
+        initialPosition: new THREE.Vector3(...def.position),
         initialY: def.position[1],
         time: Math.random() * Math.PI * 2,
         collected: false,
@@ -265,9 +273,13 @@ export class LevelManager {
             }
           }
 
-          // Align base to anchor Y so position stays intuitive
+          // Center the object on X and Z to prevent spinning in place around a distant origin,
+          // and align base to anchor Y so position stays intuitive.
           const bounds = new THREE.Box3().setFromObject(objectToAdd);
+          const center = bounds.getCenter(new THREE.Vector3());
+          objectToAdd.position.x -= center.x;
           objectToAdd.position.y -= bounds.min.y;
+          objectToAdd.position.z -= center.z;
 
           // Override cloud model to bright white
           if (def.modelPath && def.modelPath.includes('clouds')) {
@@ -282,6 +294,26 @@ export class LevelManager {
                 });
               }
             });
+          }
+
+          // Sun model — glowing emissive + point light
+          if (def.modelPath && def.modelPath.includes('Low_poly_sun')) {
+            objectToAdd.traverse((child) => {
+              if (child instanceof THREE.Mesh) {
+                child.material = new THREE.MeshStandardMaterial({
+                  color: 0xffdd44,
+                  roughness: 0.1,
+                  metalness: 0.0,
+                  emissive: new THREE.Color(0xffaa00),
+                  emissiveIntensity: 2.0,
+                });
+              }
+            });
+
+            const sunLight = new THREE.PointLight(0xffaa44, 8, 120);
+            sunLight.position.copy(anchor.position);
+            sunLight.position.y += 2;
+            this.engine.scene.add(sunLight);
           }
 
           anchor.add(objectToAdd);
@@ -372,6 +404,7 @@ export class LevelManager {
     this.decorations.push({
       mesh,
       def,
+      initialPosition: new THREE.Vector3(...def.position),
       initialY: def.position[1],
       time: Math.random() * Math.PI * 2,
       collected: false,
@@ -438,6 +471,19 @@ export class LevelManager {
             dec.initialY +
             Math.sin(dec.time * dec.def.animate.bobSpeed) *
             dec.def.animate.bobHeight;
+        }
+        if (dec.def.animate.orbitRadius && dec.def.animate.orbitSpeed) {
+          const angle = dec.time * dec.def.animate.orbitSpeed;
+          const radius = dec.def.animate.orbitRadius;
+
+          // Position — orbit on XZ plane
+          dec.mesh.position.x = dec.initialPosition.x + Math.cos(angle) * radius;
+          dec.mesh.position.z = dec.initialPosition.z + Math.sin(angle) * radius;
+
+          // Heading — face direction of travel (tangent to circle)
+          // Three.js default forward is -Z. 
+          const rotOffset = dec.def.animate.orbitRotationOffset || 0;
+          dec.mesh.rotation.y = -angle + rotOffset;
         }
       }
     }
