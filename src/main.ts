@@ -606,7 +606,10 @@ class Game {
 
     const dt = Math.min(this.engine.clock.getDelta(), 0.05);
     this.physics.step(dt);
-    this.player.update(dt);
+    // Skip player update when in spectator mode
+    if (!this.engine.isSpectatorMode) {
+      this.player.update(dt);
+    }
     this.input.resetMouseDelta();
     this.levelManager.update(dt);
 
@@ -665,7 +668,7 @@ class Game {
     );
 
     this.updateHUD();
-    this.engine.render();
+    this.engine.render(dt);
   }
 
   private updateHUD(): void {
