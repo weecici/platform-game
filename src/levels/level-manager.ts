@@ -39,6 +39,14 @@ export interface DecorationDef {
   color?: number;
   emissive?: number;
   modelPath?: string;
+  /**
+   * Extract a single child by index from the loaded model.
+   * Useful when a USDZ file contains multiple objects (e.g. a forest of trees)
+   * and you only want one specific tree. Index 0 = first child.
+   */
+  childIndex?: number;
+  /** Extract a single child by name instead of index. */
+  childName?: string;
   animate?: {
     rotateY?: number;
     bobSpeed?: number;
@@ -205,13 +213,65 @@ export class LevelManager {
             return;
           }
 
-          // Align model base to the anchor so y position stays intuitive.
-          const bounds = new THREE.Box3().setFromObject(model);
-          model.position.y -= bounds.min.y;
+          // ── Debug: print the full hierarchy to F12 Console ──────────────
+          if (def.childIndex !== undefined || def.childName) {
+            const printTree = (node: THREE.Object3D, depth: number) => {
+              const pad = '  '.repeat(depth);
+              const meshCount = (() => { let n = 0; node.traverse(c => { if (c instanceof THREE.Mesh) n++; }); return n; })();
+              console.log(`${pad}[${node.type}] name="${node.name}" children=${node.children.length} meshes=${meshCount}`);
+              if (depth < 3) node.children.forEach(c => printTree(c, depth + 1));
+            };
+            console.group(`🌳 ${def.modelPath} — hierarchy (depth ≤3)`);
+            printTree(model, 0);
+            console.groupEnd();
+          }
+
+          // ── Smart child extraction ────────────────────────────────────────
+          // Collect the shallowest nodes that actually own geometry (meshes).
+          // Strategy: walk down until we find a level where multiple siblings
+          // each contain meshes — those are the individual trees.
+          let objectToAdd: THREE.Object3D = model;
+
+          if (def.childName) {
+            const found = model.getObjectByName(def.childName);
+            objectToAdd = found ?? model;
+            if (!found) console.warn(`childName "${def.childName}" not found in ${def.modelPath}.`);
+
+          } else if (def.childIndex !== undefined) {
+            // Collect leaf-groups: nodes whose siblings share the same parent
+            // and each has at least 1 mesh descendant.
+            const collectLeafGroups = (root: THREE.Object3D): THREE.Object3D[] => {
+              // If root has multiple children that each contain meshes, return them.
+              const meaningful = root.children.filter(c => {
+                let hasMesh = false;
+                c.traverse(x => { if (x instanceof THREE.Mesh) hasMesh = true; });
+                return hasMesh;
+              });
+              if (meaningful.length > 1) return meaningful;
+              // Otherwise recurse into the single meaningful child.
+              if (meaningful.length === 1) return collectLeafGroups(meaningful[0]);
+              return [root]; // fallback: use root
+            };
+
+            const leafGroups = collectLeafGroups(model);
+            console.log(`🌳 Found ${leafGroups.length} individual tree(s) in ${def.modelPath}`);
+            leafGroups.forEach((g, i) => console.log(`  [${i}] name="${g.name}" type=${g.type}`));
+
+            const picked = leafGroups[def.childIndex % leafGroups.length];
+            if (picked) {
+              objectToAdd = picked;
+            } else {
+              console.warn(`childIndex ${def.childIndex} out of range. Found ${leafGroups.length} groups.`);
+            }
+          }
+
+          // Align base to anchor Y so position stays intuitive
+          const bounds = new THREE.Box3().setFromObject(objectToAdd);
+          objectToAdd.position.y -= bounds.min.y;
 
           // Override cloud model to bright white
           if (def.modelPath && def.modelPath.includes('clouds')) {
-            model.traverse((child) => {
+            objectToAdd.traverse((child) => {
               if (child instanceof THREE.Mesh) {
                 child.material = new THREE.MeshStandardMaterial({
                   color: 0xffffff,
@@ -224,7 +284,7 @@ export class LevelManager {
             });
           }
 
-          anchor.add(model);
+          anchor.add(objectToAdd);
 
           if (def.solid) {
             // Update matrices to get correct world coordinates

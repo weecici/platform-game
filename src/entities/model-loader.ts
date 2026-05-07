@@ -5,7 +5,11 @@ import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { USDZLoader } from 'three/addons/loaders/USDZLoader.js';
 
 /**
- * ModelLoader - Loads 3D models from files (GLTF/GLB, OBJ, FBX)
+ * ModelLoader - Loads 3D models from files (GLTF/GLB, OBJ, FBX, USDZ)
+ *
+ * URL-based cache: the same file path is only fetched ONCE.
+ * Every subsequent request receives a cheap .clone() of the cached group,
+ * so placing 14 identical trees costs only 1 network round-trip.
  */
 export class ModelLoader {
   private gltfLoader: GLTFLoader;
@@ -13,6 +17,11 @@ export class ModelLoader {
   private fbxLoader: FBXLoader;
   private usdzLoader: USDZLoader;
   private loadedModels: Map<string, THREE.Group> = new Map();
+
+  /** Cache: url → already-loaded master group */
+  private urlCache: Map<string, THREE.Group> = new Map();
+  /** In-flight dedup: url → promise that resolves to the master group */
+  private pendingLoads: Map<string, Promise<THREE.Group>> = new Map();
 
   constructor() {
     this.gltfLoader = new GLTFLoader();
@@ -115,23 +124,58 @@ export class ModelLoader {
   }
 
   /**
-   * Auto-detect format and load
+   * Auto-detect format and load.
+   * Results are cached by URL — identical paths return a .clone() of the
+   * master group without re-downloading the file.
    */
   async load(url: string, name?: string): Promise<THREE.Group> {
+    // 1. Already cached → return a cheap clone immediately
+    const cached = this.urlCache.get(url);
+    if (cached) {
+      const clone = cached.clone();
+      if (name) this.loadedModels.set(name, clone);
+      return clone;
+    }
+
+    // 2. Same URL is already being fetched → wait for that promise, then clone
+    const inFlight = this.pendingLoads.get(url);
+    if (inFlight) {
+      const master = await inFlight;
+      const clone = master.clone();
+      if (name) this.loadedModels.set(name, clone);
+      return clone;
+    }
+
+    // 3. First time seeing this URL → kick off the real load
     const ext = url.split('.').pop()?.toLowerCase();
+    let loadPromise: Promise<THREE.Group>;
     switch (ext) {
       case 'glb':
       case 'gltf':
-        return this.loadGLTF(url, name);
+        loadPromise = this.loadGLTF(url);
+        break;
       case 'obj':
-        return this.loadOBJ(url, name);
+        loadPromise = this.loadOBJ(url);
+        break;
       case 'fbx':
-        return this.loadFBX(url, name);
+        loadPromise = this.loadFBX(url);
+        break;
       case 'usdz':
-        return this.loadUSDZ(url, name);
+        loadPromise = this.loadUSDZ(url);
+        break;
       default:
-        throw new Error(`Unsupported model format: ${ext}`);
+        return Promise.reject(new Error(`Unsupported model format: ${ext}`));
     }
+
+    this.pendingLoads.set(url, loadPromise);
+
+    const master = await loadPromise;
+    this.urlCache.set(url, master);          // store master
+    this.pendingLoads.delete(url);
+
+    const clone = master.clone();
+    if (name) this.loadedModels.set(name, clone);
+    return clone;
   }
 
   getModel(name: string): THREE.Group | undefined {
