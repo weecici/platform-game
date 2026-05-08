@@ -394,6 +394,128 @@ decorations: [
       scale: [0.06, 0.5, 0.5],
       rotation: [0, Math.PI, 0],
     },
+    // ===MODEL DECORATIONS ===
+    // floating islands in the sky 
+    {
+      type: "model",
+      modelPath: "/assets/models/floating_island.usdz",
+      position: [-28, 45, -45],
+      scale: [0.15, 0.15, 0.15],
+      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    },
+
+    {
+      type: "model",
+      modelPath: "/assets/models/floating_island.usdz",
+      position: [30, 42, -70],
+      scale: [0.15, 0.15, 0.15],
+      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    },
+
+    {
+      type: "model",
+      modelPath: "/assets/models/floating_island.usdz",
+      position: [-15, 52, -100],
+      scale: [0.15, 0.15, 0.15],
+      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    },
+
+    {
+      type: "model",
+      modelPath: "/assets/models/floating_island.usdz",
+      position: [40, 48, -130],
+      scale: [0.15, 0.15, 0.15],
+      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    },
+
+    {
+      type: "model",
+      modelPath: "/assets/models/floating_island.usdz",
+      position: [-35, 40, -160],
+      scale: [0.15, 0.15, 0.15],
+      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    },
+    {
+      type: "model",
+      modelPath: "/assets/models/floating_island.usdz",
+      position: [0, 55, -200],
+      scale: [0.15, 0.15, 0.15],
+      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    },
+
+    {
+      type: "model",
+      modelPath: "/assets/models/floating_island.usdz",
+      position: [-25, 45, -15],
+      scale: [0.1, 0.1, 0.1],
+      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    },
+
+    {
+      type: "model",
+      modelPath: "/assets/models/floating_island.usdz",
+      position: [18, 50, -5],
+      scale: [0.1, 0.1, 0.1],
+      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    },
+
+    {
+      type: "model",
+      modelPath: "/assets/models/floating_island.usdz",
+      position: [22, 48, -75],
+      scale: [0.1, 0.1, 0.1],
+      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    },
+    {
+      type: "model",
+      modelPath: "/assets/models/floating_island.usdz",
+      position: [-28, 45, -45], // Hòn đảo gốc
+      scale: [0.1, 0.1, 0.1],
+      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    },
+    {
+      type: "model",
+      modelPath: "/assets/models/floating_island.usdz",
+      position: [-25, 45, -15],
+      scale: [0.1, 0.1, 0.1],
+      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    },
+    {
+      type: "model",
+      modelPath: "/assets/models/floating_island.usdz",
+      position: [18, 50, -5],
+      scale: [0.1, 0.1, 0.1],
+      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    },
+    {
+      type: "model",
+      modelPath: "/assets/models/floating_island.usdz",
+      position: [22, 48, -75],
+      scale: [0.1, 0.1, 0.1],
+      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    },
+    {
+      type: "model",
+      modelPath: "/assets/models/floating_island.usdz",
+      position: [15, 45, 5],
+      scale: [0.1, 0.1, 0.1],
+      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    },
+    {
+      type: "model",
+      modelPath: "/assets/models/floating_island.usdz",
+      position: [-28, 52, -85],
+      scale: [0.1, 0.1, 0.1],
+      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    },
+    {
+      type: "model",
+      modelPath: "/assets/models/floating_island.usdz",
+      position: [28, 48, -135],
+      scale: [0.1, 0.1, 0.1],
+      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    },
+    
     // === MODEL DECORATIONS ===
     // Spawn focal props
     {
@@ -481,102 +603,175 @@ decorations: [
     {
       type: "model",
       modelPath: "/assets/models/clouds.usdz",
-      position: [-28, 38, 10],
+      position: [-28, 75, 10],
       scale: [0.018, 0.018, 0.018],
       animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
     },
     {
       type: "model",
       modelPath: "/assets/models/clouds.usdz",
-      position: [-10, 42, -6],
+      position: [-10, 75, -6],
       scale: [0.02, 0.02, 0.02],
       animate: { rotateY: -0.025, bobSpeed: 0.11, bobHeight: 0.4 },
     },
     {
       type: "model",
       modelPath: "/assets/models/clouds.usdz",
-      position: [14, 36, 8],
+      position: [14, 75, 8],
       scale: [0.017, 0.017, 0.017],
       animate: { rotateY: 0.02, bobSpeed: 0.1, bobHeight: 0.3 },
     },
     {
       type: "model",
       modelPath: "/assets/models/clouds.usdz",
-      position: [30, 45, -20],
+      position: [30, 75, -20],
       scale: [0.024, 0.024, 0.024],
       animate: { rotateY: 0.018, bobSpeed: 0.09, bobHeight: 0.45 },
     },
     {
       type: "model",
       modelPath: "/assets/models/clouds.usdz",
-      position: [-31, 49, -34],
+      position: [-31, 75, -34],
       scale: [0.022, 0.022, 0.022],
       animate: { rotateY: -0.02, bobSpeed: 0.1, bobHeight: 0.42 },
     },
     {
       type: "model",
       modelPath: "/assets/models/clouds.usdz",
-      position: [6, 40, -48],
+      position: [6, 75, -48],
       scale: [0.019, 0.019, 0.019],
       animate: { rotateY: 0.03, bobSpeed: 0.11, bobHeight: 0.38 },
     },
     {
       type: "model",
       modelPath: "/assets/models/clouds.usdz",
-      position: [27, 34, -64],
+      position: [27, 75, -64],
       scale: [0.016, 0.016, 0.016],
       animate: { rotateY: -0.022, bobSpeed: 0.09, bobHeight: 0.28 },
     },
     {
       type: "model",
       modelPath: "/assets/models/clouds.usdz",
-      position: [-24, 46, -82],
+      position: [-24, 75, -82],
       scale: [0.021, 0.021, 0.021],
       animate: { rotateY: 0.02, bobSpeed: 0.1, bobHeight: 0.35 },
     },
     {
       type: "model",
       modelPath: "/assets/models/clouds.usdz",
-      position: [10, 38, -98],
+      position: [10, 75, -98],
       scale: [0.018, 0.018, 0.018],
       animate: { rotateY: -0.018, bobSpeed: 0.12, bobHeight: 0.34 },
     },
     {
       type: "model",
       modelPath: "/assets/models/clouds.usdz",
-      position: [31, 44, -114],
+      position: [31, 75, -114],
       scale: [0.023, 0.023, 0.023],
       animate: { rotateY: 0.015, bobSpeed: 0.09, bobHeight: 0.42 },
     },
     {
       type: "model",
       modelPath: "/assets/models/clouds.usdz",
-      position: [-29, 47, -132],
+      position: [-29, 75, -132],
       scale: [0.022, 0.022, 0.022],
       animate: { rotateY: -0.017, bobSpeed: 0.1, bobHeight: 0.4 },
     },
     {
       type: "model",
       modelPath: "/assets/models/clouds.usdz",
-      position: [3, 41, -148],
+      position: [3, 75, -148],
       scale: [0.019, 0.019, 0.019],
       animate: { rotateY: 0.02, bobSpeed: 0.11, bobHeight: 0.36 },
     },
     {
       type: "model",
       modelPath: "/assets/models/clouds.usdz",
-      position: [22, 36, -166],
+      position: [22, 75, -166],
       scale: [0.017, 0.017, 0.017],
       animate: { rotateY: -0.02, bobSpeed: 0.1, bobHeight: 0.3 },
     },
     {
       type: "model",
       modelPath: "/assets/models/clouds.usdz",
-      position: [-12, 43, -176],
+      position: [-12, 75, -176],
       scale: [0.02, 0.02, 0.02],
       animate: { rotateY: 0.018, bobSpeed: 0.09, bobHeight: 0.34 },
     },
 
+    {
+      type: "model",
+      modelPath: "/assets/models/clouds.usdz",
+      position: [-22, 75, -5],
+      scale: [0.018, 0.018, 0.018],
+      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    },
+    
+    {
+      type: "model",
+      modelPath: "/assets/models/clouds.usdz",
+      position: [25, 72, -10],
+      scale: [0.018, 0.018, 0.018],
+      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    },
+    
+    {
+      type: "model",
+      modelPath: "/assets/models/clouds.usdz",
+      position: [28, 78, -65],
+      scale: [0.018, 0.018, 0.018],
+      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    },
+    {
+      type: "model",
+      modelPath: "/assets/models/clouds.usdz",
+      position: [-28, 75, 10], // Đám mây gốc
+      scale: [0.018, 0.018, 0.018],
+      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    },
+    {
+      type: "model",
+      modelPath: "/assets/models/clouds.usdz",
+      position: [-22, 75, -5],
+      scale: [0.018, 0.018, 0.018],
+      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    },
+    
+    {
+      type: "model",
+      modelPath: "/assets/models/clouds.usdz",
+      position: [25, 72, -10],
+      scale: [0.018, 0.018, 0.018],
+      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    },
+    {
+      type: "model",
+      modelPath: "/assets/models/clouds.usdz",
+      position: [28, 78, -65],
+      scale: [0.018, 0.018, 0.018],
+      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    },
+    {
+      type: "model",
+      modelPath: "/assets/models/clouds.usdz",
+      position: [-12, 70, 8],
+      scale: [0.018, 0.018, 0.018],
+      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    },
+    {
+      type: "model",
+      modelPath: "/assets/models/clouds.usdz",
+      position: [-32, 78, -55],
+      scale: [0.018, 0.018, 0.018],
+      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    },
+    {
+      type: "model",
+      modelPath: "/assets/models/clouds.usdz",
+      position: [32, 72, -110],
+      scale: [0.018, 0.018, 0.018],
+      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    },
     // === COLLECTIBLE BLOCK PICKUPS ===
     // Spread across the course so the player has to collect them to bridge gaps.
     // Each collectible grants one unit of the named block type.
@@ -795,15 +990,6 @@ decorations: [
       color: 0x44ffaa,
       emissive: 0x22dd88,
       animate: { rotateY: -1.5, bobSpeed: 1.5, bobHeight: 0.3 },
-    },
-
-    // Sun — high above the map center
-    {
-      type: "model",
-      modelPath: "/assets/models/low_poly_sun.usdz",
-      position: [0, 65, 0],
-      scale: [0.05, 0.05, 0.05],
-      animate: { rotateY: 0.15, bobSpeed: 0.08, bobHeight: 0.2 },
     },
 
     // === FLYING PLANES — orbit around the map below the clouds ===
