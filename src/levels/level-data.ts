@@ -376,7 +376,24 @@ decorations: [
       rotation: [0, 1.4, 0],
       childIndex: 1,
     },
-
+    // ===MODEL DECORATIONS ===
+    // Low poly mountain — left border, stretched along map length
+    {
+      type: "model",
+      modelPath: "/assets/models/low_poly_mountain.usdz",
+      position: [-75, -4.5, -60],
+      scale: [0.06, 0.5, 0.5],
+      rotation: [0, Math.PI, 0],
+    },
+    // ===MODEL DECORATIONS ===
+    // Low poly mountain — right border, stretched along map length
+    {
+      type: "model",
+      modelPath: "/assets/models/low_poly_mountain.usdz",
+      position: [95, -4.5, -60],
+      scale: [0.06, 0.5, 0.5],
+      rotation: [0, Math.PI, 0],
+    },
     // === MODEL DECORATIONS ===
     // Spawn focal props
     {
