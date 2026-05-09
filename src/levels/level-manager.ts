@@ -32,7 +32,7 @@ export interface LevelConfig {
 }
 
 export interface DecorationDef {
-  type: 'sphere' | 'cone' | 'cylinder' | 'torus' | 'torusknot' | 'model';
+  type: 'sphere' | 'cone' | 'cylinder' | 'torus' | 'torusknot' | 'model' | 'river';
   position: [number, number, number];
   scale?: [number, number, number];
   rotation?: [number, number, number];
@@ -57,6 +57,7 @@ export interface DecorationDef {
     orbitSpeed?: number;
     /** Offset rotation for orbiting models (e.g. to fix moonwalking or sideways models) */
     orbitRotationOffset?: number;
+
   };
   /** If set, this decoration is a collectible that grants the named block type id. */
   collectible?: string;
@@ -383,22 +384,28 @@ export class LevelManager {
       case 'torusknot':
         geometry = new THREE.TorusKnotGeometry(0.4, 0.12, 100, 16);
         break;
+      case 'river':
+        geometry = new THREE.PlaneGeometry(15, 295);
+        break;
       default:
         geometry = new THREE.SphereGeometry(0.5, 24, 24);
     }
 
     const material = new THREE.MeshStandardMaterial({
       color: def.color || 0xffaa00,
-      roughness: 0.2,
-      metalness: 0.8,
+      roughness: def.type === 'river' ? 0.1 : 0.2,
+      metalness: def.type === 'river' ? 0.1 : 0.8,
+      transparent: def.type === 'river',
+      opacity: def.type === 'river' ? 0.8 : 1,
       emissive: new THREE.Color(def.emissive || 0x000000),
       emissiveIntensity: def.emissive ? 0.5 : 0,
     });
 
     const mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(...def.position);
+    if (def.type === 'river') mesh.rotation.x = -Math.PI / 2;
     if (def.scale) mesh.scale.set(...def.scale);
-    mesh.castShadow = true;
+    mesh.castShadow = def.type !== 'river';
     this.engine.scene.add(mesh);
 
     this.decorations.push({
