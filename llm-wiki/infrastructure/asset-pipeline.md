@@ -19,7 +19,7 @@ A sophisticated class that handles two types of textures:
 
 An abstraction over Three.js' built-in `GLTFLoader`, `OBJLoader`, `FBXLoader`, and `USDZLoader`.
 
-- **Auto-detection:** It analyzes the extension `.gltf`/`.usdz` and runs the correct loader.
+- **Auto-detection:** It analyzes the extension `.gltf`/`.usdz` and runs the correct loader. The `.usdz` loader in particular is heavily utilized to construct the vast background environments, loading models of barns, mountains, trees, and planes.
 - **Pre-loading:** Used by the `Game` to instantiate the Character Selection preview scene.
 
 ## ShapeFactory
