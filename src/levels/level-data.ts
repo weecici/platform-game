@@ -283,6 +283,91 @@ decorations: [
       position: [0, -4, -60],
       color: 0x3498db,
     },
+    // === BARNS — dọc 2 bờ sông, xa hơn hàng cây ===
+    {
+      type: "model",
+      modelPath: "/assets/models/barn_1.usdz",
+      position: [-50, -4.5, -10],
+      scale: [0.05, 0.05, 0.05],
+      rotation: [0, 0.2, 0],
+    },
+    {
+      type: "model",
+      modelPath: "/assets/models/barn_2.usdz",
+      position: [-50, -4.5, -28],
+      scale: [0.05, 0.05, 0.05],
+      rotation: [0, -0.4, 0],
+    },
+    {
+      type: "model",
+      modelPath: "/assets/models/barn_3.usdz",
+      position: [-50, -4.5, -50],
+      scale: [0.1, 0.1, 0.1],
+      rotation: [0, 0.6, 0],
+    },
+    {
+      type: "model",
+      modelPath: "/assets/models/barn_4.usdz",
+      position: [-50, -4.5, -82],
+      scale: [0.1, 0.1, 0.1],
+      rotation: [0, -0.3, 0],
+    },
+    {
+      type: "model",
+      modelPath: "/assets/models/barn_1.usdz",
+      position: [-50, -4.5, -115],
+      scale: [0.05, 0.05, 0.05],
+      rotation: [0, 0.5, 0],
+    },
+    {
+      type: "model",
+      modelPath: "/assets/models/barn_2.usdz",
+      position: [-50, -4.5, -150],
+      scale: [0.05, 0.05, 0.05],
+      rotation: [0, -0.7, 0],
+    },
+    {
+      type: "model",
+      modelPath: "/assets/models/barn_3.usdz",
+      position: [48, -4.5, -10],
+      scale: [0.1, 0.1, 0.1],
+      rotation: [0, -0.2, 0],
+    },
+    {
+      type: "model",
+      modelPath: "/assets/models/barn_4.usdz",
+      position: [48, -4.5, -32],
+      scale: [0.1, 0.1, 0.1],
+      rotation: [0, 0.4, 0],
+    },
+    {
+      type: "model",
+      modelPath: "/assets/models/barn_1.usdz",
+      position: [48, -4.5, -60],
+      scale: [0.05, 0.05, 0.05],
+      rotation: [0, -0.5, 0],
+    },
+    {
+      type: "model",
+      modelPath: "/assets/models/barn_2.usdz",
+      position: [48, -4.5, -100],
+      scale: [0.05, 0.05, 0.05],
+      rotation: [0, 0.3, 0],
+    },
+    {
+      type: "model",
+      modelPath: "/assets/models/barn_3.usdz",
+      position: [48, -4.5, -130],
+      scale: [0.1, 0.1, 0.1],
+      rotation: [0, -0.6, 0],
+    },
+    {
+      type: "model",
+      modelPath: "/assets/models/barn_4.usdz",
+      position: [48, -4.5, -150],
+      scale: [0.1, 0.1, 0.1],
+      rotation: [0, 0.1, 0],
+    },
     // === LOW POLY TREES — mỗi entry dùng 1 cây con riêng (childIndex) ===
     // File low_poly_tree.usdz chứa nhiều cây → childIndex chọn từng cây lẻ
     // Scale 0.05 (lớn hơn cũ ~4x). Nếu cây quá to/nhỏ hãy báo để điều chỉnh.
@@ -521,17 +606,7 @@ decorations: [
       scale: [0.1, 0.1, 0.1],
       animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
     },
-    
     // === MODEL DECORATIONS ===
-    // Spawn focal props
-    {
-      type: "model",
-      modelPath: "/assets/models/uia_cat.usdz",
-      position: [4.0, 0.5, 2.9],
-      scale: [0.03, 0.03, 0.03],
-      solid: true,
-    },
-
     // Trees around spawn area
     {
       type: "model",
@@ -588,23 +663,6 @@ decorations: [
       solid: true,
     },
     
-    {
-      type: "model",
-      modelPath: "/assets/models/uia_cat.usdz",
-      position: [20, -4.75, -38],
-      scale: [0.115, 0.115, 0.115],
-      rotation: [0, -1.15, 0],
-      animate: { rotateY: 0.32 },
-    },
-    {
-      type: "model",
-      modelPath: "/assets/models/uia_cat.usdz",
-      position: [23, -4.75, -92],
-      scale: [0.12, 0.12, 0.12],
-      rotation: [0, -1.2, 0],
-      animate: { rotateY: -0.28 },
-    },
-
     // Sky clouds
     {
       type: "model",
@@ -778,6 +836,31 @@ decorations: [
       scale: [0.018, 0.018, 0.018],
       animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
     },
+    // === FLYING PLANES — orbit around the map below the clouds ===
+    {
+      type: "model",
+      modelPath: "/assets/models/sbd_3.usdz",
+      position: [10, 40, -60],
+      scale: [0.025, 0.025, 0.025],
+      animate: { orbitRadius: 60, orbitSpeed: 0.2, bobSpeed: 0.3, bobHeight: 1.5, orbitRotationOffset: -Math.PI / 2 },
+    },
+    {
+      type: "model",
+      modelPath: "/assets/models/blue_plane.usdz",
+      position: [10, 50, -60],
+      scale: [0.025, 0.025, 0.025],
+      animate: { orbitRadius: 60, orbitSpeed: 0.2, bobSpeed: 0.25, bobHeight: 2.0, orbitRotationOffset: 0 },
+    },
+    {
+      type: "model",
+      modelPath: "/assets/models/fly_plane.usdz",
+      position: [10, 35, -60],
+      scale: [0.025, 0.025, 0.025],
+      animate: { orbitRadius: 60, orbitSpeed: 0.2, bobSpeed: 0.35, bobHeight: 1.2, orbitRotationOffset: 0},
+    },
+    //=== MODEL DECORATIONS ===
+    // Low poly farm — left border, stretched along river length
+    
     // === COLLECTIBLE BLOCK PICKUPS ===
     // Spread across the course so the player has to collect them to bridge gaps.
     // Each collectible grants one unit of the named block type.
@@ -997,30 +1080,6 @@ decorations: [
       emissive: 0x22dd88,
       animate: { rotateY: -1.5, bobSpeed: 1.5, bobHeight: 0.3 },
     },
-
-    // === FLYING PLANES — orbit around the map below the clouds ===
-    {
-      type: "model",
-      modelPath: "/assets/models/sbd_3.usdz",
-      position: [10, 40, -60],
-      scale: [0.025, 0.025, 0.025],
-      animate: { orbitRadius: 60, orbitSpeed: 0.2, bobSpeed: 0.3, bobHeight: 1.5, orbitRotationOffset: -Math.PI / 2 },
-    },
-    {
-      type: "model",
-      modelPath: "/assets/models/blue_plane.usdz",
-      position: [10, 50, -60],
-      scale: [0.025, 0.025, 0.025],
-      animate: { orbitRadius: 60, orbitSpeed: 0.2, bobSpeed: 0.25, bobHeight: 2.0, orbitRotationOffset: 0 },
-    },
-    {
-      type: "model",
-      modelPath: "/assets/models/fly_plane.usdz",
-      position: [10, 35, -60],
-      scale: [0.025, 0.025, 0.025],
-      animate: { orbitRadius: 60, orbitSpeed: 0.2, bobSpeed: 0.35, bobHeight: 1.2, orbitRotationOffset: 0},
-    },
-
     // === STATIC DECORATIONS (not collectible) ===
     // Pillars along the narrow bridge
     {
