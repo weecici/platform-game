@@ -12,6 +12,12 @@ The central class (`Game`) in `src/main.ts` orchestrates the initialization and 
 
 Uses `requestAnimationFrame` to step the [Physics World](../infrastructure/rendering-and-lighting.md) (Cannon-es), update the [Player Controller](./player.md), process the [Level Manager](./level-manager.md), and render the frame.
 
+### Spectator Mode
+
+The underlying `Engine` (`src/core/engine.ts`) implements a `SpectatorController` allowing for a free-fly noclip camera.
+- **Toggle:** Pressing `O` detaches the camera from the player.
+- **Controls:** WASD for lateral movement, `Space/Shift` for altitude adjustment, and the scroll wheel to dynamically alter the camera's flying speed. The player's physical body remains frozen or falls based on momentum while the camera explores.
+
 ## State Machine
 
 Maintains state flags (`isRunning`, `isPaused`, `isDead`, `isFinished`) to manage UI screens:
