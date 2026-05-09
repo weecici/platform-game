@@ -277,6 +277,12 @@ export const LEVEL_PARKOUR_CITY: LevelConfig = {
   ],
 
 decorations: [
+    // === DÒNG SÔNG (nền trang trí, không va chạm) ===
+    {
+      type: "river",
+      position: [0, -4, -60],
+      color: 0x3498db,
+    },
     // === LOW POLY TREES — mỗi entry dùng 1 cây con riêng (childIndex) ===
     // File low_poly_tree.usdz chứa nhiều cây → childIndex chọn từng cây lẻ
     // Scale 0.05 (lớn hơn cũ ~4x). Nếu cây quá to/nhỏ hãy báo để điều chỉnh.
@@ -581,7 +587,7 @@ decorations: [
       rotation: [0, 0.5, 0],
       solid: true,
     },
-
+    
     {
       type: "model",
       modelPath: "/assets/models/uia_cat.usdz",
@@ -996,23 +1002,23 @@ decorations: [
     {
       type: "model",
       modelPath: "/assets/models/sbd_3.usdz",
-      position: [0, 40, -60],
+      position: [10, 40, -60],
       scale: [0.025, 0.025, 0.025],
-      animate: { orbitRadius: 100, orbitSpeed: 0.2, bobSpeed: 0.3, bobHeight: 1.5, orbitRotationOffset: -Math.PI / 2 },
+      animate: { orbitRadius: 60, orbitSpeed: 0.2, bobSpeed: 0.3, bobHeight: 1.5, orbitRotationOffset: -Math.PI / 2 },
     },
     {
       type: "model",
       modelPath: "/assets/models/blue_plane.usdz",
-      position: [0, 50, -60],
+      position: [10, 50, -60],
       scale: [0.025, 0.025, 0.025],
-      animate: { orbitRadius: 100, orbitSpeed: 0.2, bobSpeed: 0.25, bobHeight: 2.0, orbitRotationOffset: 0 },
+      animate: { orbitRadius: 60, orbitSpeed: 0.2, bobSpeed: 0.25, bobHeight: 2.0, orbitRotationOffset: 0 },
     },
     {
       type: "model",
       modelPath: "/assets/models/fly_plane.usdz",
-      position: [0, 35, -60],
+      position: [10, 35, -60],
       scale: [0.025, 0.025, 0.025],
-      animate: { orbitRadius: 100, orbitSpeed: 0.2, bobSpeed: 0.35, bobHeight: 1.2, orbitRotationOffset: 0},
+      animate: { orbitRadius: 60, orbitSpeed: 0.2, bobSpeed: 0.35, bobHeight: 1.2, orbitRotationOffset: 0},
     },
 
     // === STATIC DECORATIONS (not collectible) ===
