@@ -72,6 +72,9 @@ interface PlatformRuntime {
   initialPosition: THREE.Vector3;
   previousPosition: THREE.Vector3;
   time: number;
+  initialTime: number;
+  initialRotation: THREE.Euler;
+  isCulled: boolean;
 }
 
 interface DecorationRuntime {
@@ -80,9 +83,15 @@ interface DecorationRuntime {
   initialPosition: THREE.Vector3;
   initialY: number;
   time: number;
+  initialTime: number;
   /** Has the player already collected this pickup? */
   collected: boolean;
   bodies: CANNON.Body[];
+  initialScale: THREE.Vector3;
+  isLoadingModel: boolean;
+  isModelLoaded: boolean;
+  generation: number;
+  isCulled: boolean;
 }
 
 export class LevelManager {
@@ -180,13 +189,17 @@ export class LevelManager {
       this.physics.addBody(body);
     }
 
+    const initialTime = Math.random() * Math.PI * 2;
     this.platforms.push({
       mesh,
       body,
       def,
       initialPosition: new THREE.Vector3(px, py, pz),
       previousPosition: new THREE.Vector3(px, py, pz),
-      time: Math.random() * Math.PI * 2,
+      time: initialTime,
+      initialTime: initialTime,
+      initialRotation: mesh.rotation.clone(),
+      isCulled: false,
     });
   }
 
@@ -203,167 +216,23 @@ export class LevelManager {
       if (def.rotation) anchor.rotation.set(...def.rotation);
       this.engine.scene.add(anchor);
 
+      const initialTime = Math.random() * Math.PI * 2;
       const decRuntime: DecorationRuntime = {
         mesh: anchor,
         def,
         initialPosition: new THREE.Vector3(...def.position),
         initialY: def.position[1],
-        time: Math.random() * Math.PI * 2,
+        time: initialTime,
+        initialTime: initialTime,
         collected: false,
         bodies: [],
+        initialScale: anchor.scale.clone(),
+        isLoadingModel: false,
+        isModelLoaded: false,
+        generation: this.levelGeneration,
+        isCulled: false,
       };
       this.decorations.push(decRuntime);
-
-      void this.modelLoader
-        .load(def.modelPath)
-        .then((model) => {
-          if (generation !== this.levelGeneration) {
-            disposeObject3D(model);
-            return;
-          }
-
-          // ── Debug: print the full hierarchy to F12 Console ──────────────
-          if (def.childIndex !== undefined || def.childName) {
-            const printTree = (node: THREE.Object3D, depth: number) => {
-              const pad = '  '.repeat(depth);
-              const meshCount = (() => { let n = 0; node.traverse(c => { if (c instanceof THREE.Mesh) n++; }); return n; })();
-              console.log(`${pad}[${node.type}] name="${node.name}" children=${node.children.length} meshes=${meshCount}`);
-              if (depth < 3) node.children.forEach(c => printTree(c, depth + 1));
-            };
-            console.group(`🌳 ${def.modelPath} — hierarchy (depth ≤3)`);
-            printTree(model, 0);
-            console.groupEnd();
-          }
-
-          // ── Smart child extraction ────────────────────────────────────────
-          // Collect the shallowest nodes that actually own geometry (meshes).
-          // Strategy: walk down until we find a level where multiple siblings
-          // each contain meshes — those are the individual trees.
-          let objectToAdd: THREE.Object3D = model;
-
-          if (def.childName) {
-            const found = model.getObjectByName(def.childName);
-            objectToAdd = found ?? model;
-            if (!found) console.warn(`childName "${def.childName}" not found in ${def.modelPath}.`);
-
-          } else if (def.childIndex !== undefined) {
-            // Collect leaf-groups: nodes whose siblings share the same parent
-            // and each has at least 1 mesh descendant.
-            const collectLeafGroups = (root: THREE.Object3D): THREE.Object3D[] => {
-              // If root has multiple children that each contain meshes, return them.
-              const meaningful = root.children.filter(c => {
-                let hasMesh = false;
-                c.traverse(x => { if (x instanceof THREE.Mesh) hasMesh = true; });
-                return hasMesh;
-              });
-              if (meaningful.length > 1) return meaningful;
-              // Otherwise recurse into the single meaningful child.
-              if (meaningful.length === 1) return collectLeafGroups(meaningful[0]);
-              return [root]; // fallback: use root
-            };
-
-            const leafGroups = collectLeafGroups(model);
-            console.log(`🌳 Found ${leafGroups.length} individual tree(s) in ${def.modelPath}`);
-            leafGroups.forEach((g, i) => console.log(`  [${i}] name="${g.name}" type=${g.type}`));
-
-            const picked = leafGroups[def.childIndex % leafGroups.length];
-            if (picked) {
-              objectToAdd = picked;
-            } else {
-              console.warn(`childIndex ${def.childIndex} out of range. Found ${leafGroups.length} groups.`);
-            }
-          }
-
-          // Center the object on X and Z to prevent spinning in place around a distant origin,
-          // and align base to anchor Y so position stays intuitive.
-          const bounds = new THREE.Box3().setFromObject(objectToAdd);
-          const center = bounds.getCenter(new THREE.Vector3());
-          objectToAdd.position.x -= center.x;
-          objectToAdd.position.y -= bounds.min.y;
-          objectToAdd.position.z -= center.z;
-
-          // Override cloud model to bright white
-          if (def.modelPath && def.modelPath.includes('clouds')) {
-            objectToAdd.traverse((child) => {
-              if (child instanceof THREE.Mesh) {
-                child.material = new THREE.MeshStandardMaterial({
-                  color: 0xffffff,
-                  roughness: 0.9,
-                  metalness: 0.0,
-                  emissive: new THREE.Color(0xddeeFF),
-                  emissiveIntensity: 0.18,
-                });
-              }
-            });
-          }
-
-          // Sun model — glowing emissive + point light
-          if (def.modelPath && def.modelPath.includes('Low_poly_sun')) {
-            objectToAdd.traverse((child) => {
-              if (child instanceof THREE.Mesh) {
-                child.material = new THREE.MeshStandardMaterial({
-                  color: 0xffdd44,
-                  roughness: 0.1,
-                  metalness: 0.0,
-                  emissive: new THREE.Color(0xffaa00),
-                  emissiveIntensity: 2.0,
-                });
-              }
-            });
-
-            const sunLight = new THREE.PointLight(0xffaa44, 8, 120);
-            sunLight.position.copy(anchor.position);
-            sunLight.position.y += 2;
-            this.engine.scene.add(sunLight);
-          }
-
-          anchor.add(objectToAdd);
-
-          if (def.solid) {
-            // Update matrices to get correct world coordinates
-            anchor.updateMatrixWorld(true);
-
-            model.traverse((child) => {
-              if (child instanceof THREE.Mesh) {
-                const geometry = child.geometry as THREE.BufferGeometry;
-                if (!geometry.attributes.position) return;
-
-                const positions = geometry.attributes.position.array;
-                const indices = geometry.index ? geometry.index.array : null;
-
-                const vertices: number[] = [];
-                const faces: number[] = [];
-
-                const vertex = new THREE.Vector3();
-                for (let i = 0; i < positions.length; i += 3) {
-                  vertex.set(positions[i], positions[i + 1], positions[i + 2]);
-                  vertex.applyMatrix4(child.matrixWorld);
-                  vertices.push(vertex.x, vertex.y, vertex.z);
-                }
-
-                if (indices) {
-                  for (let i = 0; i < indices.length; i++) {
-                    faces.push(indices[i]);
-                  }
-                } else {
-                  for (let i = 0; i < positions.length / 3; i++) {
-                    faces.push(i);
-                  }
-                }
-
-                const trimeshShape = new CANNON.Trimesh(vertices, faces);
-                const body = new CANNON.Body({ mass: 0, type: CANNON.Body.STATIC });
-                body.addShape(trimeshShape);
-                this.physics.addBody(body);
-                decRuntime.bodies.push(body);
-              }
-            });
-          }
-        })
-        .catch((error) => {
-          console.warn(`Failed to load decoration model: ${def.modelPath}`, error);
-        });
-
       return;
     }
 
@@ -408,19 +277,183 @@ export class LevelManager {
     mesh.castShadow = def.type !== 'river';
     this.engine.scene.add(mesh);
 
+    const initialTime = Math.random() * Math.PI * 2;
     this.decorations.push({
       mesh,
       def,
       initialPosition: new THREE.Vector3(...def.position),
       initialY: def.position[1],
-      time: Math.random() * Math.PI * 2,
+      time: initialTime,
+      initialTime: initialTime,
       collected: false,
       bodies: [],
+      initialScale: mesh.scale.clone(),
+      isLoadingModel: true,
+      isModelLoaded: true,
+      generation: this.levelGeneration,
+      isCulled: false,
     });
   }
 
-  update(dt: number): void {
+  private loadDecorationModel(dec: DecorationRuntime): void {
+    if (!dec.def.modelPath) return;
+
+    void this.modelLoader
+      .load(dec.def.modelPath)
+      .then((model) => {
+        if (dec.generation !== this.levelGeneration) {
+          disposeObject3D(model);
+          return;
+        }
+
+        const anchor = dec.mesh as THREE.Group;
+        const def = dec.def;
+        
+        let objectToAdd: THREE.Object3D = model;
+
+        if (def.childName) {
+          const found = model.getObjectByName(def.childName);
+          objectToAdd = found ?? model;
+        } else if (def.childIndex !== undefined) {
+          const collectLeafGroups = (root: THREE.Object3D): THREE.Object3D[] => {
+            const meaningful = root.children.filter(c => {
+              let hasMesh = false;
+              c.traverse(x => { if (x instanceof THREE.Mesh) hasMesh = true; });
+              return hasMesh;
+            });
+            if (meaningful.length > 1) return meaningful;
+            if (meaningful.length === 1) return collectLeafGroups(meaningful[0]);
+            return [root]; 
+          };
+
+          const leafGroups = collectLeafGroups(model);
+          const picked = leafGroups[def.childIndex % leafGroups.length];
+          if (picked) {
+            objectToAdd = picked;
+          }
+        }
+
+        const bounds = new THREE.Box3().setFromObject(objectToAdd);
+        const center = bounds.getCenter(new THREE.Vector3());
+        objectToAdd.position.x -= center.x;
+        objectToAdd.position.y -= bounds.min.y;
+        objectToAdd.position.z -= center.z;
+
+        if (def.modelPath && def.modelPath.includes('clouds')) {
+          objectToAdd.traverse((child) => {
+            if (child instanceof THREE.Mesh) {
+              child.material = new THREE.MeshStandardMaterial({
+                color: 0xffffff,
+                roughness: 0.9,
+                metalness: 0.0,
+                emissive: new THREE.Color(0xddeeFF),
+                emissiveIntensity: 0.18,
+              });
+              // Disable heavy shadow calculations for clouds
+              child.castShadow = false;
+              child.receiveShadow = false;
+            }
+          });
+        }
+
+        if (def.modelPath && def.modelPath.includes('Low_poly_sun')) {
+          objectToAdd.traverse((child) => {
+            if (child instanceof THREE.Mesh) {
+              child.material = new THREE.MeshStandardMaterial({
+                color: 0xffdd44,
+                roughness: 0.1,
+                metalness: 0.0,
+                emissive: new THREE.Color(0xffaa00),
+                emissiveIntensity: 2.0,
+              });
+              child.castShadow = false;
+              child.receiveShadow = false;
+            }
+          });
+
+          const sunLight = new THREE.PointLight(0xffaa44, 8, 120);
+          sunLight.position.copy(anchor.position);
+          sunLight.position.y += 2;
+          this.engine.scene.add(sunLight);
+        }
+
+        anchor.add(objectToAdd);
+
+        if (def.solid) {
+          anchor.updateMatrixWorld(true);
+
+          model.traverse((child) => {
+            if (child instanceof THREE.Mesh) {
+              const geometry = child.geometry as THREE.BufferGeometry;
+              if (!geometry.attributes.position) return;
+
+              const positions = geometry.attributes.position.array;
+              const indices = geometry.index ? geometry.index.array : null;
+
+              const vertices: number[] = [];
+              const faces: number[] = [];
+
+              const vertex = new THREE.Vector3();
+              for (let i = 0; i < positions.length; i += 3) {
+                vertex.set(positions[i], positions[i + 1], positions[i + 2]);
+                vertex.applyMatrix4(child.matrixWorld);
+                vertices.push(vertex.x, vertex.y, vertex.z);
+              }
+
+              if (indices) {
+                for (let i = 0; i < indices.length; i++) {
+                  faces.push(indices[i]);
+                }
+              } else {
+                for (let i = 0; i < positions.length / 3; i++) {
+                  faces.push(i);
+                }
+              }
+
+              const trimeshShape = new CANNON.Trimesh(vertices, faces);
+              const body = new CANNON.Body({ mass: 0, type: CANNON.Body.STATIC });
+              body.addShape(trimeshShape);
+              // Only add to physics if not currently culled
+              if (!dec.isCulled) {
+                this.physics.addBody(body);
+              }
+              dec.bodies.push(body);
+            }
+          });
+        }
+        dec.isModelLoaded = true;
+      })
+      .catch((error) => {
+        console.warn(`Failed to load decoration model: ${dec.def.modelPath}`, error);
+      });
+  }
+
+  update(dt: number, playerPos: THREE.Vector3): void {
+    const RENDER_DISTANCE = 75;
+    const RENDER_DISTANCE_SQ = RENDER_DISTANCE * RENDER_DISTANCE;
+    const LAZY_LOAD_DISTANCE = 100;
+    const LAZY_LOAD_DISTANCE_SQ = LAZY_LOAD_DISTANCE * LAZY_LOAD_DISTANCE;
+
     for (const plat of this.platforms) {
+      // Distance culling for platforms
+      const dx = playerPos.x - plat.initialPosition.x;
+      const dz = playerPos.z - plat.initialPosition.z;
+      const distSq = dx * dx + dz * dz;
+      
+      const shouldBeVisible = distSq <= RENDER_DISTANCE_SQ;
+      
+      if (shouldBeVisible && plat.isCulled) {
+        plat.isCulled = false;
+        plat.mesh.visible = true;
+        if (plat.body) this.physics.addBody(plat.body);
+      } else if (!shouldBeVisible && !plat.isCulled) {
+        plat.isCulled = true;
+        plat.mesh.visible = false;
+        if (plat.body) this.physics.removeBody(plat.body);
+      }
+
+      if (plat.isCulled) continue;
+
       plat.time += dt;
 
       if (plat.def.type === 'moving' && plat.def.moveAxis) {
@@ -468,6 +501,39 @@ export class LevelManager {
 
     for (const dec of this.decorations) {
       if (dec.collected) continue;
+
+      const dx = playerPos.x - dec.initialPosition.x;
+      const dy = playerPos.y - dec.initialPosition.y;
+      const dz = playerPos.z - dec.initialPosition.z;
+      const distSq = dx * dx + dy * dy + dz * dz;
+
+      // Lazy Loading for models
+      if (dec.def.type === 'model') {
+        if (!dec.isModelLoaded && !dec.isLoadingModel && distSq <= LAZY_LOAD_DISTANCE_SQ) {
+          dec.isLoadingModel = true;
+          this.loadDecorationModel(dec);
+        }
+      }
+
+      // Visibility & Physics Culling
+      const shouldBeVisible = distSq <= RENDER_DISTANCE_SQ;
+      
+      if (shouldBeVisible && dec.isCulled) {
+        dec.isCulled = false;
+        dec.mesh.visible = true;
+        for (const body of dec.bodies) {
+          this.physics.addBody(body);
+        }
+      } else if (!shouldBeVisible && !dec.isCulled) {
+        dec.isCulled = true;
+        dec.mesh.visible = false;
+        for (const body of dec.bodies) {
+          this.physics.removeBody(body);
+        }
+      }
+
+      if (dec.isCulled) continue;
+
       dec.time += dt;
       if (dec.def.animate) {
         if (dec.def.animate.rotateY) {
@@ -541,6 +607,55 @@ export class LevelManager {
     }
 
     return collected;
+  }
+
+  resetLevel(): void {
+    if (!this.currentConfig) return;
+
+    for (const plat of this.platforms) {
+      plat.time = plat.initialTime;
+      plat.mesh.position.copy(plat.initialPosition);
+      plat.previousPosition.copy(plat.initialPosition);
+      plat.mesh.rotation.copy(plat.initialRotation);
+
+      if (plat.body && !plat.isCulled) {
+        plat.body.position.set(
+          plat.initialPosition.x,
+          plat.initialPosition.y,
+          plat.initialPosition.z
+        );
+        plat.body.quaternion.set(
+          plat.mesh.quaternion.x,
+          plat.mesh.quaternion.y,
+          plat.mesh.quaternion.z,
+          plat.mesh.quaternion.w
+        );
+        plat.body.velocity.set(0, 0, 0);
+        plat.body.angularVelocity.set(0, 0, 0);
+        plat.body.aabbNeedsUpdate = true;
+      }
+    }
+
+    for (const dec of this.decorations) {
+      dec.time = dec.initialTime;
+      
+      // If we bobbed or rotated, reset rotation and Y-position
+      if (dec.def.animate) {
+        if (dec.def.rotation) {
+          dec.mesh.rotation.set(...dec.def.rotation);
+        } else {
+          dec.mesh.rotation.set(0, 0, 0);
+        }
+        dec.mesh.position.y = dec.initialY;
+      }
+
+      if (dec.collected) {
+        dec.collected = false;
+        dec.mesh.scale.copy(dec.initialScale);
+        dec.mesh.position.y = dec.initialY;
+        this.engine.scene.add(dec.mesh);
+      }
+    }
   }
 
   clearLevel(): void {
