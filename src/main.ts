@@ -536,8 +536,8 @@ class Game {
     this.cancelLoop();
     this.player.isDead = false;
 
-    // Reload the map so that all collectible floating objects reappear
-    this.levelManager.loadLevel(LEVEL_PARKOUR_CITY);
+    // Soft reset the level to restore platforms, pickups, and physics instantly
+    this.levelManager.resetLevel();
 
     this.player.respawn(this.levelManager.getSpawnPosition());
     this.primitivePlacement.deselectBlock();
@@ -611,16 +611,17 @@ class Game {
       this.player.update(dt);
     }
     this.input.resetMouseDelta();
-    this.levelManager.update(dt);
+    
+    const playerPos = this.player.getPosition();
+    this.levelManager.update(dt, playerPos);
 
     // Update ghost preview position every frame
     this.primitivePlacement.updateGhost(
-      this.player.getPosition(),
+      playerPos,
       this.player.aimYaw,
       this.player.aimPitch,
     );
 
-    const playerPos = this.player.getPosition();
     this.lighting.updateSunPosition(playerPos.x, playerPos.z);
 
     // Check for collectible pickups

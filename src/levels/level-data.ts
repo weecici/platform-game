@@ -276,13 +276,13 @@ export const LEVEL_PARKOUR_CITY: LevelConfig = {
     },
   ],
 
-decorations: [
+  decorations: [
     // === DÒNG SÔNG (nền trang trí, không va chạm) ===
-    {
-      type: "river",
-      position: [0, -4, -60],
-      color: 0x3498db,
-    },
+    // {
+    //   type: "river",
+    //   position: [0, -4, -60],
+    //   color: 0x3498db,
+    // },
     // === BARNS — dọc 2 bờ sông, xa hơn hàng cây ===
     {
       type: "model",
@@ -486,126 +486,126 @@ decorations: [
       rotation: [0, Math.PI, 0],
     },
     // ===MODEL DECORATIONS ===
-    // floating islands in the sky 
-    {
-      type: "model",
-      modelPath: "/assets/models/floating_island.usdz",
-      position: [-28, 45, -45],
-      scale: [0.15, 0.15, 0.15],
-      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
-    },
+    // floating islands in the sky
+    // {
+    //   type: "model",
+    //   modelPath: "/assets/models/floating_island.usdz",
+    //   position: [-28, 45, -45],
+    //   scale: [0.15, 0.15, 0.15],
+    //   animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    // },
 
-    {
-      type: "model",
-      modelPath: "/assets/models/floating_island.usdz",
-      position: [30, 42, -70],
-      scale: [0.15, 0.15, 0.15],
-      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
-    },
+    // {
+    //   type: "model",
+    //   modelPath: "/assets/models/floating_island.usdz",
+    //   position: [30, 42, -70],
+    //   scale: [0.15, 0.15, 0.15],
+    //   animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    // },
 
-    {
-      type: "model",
-      modelPath: "/assets/models/floating_island.usdz",
-      position: [-15, 52, -100],
-      scale: [0.15, 0.15, 0.15],
-      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
-    },
+    // {
+    //   type: "model",
+    //   modelPath: "/assets/models/floating_island.usdz",
+    //   position: [-15, 52, -100],
+    //   scale: [0.15, 0.15, 0.15],
+    //   animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    // },
 
-    {
-      type: "model",
-      modelPath: "/assets/models/floating_island.usdz",
-      position: [40, 48, -130],
-      scale: [0.15, 0.15, 0.15],
-      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
-    },
+    // {
+    //   type: "model",
+    //   modelPath: "/assets/models/floating_island.usdz",
+    //   position: [40, 48, -130],
+    //   scale: [0.15, 0.15, 0.15],
+    //   animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    // },
 
-    {
-      type: "model",
-      modelPath: "/assets/models/floating_island.usdz",
-      position: [-35, 40, -160],
-      scale: [0.15, 0.15, 0.15],
-      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
-    },
-    {
-      type: "model",
-      modelPath: "/assets/models/floating_island.usdz",
-      position: [0, 55, -200],
-      scale: [0.15, 0.15, 0.15],
-      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
-    },
+    // {
+    //   type: "model",
+    //   modelPath: "/assets/models/floating_island.usdz",
+    //   position: [-35, 40, -160],
+    //   scale: [0.15, 0.15, 0.15],
+    //   animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    // },
+    // {
+    //   type: "model",
+    //   modelPath: "/assets/models/floating_island.usdz",
+    //   position: [0, 55, -200],
+    //   scale: [0.15, 0.15, 0.15],
+    //   animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    // },
 
-    {
-      type: "model",
-      modelPath: "/assets/models/floating_island.usdz",
-      position: [-25, 45, -15],
-      scale: [0.1, 0.1, 0.1],
-      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
-    },
+    // {
+    //   type: "model",
+    //   modelPath: "/assets/models/floating_island.usdz",
+    //   position: [-25, 45, -15],
+    //   scale: [0.1, 0.1, 0.1],
+    //   animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    // },
 
-    {
-      type: "model",
-      modelPath: "/assets/models/floating_island.usdz",
-      position: [18, 50, -5],
-      scale: [0.1, 0.1, 0.1],
-      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
-    },
+    // {
+    //   type: "model",
+    //   modelPath: "/assets/models/floating_island.usdz",
+    //   position: [18, 50, -5],
+    //   scale: [0.1, 0.1, 0.1],
+    //   animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    // },
 
-    {
-      type: "model",
-      modelPath: "/assets/models/floating_island.usdz",
-      position: [22, 48, -75],
-      scale: [0.1, 0.1, 0.1],
-      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
-    },
-    {
-      type: "model",
-      modelPath: "/assets/models/floating_island.usdz",
-      position: [-28, 45, -45], // Hòn đảo gốc
-      scale: [0.1, 0.1, 0.1],
-      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
-    },
-    {
-      type: "model",
-      modelPath: "/assets/models/floating_island.usdz",
-      position: [-25, 45, -15],
-      scale: [0.1, 0.1, 0.1],
-      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
-    },
-    {
-      type: "model",
-      modelPath: "/assets/models/floating_island.usdz",
-      position: [18, 50, -5],
-      scale: [0.1, 0.1, 0.1],
-      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
-    },
-    {
-      type: "model",
-      modelPath: "/assets/models/floating_island.usdz",
-      position: [22, 48, -75],
-      scale: [0.1, 0.1, 0.1],
-      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
-    },
-    {
-      type: "model",
-      modelPath: "/assets/models/floating_island.usdz",
-      position: [15, 45, 5],
-      scale: [0.1, 0.1, 0.1],
-      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
-    },
-    {
-      type: "model",
-      modelPath: "/assets/models/floating_island.usdz",
-      position: [-28, 52, -85],
-      scale: [0.1, 0.1, 0.1],
-      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
-    },
-    {
-      type: "model",
-      modelPath: "/assets/models/floating_island.usdz",
-      position: [28, 48, -135],
-      scale: [0.1, 0.1, 0.1],
-      animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
-    },
+    // {
+    //   type: "model",
+    //   modelPath: "/assets/models/floating_island.usdz",
+    //   position: [22, 48, -75],
+    //   scale: [0.1, 0.1, 0.1],
+    //   animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    // },
+    // {
+    //   type: "model",
+    //   modelPath: "/assets/models/floating_island.usdz",
+    //   position: [-28, 45, -45], // Hòn đảo gốc
+    //   scale: [0.1, 0.1, 0.1],
+    //   animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    // },
+    // {
+    //   type: "model",
+    //   modelPath: "/assets/models/floating_island.usdz",
+    //   position: [-25, 45, -15],
+    //   scale: [0.1, 0.1, 0.1],
+    //   animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    // },
+    // {
+    //   type: "model",
+    //   modelPath: "/assets/models/floating_island.usdz",
+    //   position: [18, 50, -5],
+    //   scale: [0.1, 0.1, 0.1],
+    //   animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    // },
+    // {
+    //   type: "model",
+    //   modelPath: "/assets/models/floating_island.usdz",
+    //   position: [22, 48, -75],
+    //   scale: [0.1, 0.1, 0.1],
+    //   animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    // },
+    // {
+    //   type: "model",
+    //   modelPath: "/assets/models/floating_island.usdz",
+    //   position: [15, 45, 5],
+    //   scale: [0.1, 0.1, 0.1],
+    //   animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    // },
+    // {
+    //   type: "model",
+    //   modelPath: "/assets/models/floating_island.usdz",
+    //   position: [-28, 52, -85],
+    //   scale: [0.1, 0.1, 0.1],
+    //   animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    // },
+    // {
+    //   type: "model",
+    //   modelPath: "/assets/models/floating_island.usdz",
+    //   position: [28, 48, -135],
+    //   scale: [0.1, 0.1, 0.1],
+    //   animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
+    // },
     // === MODEL DECORATIONS ===
     // Trees around spawn area
     {
@@ -662,7 +662,7 @@ decorations: [
       rotation: [0, 0.5, 0],
       solid: true,
     },
-    
+
     // Sky clouds
     {
       type: "model",
@@ -770,7 +770,7 @@ decorations: [
       scale: [0.018, 0.018, 0.018],
       animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
     },
-    
+
     {
       type: "model",
       modelPath: "/assets/models/clouds.usdz",
@@ -778,7 +778,7 @@ decorations: [
       scale: [0.018, 0.018, 0.018],
       animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
     },
-    
+
     {
       type: "model",
       modelPath: "/assets/models/clouds.usdz",
@@ -800,7 +800,7 @@ decorations: [
       scale: [0.018, 0.018, 0.018],
       animate: { rotateY: 0.03, bobSpeed: 0.12, bobHeight: 0.35 },
     },
-    
+
     {
       type: "model",
       modelPath: "/assets/models/clouds.usdz",
@@ -842,25 +842,43 @@ decorations: [
       modelPath: "/assets/models/sbd_3.usdz",
       position: [10, 40, -60],
       scale: [0.025, 0.025, 0.025],
-      animate: { orbitRadius: 60, orbitSpeed: 0.2, bobSpeed: 0.3, bobHeight: 1.5, orbitRotationOffset: -Math.PI / 2 },
+      animate: {
+        orbitRadius: 60,
+        orbitSpeed: 0.2,
+        bobSpeed: 0.3,
+        bobHeight: 1.5,
+        orbitRotationOffset: -Math.PI / 2,
+      },
     },
     {
       type: "model",
       modelPath: "/assets/models/blue_plane.usdz",
       position: [10, 50, -60],
       scale: [0.025, 0.025, 0.025],
-      animate: { orbitRadius: 60, orbitSpeed: 0.2, bobSpeed: 0.25, bobHeight: 2.0, orbitRotationOffset: 0 },
+      animate: {
+        orbitRadius: 60,
+        orbitSpeed: 0.2,
+        bobSpeed: 0.25,
+        bobHeight: 2.0,
+        orbitRotationOffset: 0,
+      },
     },
     {
       type: "model",
       modelPath: "/assets/models/fly_plane.usdz",
       position: [10, 35, -60],
       scale: [0.025, 0.025, 0.025],
-      animate: { orbitRadius: 60, orbitSpeed: 0.2, bobSpeed: 0.35, bobHeight: 1.2, orbitRotationOffset: 0},
+      animate: {
+        orbitRadius: 60,
+        orbitSpeed: 0.2,
+        bobSpeed: 0.35,
+        bobHeight: 1.2,
+        orbitRotationOffset: 0,
+      },
     },
     //=== MODEL DECORATIONS ===
     // Low poly farm — left border, stretched along river length
-    
+
     // === COLLECTIBLE BLOCK PICKUPS ===
     // Spread across the course so the player has to collect them to bridge gaps.
     // Each collectible grants one unit of the named block type.
@@ -1123,4 +1141,3 @@ decorations: [
     },
   ],
 };
-

@@ -18,5 +18,9 @@ For every platform in the config, it creates a `PlatformRuntime` containing a Th
 
 Decorations serve two purposes: aesthetics (e.g., Apple `.usdz` clouds or trees) and pickups.
 
+- **Chunk Streaming & Culling:** To maintain 60 FPS, the game uses aggressive spatial management:
+  - **Lazy Loading:** `.usdz` models are only fetched and parsed when the player gets within `100` units.
+  - **Physics/Render Culling:** If the player moves more than `75` units away from a platform or decoration, its mesh is hidden (`visible = false`) and its expensive `CANNON.Body` is physically ejected from the `CANNON.World` to drop CPU overhead to near-zero.
+  - **Shadow Management:** Because distant models are culled from rendering entirely, nearby `.usdz` set-pieces (like trees and barns) are permitted to cast dynamic WebGL shadows for high visual fidelity without crippling the framerate. (However, logical exceptions like clouds and the sun still have shadows disabled).
 - **Collectibles:** If a decoration config has a `collectible` string, it represents a block type. The orchestrator calls `checkCollectibles(playerPos)`. If the player is within `PICKUP_RADIUS` (2.0), the decoration plays a fast shrink/float animation and removes itself from the scene. The orchestrator then delegates the granted block to the [Block Inventory](./block-inventory.md).
 - **Physical Models:** Decorations with `solid: true` generate [Exact Mesh Collision](../concepts/mesh-collision.md) bodies automatically when loaded, enabling precise interaction between the player and complex 3D meshes.

@@ -23,7 +23,7 @@ The underlying `Engine` (`src/core/engine.ts`) implements a `SpectatorController
 Maintains state flags (`isRunning`, `isPaused`, `isDead`, `isFinished`) to manage UI screens:
 
 - **Death Sequence:** If the player hits `deathY = -4.5`, `playerDied()` flags the state. The loop waits for `deathSequenceDuration` (1.2s) before showing the death screen.
-- **Restarting:** Triggers `restartGame()` which re-fetches the spawn point, clears the [Primitive Placement](./primitive-placement.md), and tells the Level Manager to reload all floating [Block Inventory](./block-inventory.md) collectibles.
+- **Restarting:** Triggers `restartGame()` which re-fetches the spawn point, clears the [Primitive Placement](./primitive-placement.md), and calls `levelManager.resetLevel()` to instantaneously soft-reset platforms and collectibles without destroying and rebuilding expensive physics.
 
 ## Character Selection Preview
 
