@@ -40,3 +40,11 @@ Append-only chronological log of operations on the wiki.
 ## [2026-05-09] update | Restored Environment Shadows
 
 - Removed the hard `castShadow = false` override for trees, barns, and mountains. Since they are actively distance-culled out of the rendering pipeline beyond 75 units, allowing nearby models to cast shadows provides better visual quality without penalizing overall FPS.
+
+## [2026-05-09] update | The Vertical Tower Overhaul
+
+- Lowered the death plane from `-4.5` to `-50.0` to enable ground-level exploration.
+- Wiped the linear horizontal parkour map.
+- Injected a massive spiral array of vertical platforms (Static -> Moving -> Rotating -> Tiny).
+- Relocated the Victory condition to require the player to reach `y = 105`.
+- Scattered 60 hidden Block Pickups across the ground level to force players to scavenge resources before using the placement system to creatively scale the vertical tower.

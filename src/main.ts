@@ -34,7 +34,7 @@ class Game {
   private score = 0;
   private elapsedTime = 0;
   private deathCount = 0;
-  private deathY = -4.5;
+  private deathY = -50.0;
   private isStarted = false;
   private animationFrameId: number | null = null;
   private deathSequenceTimer = 0;
