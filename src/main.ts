@@ -1,19 +1,17 @@
 /// <reference types="vite/client" />
-import * as THREE from 'three';
-import { Engine } from './core/engine';
-import { InputManager } from './core/input-manager';
-import { PhysicsWorld } from './core/physics-world';
-import { LightingSystem } from './systems/lighting-system';
-import { TextureManager } from './systems/texture-manager';
-import { PlayerController } from './entities/player-controller';
-import { LevelManager } from './levels/level-manager';
-import { LEVEL_PARKOUR_CITY } from './levels/level-data';
-import { DebugGUI } from './ui/debug-ui';
-import {
-  PrimitivePlacementSystem,
-} from './systems/primitive-placement';
-import { BLOCK_CATALOGUE, BlockInventory } from './systems/block-system';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import * as THREE from "three";
+import { Engine } from "./core/engine";
+import { InputManager } from "./core/input-manager";
+import { PhysicsWorld } from "./core/physics-world";
+import { LightingSystem } from "./systems/lighting-system";
+import { TextureManager } from "./systems/texture-manager";
+import { PlayerController } from "./entities/player-controller";
+import { LevelManager } from "./levels/level-manager";
+import { LEVEL_PARKOUR_CITY } from "./levels/level-data";
+import { DebugGUI } from "./ui/debug-ui";
+import { PrimitivePlacementSystem } from "./systems/primitive-placement";
+import { BLOCK_CATALOGUE, BlockInventory } from "./systems/block-system";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 class Game {
   private engine: Engine;
@@ -39,7 +37,7 @@ class Game {
   private animationFrameId: number | null = null;
   private deathSequenceTimer = 0;
   private readonly deathSequenceDuration = 1.2;
-  private deathReason = 'You fell out of the course.';
+  private deathReason = "You fell out of the course.";
 
   private hudEl: HTMLElement;
   private scoreEl: HTMLElement;
@@ -57,7 +55,8 @@ class Game {
   private charListContainer!: HTMLElement;
   private btnSelectPlay!: HTMLButtonElement;
   private charPreviewCanvas!: HTMLCanvasElement;
-  private selectedCharacterPath: string = '/assets/characters/Astronaut_RaeTheRedPanda.gltf';
+  private selectedCharacterPath: string =
+    "/assets/characters/Astronaut_RaeTheRedPanda.gltf";
 
   private previewRenderer!: THREE.WebGLRenderer;
   private previewScene!: THREE.Scene;
@@ -69,7 +68,7 @@ class Game {
   private previewActions: Map<string, THREE.AnimationAction> = new Map();
 
   constructor() {
-    const canvas = document.getElementById('game-canvas') as HTMLCanvasElement;
+    const canvas = document.getElementById("game-canvas") as HTMLCanvasElement;
 
     this.engine = new Engine(canvas);
     this.input = new InputManager(canvas);
@@ -116,82 +115,92 @@ class Game {
     );
     this.debugGUI.hide();
 
-    this.hudEl = document.getElementById('hud')!;
-    this.scoreEl = document.getElementById('hud-score')!;
-    this.timeEl = document.getElementById('hud-time')!;
-    this.speedEl = document.getElementById('hud-speed')!;
-    this.deathsEl = document.getElementById('hud-deaths')!;
-    this.startScreen = document.getElementById('start-screen')!;
-    this.deathScreen = document.getElementById('death-screen')!;
-    this.pauseScreen = document.getElementById('pause-screen')!;
-    this.loadingScreen = document.getElementById('loading')!;
-    this.captureHintEl = document.getElementById('capture-hint')!;
+    this.hudEl = document.getElementById("hud")!;
+    this.scoreEl = document.getElementById("hud-score")!;
+    this.timeEl = document.getElementById("hud-time")!;
+    this.speedEl = document.getElementById("hud-speed")!;
+    this.deathsEl = document.getElementById("hud-deaths")!;
+    this.startScreen = document.getElementById("start-screen")!;
+    this.deathScreen = document.getElementById("death-screen")!;
+    this.pauseScreen = document.getElementById("pause-screen")!;
+    this.loadingScreen = document.getElementById("loading")!;
+    this.captureHintEl = document.getElementById("capture-hint")!;
 
     // Character selection UI bindings
-    this.charSelectScreen = document.getElementById('character-select-screen')!;
-    this.charListContainer = document.getElementById('char-list-container')!;
-    this.btnSelectPlay = document.getElementById('btn-select-play') as HTMLButtonElement;
-    this.charPreviewCanvas = document.getElementById('char-preview-canvas') as HTMLCanvasElement;
+    this.charSelectScreen = document.getElementById("character-select-screen")!;
+    this.charListContainer = document.getElementById("char-list-container")!;
+    this.btnSelectPlay = document.getElementById(
+      "btn-select-play",
+    ) as HTMLButtonElement;
+    this.charPreviewCanvas = document.getElementById(
+      "char-preview-canvas",
+    ) as HTMLCanvasElement;
 
     this.setupEventListeners();
     this.setupSkybox();
 
-    this.loadingScreen.classList.add('hidden');
+    this.loadingScreen.classList.add("hidden");
     setTimeout(() => {
-      this.loadingScreen.style.display = 'none';
+      this.loadingScreen.style.display = "none";
     }, 500);
   }
 
   private async loadExternalTextureSets(): Promise<void> {
     try {
       await Promise.all([
-        this.textureManager.loadTextureSet('stone', {
-          baseColor: '/assets/textures/stone-city/basecolor.jpg',
-          normal: '/assets/textures/stone-city/normal.jpg',
-          roughness: '/assets/textures/stone-city/roughness.jpg',
-          ao: '/assets/textures/stone-city/ao.jpg',
+        this.textureManager.loadTextureSet("stone", {
+          baseColor: "/assets/textures/stone-city/basecolor.jpg",
+          normal: "/assets/textures/stone-city/normal.jpg",
+          roughness: "/assets/textures/stone-city/roughness.jpg",
+          ao: "/assets/textures/stone-city/ao.jpg",
         }),
-        this.textureManager.loadTextureSet('concrete-moss', {
-          baseColor: '/assets/textures/concrete-moss/textures/concrete_moss_diff_1k.jpg',
-          normal: '/assets/textures/concrete-moss/textures/concrete_moss_nor_gl_1k.jpg',
-          roughness: '/assets/textures/concrete-moss/textures/concrete_moss_arm_1k.jpg',
-          ao: '/assets/textures/concrete-moss/textures/concrete_moss_arm_1k.jpg',
+        this.textureManager.loadTextureSet("concrete-moss", {
+          baseColor:
+            "/assets/textures/concrete-moss/textures/concrete_moss_diff_1k.jpg",
+          normal:
+            "/assets/textures/concrete-moss/textures/concrete_moss_nor_gl_1k.jpg",
+          roughness:
+            "/assets/textures/concrete-moss/textures/concrete_moss_arm_1k.jpg",
+          ao: "/assets/textures/concrete-moss/textures/concrete_moss_arm_1k.jpg",
         }),
-        this.textureManager.loadTextureSet('metal', {
-          baseColor: '/assets/textures/metal-industrial/basecolor.jpg',
-          normal: '/assets/textures/metal-industrial/normal.jpg',
-          roughness: '/assets/textures/metal-industrial/roughness.jpg',
-          ao: '/assets/textures/metal-industrial/ao.jpg',
-          metallic: '/assets/textures/metal-industrial/metallic.jpg',
+        this.textureManager.loadTextureSet("metal", {
+          baseColor: "/assets/textures/metal-industrial/basecolor.jpg",
+          normal: "/assets/textures/metal-industrial/normal.jpg",
+          roughness: "/assets/textures/metal-industrial/roughness.jpg",
+          ao: "/assets/textures/metal-industrial/ao.jpg",
+          metallic: "/assets/textures/metal-industrial/metallic.jpg",
         }),
-        this.textureManager.loadTextureSet('metal-plate', {
-          baseColor: '/assets/textures/metal-plate/textures/metal_plate_diff_1k.jpg',
-          normal: '/assets/textures/metal-plate/textures/metal_plate_nor_gl_1k.jpg',
-          roughness: '/assets/textures/metal-plate/textures/metal_plate_rough_1k.jpg',
+        this.textureManager.loadTextureSet("metal-plate", {
+          baseColor:
+            "/assets/textures/metal-plate/textures/metal_plate_diff_1k.jpg",
+          normal:
+            "/assets/textures/metal-plate/textures/metal_plate_nor_gl_1k.jpg",
+          roughness:
+            "/assets/textures/metal-plate/textures/metal_plate_rough_1k.jpg",
         }),
-        this.textureManager.loadTextureSet('brick', {
-          baseColor: '/assets/textures/brick-weathered/basecolor.jpg',
-          normal: '/assets/textures/brick-weathered/normal.jpg',
-          roughness: '/assets/textures/brick-weathered/roughness.jpg',
-          ao: '/assets/textures/brick-weathered/ao.jpg',
+        this.textureManager.loadTextureSet("brick", {
+          baseColor: "/assets/textures/brick-weathered/basecolor.jpg",
+          normal: "/assets/textures/brick-weathered/normal.jpg",
+          roughness: "/assets/textures/brick-weathered/roughness.jpg",
+          ao: "/assets/textures/brick-weathered/ao.jpg",
         }),
-        this.textureManager.loadTextureSet('grass-rock', {
-          baseColor: '/assets/textures/grass-rock/basecolor.jpg',
-          normal: '/assets/textures/grass-rock/normal.jpg',
-          roughness: '/assets/textures/grass-rock/roughness.jpg',
-          ao: '/assets/textures/grass-rock/ao.jpg',
+        this.textureManager.loadTextureSet("grass-rock", {
+          baseColor: "/assets/textures/grass-rock/basecolor.jpg",
+          normal: "/assets/textures/grass-rock/normal.jpg",
+          roughness: "/assets/textures/grass-rock/roughness.jpg",
+          ao: "/assets/textures/grass-rock/ao.jpg",
         }),
-        this.textureManager.loadTextureSet('wood', {
-          baseColor: '/assets/textures/wood-aged-planks/basecolor.jpg',
-          normal: '/assets/textures/wood-aged-planks/normal.jpg',
-          roughness: '/assets/textures/wood-aged-planks/roughness.jpg',
-          ao: '/assets/textures/wood-aged-planks/ao.jpg',
+        this.textureManager.loadTextureSet("wood", {
+          baseColor: "/assets/textures/wood-aged-planks/basecolor.jpg",
+          normal: "/assets/textures/wood-aged-planks/normal.jpg",
+          roughness: "/assets/textures/wood-aged-planks/roughness.jpg",
+          ao: "/assets/textures/wood-aged-planks/ao.jpg",
         }),
-        this.textureManager.loadTextureSet('asphalt', {
-          baseColor: '/assets/textures/asphalt-dark/basecolor.jpg',
-          normal: '/assets/textures/asphalt-dark/normal.jpg',
-          roughness: '/assets/textures/asphalt-dark/roughness.jpg',
-          ao: '/assets/textures/asphalt-dark/ao.jpg',
+        this.textureManager.loadTextureSet("asphalt-dark", {
+          baseColor: "/assets/textures/asphalt-dark/basecolor.jpg",
+          normal: "/assets/textures/asphalt-dark/normal.jpg",
+          roughness: "/assets/textures/asphalt-dark/roughness.jpg",
+          ao: "/assets/textures/asphalt-dark/ao.jpg",
         }),
       ]);
 
@@ -199,7 +208,7 @@ class Game {
       this.levelManager.loadLevel(LEVEL_PARKOUR_CITY);
     } catch (error) {
       console.warn(
-        'Failed to load external texture sets. Falling back to procedural textures.',
+        "Failed to load external texture sets. Falling back to procedural textures.",
         error,
       );
     }
@@ -208,23 +217,23 @@ class Game {
   private setupSkybox(): void {
     const cubeLoader = new THREE.CubeTextureLoader();
     const texturePaths = [
-      '/assets/textures/sky-box/px.png',
-      '/assets/textures/sky-box/nx.png',
-      '/assets/textures/sky-box/py.png',
-      '/assets/textures/sky-box/ny.png',
-      '/assets/textures/sky-box/pz.png',
-      '/assets/textures/sky-box/nz.png',
+      "/assets/textures/sky-box/px.png",
+      "/assets/textures/sky-box/nx.png",
+      "/assets/textures/sky-box/py.png",
+      "/assets/textures/sky-box/ny.png",
+      "/assets/textures/sky-box/pz.png",
+      "/assets/textures/sky-box/nz.png",
     ];
 
     const skyboxTexture = cubeLoader.load(
       texturePaths,
       (texture) => {
-        console.log('Skybox loaded successfully', texture);
+        console.log("Skybox loaded successfully", texture);
       },
       undefined,
       (err) => {
-        console.error('Skybox failed to load:', err);
-      }
+        console.error("Skybox failed to load:", err);
+      },
     );
 
     skyboxTexture.colorSpace = THREE.SRGBColorSpace;
@@ -240,30 +249,30 @@ class Game {
     }
   }
   private setupEventListeners(): void {
-    document.getElementById('btn-start')!.addEventListener('click', () => {
+    document.getElementById("btn-start")!.addEventListener("click", () => {
       this.showCharacterSelection();
     });
 
-    this.btnSelectPlay.addEventListener('click', () => {
+    this.btnSelectPlay.addEventListener("click", () => {
       this.startGame();
     });
 
-    document.getElementById('btn-restart')!.addEventListener('click', () => {
+    document.getElementById("btn-restart")!.addEventListener("click", () => {
       this.restartGame();
     });
 
-    document.getElementById('btn-resume')!.addEventListener('click', () => {
+    document.getElementById("btn-resume")!.addEventListener("click", () => {
       this.resumeGame();
     });
 
-    this.engine.renderer.domElement.addEventListener('click', () => {
+    this.engine.renderer.domElement.addEventListener("click", () => {
       if (this.isStarted && this.isRunning && !this.input.isPointerLocked) {
         this.input.requestPointerLock();
       }
     });
 
     // Left mouse click → place block at ghost position
-    this.engine.renderer.domElement.addEventListener('mousedown', (e) => {
+    this.engine.renderer.domElement.addEventListener("mousedown", (e) => {
       if (
         e.button === 0 &&
         this.isStarted &&
@@ -286,26 +295,30 @@ class Game {
     });
 
     // Scroll wheel → adjust ghost placement distance
-    this.engine.renderer.domElement.addEventListener('wheel', (e) => {
-      if (this.isStarted && this.isRunning && this.input.isPointerLocked) {
-        // deltaY > 0 = scroll down = farther; < 0 = scroll up = closer
-        const step = e.deltaY > 0 ? 0.5 : -0.5;
-        this.primitivePlacement.adjustGhostDistance(step);
-        this.showDistanceHint();
-        e.preventDefault();
-      }
-    }, { passive: false });
+    this.engine.renderer.domElement.addEventListener(
+      "wheel",
+      (e) => {
+        if (this.isStarted && this.isRunning && this.input.isPointerLocked) {
+          // deltaY > 0 = scroll down = farther; < 0 = scroll up = closer
+          const step = e.deltaY > 0 ? 0.5 : -0.5;
+          this.primitivePlacement.adjustGhostDistance(step);
+          this.showDistanceHint();
+          e.preventDefault();
+        }
+      },
+      { passive: false },
+    );
 
-    document.addEventListener('pointerlockchange', () => {
+    document.addEventListener("pointerlockchange", () => {
       const shouldShowHint =
         this.isStarted &&
         this.isRunning &&
         !this.isPaused &&
         !this.input.isPointerLocked;
-      this.captureHintEl.classList.toggle('visible', shouldShowHint);
+      this.captureHintEl.classList.toggle("visible", shouldShowHint);
     });
 
-    this.input.onKeyPress('p', () => {
+    this.input.onKeyPress("p", () => {
       if (this.isStarted && this.isRunning) {
         this.pauseGame();
       } else if (this.isPaused) {
@@ -313,11 +326,11 @@ class Game {
       }
     });
 
-    this.input.onKeyPress('g', () => {
+    this.input.onKeyPress("g", () => {
       this.debugGUI.toggle();
     });
 
-    this.input.onKeyPress('r', () => {
+    this.input.onKeyPress("r", () => {
       if (this.isStarted) {
         this.restartGame();
       }
@@ -326,8 +339,18 @@ class Game {
     // Keys 1-6: select block type for placement (ghost preview)
     // Each key maps to one unique shape in the catalogue.
     const blockKeys: Record<string, number> = {
-      '1': 0, '2': 1, '3': 2, '4': 3, '5': 4, '6': 5,
-      '!': 0, '@': 1, '#': 2, '$': 3, '%': 4, '^': 5,
+      "1": 0,
+      "2": 1,
+      "3": 2,
+      "4": 3,
+      "5": 4,
+      "6": 5,
+      "!": 0,
+      "@": 1,
+      "#": 2,
+      $: 3,
+      "%": 4,
+      "^": 5,
     };
 
     for (const [key, idx] of Object.entries(blockKeys)) {
@@ -340,69 +363,83 @@ class Game {
       });
     }
 
-    this.input.onKeyPress('backspace', () => {
+    this.input.onKeyPress("backspace", () => {
       if (this.isStarted) {
         this.primitivePlacement.deselectBlock();
         this.primitivePlacement.clear();
         this.blockInventory.reset();
         this.updateInventoryHUD();
-        document.querySelectorAll('.hotbar-slot').forEach(el => el.classList.remove('active'));
+        document
+          .querySelectorAll(".hotbar-slot")
+          .forEach((el) => el.classList.remove("active"));
       }
     });
   }
 
   private activateHotbarSlot(key: string): void {
     switch (key) {
-      case '!':
-        key = '1';
+      case "!":
+        key = "1";
         break;
-      case '@':
-        key = '2'
+      case "@":
+        key = "2";
         break;
-      case '#':
-        key = '3'
+      case "#":
+        key = "3";
         break;
-      case '$':
-        key = '4'
+      case "$":
+        key = "4";
         break;
-      case '%':
-        key = '5'
+      case "%":
+        key = "5";
         break;
-      case '^':
-        key = '6'
+      case "^":
+        key = "6";
         break;
     }
-    document.querySelectorAll('.hotbar-slot').forEach(el => el.classList.remove('active'));
+    document
+      .querySelectorAll(".hotbar-slot")
+      .forEach((el) => el.classList.remove("active"));
     const slot = document.getElementById(`slot-${key}`);
-    if (slot) slot.classList.add('active');
+    if (slot) slot.classList.add("active");
   }
 
   private showCharacterSelection(): void {
-    this.startScreen.style.display = 'none';
-    this.charSelectScreen.classList.add('active');
+    this.startScreen.style.display = "none";
+    this.charSelectScreen.classList.add("active");
     this.setupPreviewScene();
 
     // Glob characters dynamically
-    const models = import.meta.glob('/public/assets/characters/*.{gltf,glb}', { query: '?url' });
-    this.charListContainer.innerHTML = '';
+    const models = import.meta.glob("/public/assets/characters/*.{gltf,glb}", {
+      query: "?url",
+    });
+    this.charListContainer.innerHTML = "";
 
-    const paths = Object.keys(models).map(p => p.replace('/public', ''));
+    const paths = Object.keys(models).map((p) => p.replace("/public", ""));
     if (paths.length > 0 && !paths.includes(this.selectedCharacterPath)) {
       this.selectedCharacterPath = paths[0];
     }
 
-    paths.forEach(path => {
-      const name = path.split('/').pop()?.replace(/\.(gltf|glb)$/, '') || 'Character';
-      const prettyName = name.replace(/_/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2');
+    paths.forEach((path) => {
+      const name =
+        path
+          .split("/")
+          .pop()
+          ?.replace(/\.(gltf|glb)$/, "") || "Character";
+      const prettyName = name
+        .replace(/_/g, " ")
+        .replace(/([a-z])([A-Z])/g, "$1 $2");
 
-      const btn = document.createElement('button');
-      btn.className = 'char-btn';
-      if (path === this.selectedCharacterPath) btn.classList.add('selected');
+      const btn = document.createElement("button");
+      btn.className = "char-btn";
+      if (path === this.selectedCharacterPath) btn.classList.add("selected");
       btn.innerHTML = `<span>${prettyName}</span> <span>></span>`;
 
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.char-btn').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
+      btn.addEventListener("click", () => {
+        document
+          .querySelectorAll(".char-btn")
+          .forEach((b) => b.classList.remove("selected"));
+        btn.classList.add("selected");
         this.selectedCharacterPath = path;
         this.loadPreviewModel(path);
       });
@@ -417,14 +454,23 @@ class Game {
   private setupPreviewScene(): void {
     if (this.previewRenderer) return; // Already setup
 
-    this.previewRenderer = new THREE.WebGLRenderer({ canvas: this.charPreviewCanvas, alpha: true, antialias: true });
+    this.previewRenderer = new THREE.WebGLRenderer({
+      canvas: this.charPreviewCanvas,
+      alpha: true,
+      antialias: true,
+    });
     const rect = this.charPreviewCanvas.parentElement!.getBoundingClientRect();
     this.previewRenderer.setSize(rect.width, rect.height, false);
     this.previewRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.previewRenderer.outputColorSpace = THREE.SRGBColorSpace;
 
     this.previewScene = new THREE.Scene();
-    this.previewCamera = new THREE.PerspectiveCamera(45, rect.width / rect.height, 0.1, 100);
+    this.previewCamera = new THREE.PerspectiveCamera(
+      45,
+      rect.width / rect.height,
+      0.1,
+      100,
+    );
     this.previewCamera.position.set(0, 0.8, 3.5);
     this.previewCamera.lookAt(0, 0.3, 0);
 
@@ -481,7 +527,7 @@ class Game {
   }
 
   private startGame(): void {
-    this.charSelectScreen.classList.remove('active');
+    this.charSelectScreen.classList.remove("active");
     if (this.previewRAF) {
       cancelAnimationFrame(this.previewRAF);
       this.previewRAF = null;
@@ -496,16 +542,16 @@ class Game {
     this.isDead = false;
     this.isFinished = false;
     this.deathSequenceTimer = 0;
-    this.deathReason = 'You fell out of the course.';
+    this.deathReason = "You fell out of the course.";
     this.player.isDead = false;
     this.score = 0;
     this.elapsedTime = 0;
     this.input.setGameplayActive(true);
 
-    this.startScreen.style.display = 'none';
-    this.deathScreen.classList.remove('active');
-    this.pauseScreen.classList.remove('active');
-    this.hudEl.style.display = '';
+    this.startScreen.style.display = "none";
+    this.deathScreen.classList.remove("active");
+    this.pauseScreen.classList.remove("active");
+    this.hudEl.style.display = "";
 
     this.input.requestPointerLock();
     this.engine.clock.start();
@@ -517,7 +563,7 @@ class Game {
     this.isRunning = false;
     this.isPaused = true;
     this.input.setGameplayActive(false);
-    this.pauseScreen.classList.add('active');
+    this.pauseScreen.classList.add("active");
     this.input.exitPointerLock();
   }
 
@@ -526,7 +572,7 @@ class Game {
     this.isPaused = false;
     this.isRunning = true;
     this.input.setGameplayActive(true);
-    this.pauseScreen.classList.remove('active');
+    this.pauseScreen.classList.remove("active");
     this.input.requestPointerLock();
     this.engine.clock.start();
     this.gameLoop();
@@ -550,22 +596,24 @@ class Game {
     this.isDead = false;
     this.isFinished = false;
     this.deathSequenceTimer = 0;
-    this.deathReason = 'You fell out of the course.';
+    this.deathReason = "You fell out of the course.";
     this.input.setGameplayActive(true);
 
-    this.deathScreen.classList.remove('active');
-    this.pauseScreen.classList.remove('active');
-    this.hudEl.style.display = '';
+    this.deathScreen.classList.remove("active");
+    this.pauseScreen.classList.remove("active");
+    this.hudEl.style.display = "";
 
     this.updateInventoryHUD();
-    document.querySelectorAll('.hotbar-slot').forEach(el => el.classList.remove('active'));
+    document
+      .querySelectorAll(".hotbar-slot")
+      .forEach((el) => el.classList.remove("active"));
 
     this.input.requestPointerLock();
     this.engine.clock.start();
     this.gameLoop();
   }
 
-  private playerDied(reason = 'You fell out of the course.'): void {
+  private playerDied(reason = "You fell out of the course."): void {
     if (this.isDead) return;
 
     this.isDead = true;
@@ -580,9 +628,9 @@ class Game {
   private finalizeDeathScreen(): void {
     this.cancelLoop();
     this.isRunning = false;
-    const deathScoreEl = document.getElementById('death-score')!;
+    const deathScoreEl = document.getElementById("death-score")!;
     deathScoreEl.textContent = `${this.deathReason} Score: ${this.score} | Time: ${this.elapsedTime.toFixed(1)}s`;
-    this.deathScreen.classList.add('active');
+    this.deathScreen.classList.add("active");
   }
 
   private finishRun(): void {
@@ -594,9 +642,9 @@ class Game {
     this.input.setGameplayActive(false);
     this.input.exitPointerLock();
 
-    const deathScoreEl = document.getElementById('death-score')!;
+    const deathScoreEl = document.getElementById("death-score")!;
     deathScoreEl.textContent = `You finished the course! Score: ${this.score} | Time: ${this.elapsedTime.toFixed(1)}s`;
-    this.deathScreen.classList.add('active');
+    this.deathScreen.classList.add("active");
   }
 
   private gameLoop(): void {
@@ -611,7 +659,7 @@ class Game {
       this.player.update(dt);
     }
     this.input.resetMouseDelta();
-    
+
     const playerPos = this.player.getPosition();
     this.levelManager.update(dt, playerPos);
 
@@ -663,8 +711,8 @@ class Game {
       this.score,
       Math.floor(
         Math.abs(playerPos.z) +
-        playerPos.y * 2 +
-        this.primitivePlacement.getCount() * 5,
+          playerPos.y * 2 +
+          this.primitivePlacement.getCount() * 5,
       ),
     );
 
@@ -682,25 +730,33 @@ class Game {
   /** Flash the placement-distance hint briefly when scroll wheel is used */
   private distanceHintTimeout: ReturnType<typeof setTimeout> | null = null;
   private showDistanceHint(): void {
-    const el = document.getElementById('placement-distance');
+    const el = document.getElementById("placement-distance");
     if (!el) return;
     el.textContent = `📏 Distance: ${this.primitivePlacement.getGhostDistance().toFixed(1)}`;
-    el.classList.add('visible');
+    el.classList.add("visible");
     if (this.distanceHintTimeout) clearTimeout(this.distanceHintTimeout);
-    this.distanceHintTimeout = setTimeout(() => el.classList.remove('visible'), 1200);
+    this.distanceHintTimeout = setTimeout(
+      () => el.classList.remove("visible"),
+      1200,
+    );
   }
 
   /** Show a brief pickup notification */
-  private pickupNotificationTimeout: ReturnType<typeof setTimeout> | null = null;
+  private pickupNotificationTimeout: ReturnType<typeof setTimeout> | null =
+    null;
   private showPickupNotification(blockId: string): void {
-    const bt = BLOCK_CATALOGUE.find(b => b.id === blockId);
+    const bt = BLOCK_CATALOGUE.find((b) => b.id === blockId);
     if (!bt) return;
-    const el = document.getElementById('pickup-notification');
+    const el = document.getElementById("pickup-notification");
     if (!el) return;
     el.textContent = `${bt.icon} +1 ${bt.label}`;
-    el.classList.add('visible');
-    if (this.pickupNotificationTimeout) clearTimeout(this.pickupNotificationTimeout);
-    this.pickupNotificationTimeout = setTimeout(() => el.classList.remove('visible'), 1500);
+    el.classList.add("visible");
+    if (this.pickupNotificationTimeout)
+      clearTimeout(this.pickupNotificationTimeout);
+    this.pickupNotificationTimeout = setTimeout(
+      () => el.classList.remove("visible"),
+      1500,
+    );
   }
 
   /** Update the block inventory HUD panel */
@@ -712,7 +768,7 @@ class Game {
         countEl.textContent = `${rem}`;
         const card = document.getElementById(`inv-card-${bt.id}`);
         if (card) {
-          card.classList.toggle('depleted', rem === 0);
+          card.classList.toggle("depleted", rem === 0);
         }
       }
     }
@@ -726,6 +782,6 @@ class Game {
   }
 }
 
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener("DOMContentLoaded", () => {
   new Game();
 });
