@@ -1,9 +1,9 @@
-import * as THREE from 'three';
-import * as CANNON from 'cannon-es';
-import type { Engine } from '../core/engine';
-import type { PhysicsWorld } from '../core/physics-world';
-import type { TextureManager } from '../systems/texture-manager';
-import { ModelLoader } from '../entities/model-loader';
+import * as THREE from "three";
+import * as CANNON from "cannon-es";
+import type { Engine } from "../core/engine";
+import type { PhysicsWorld } from "../core/physics-world";
+import type { TextureManager } from "../systems/texture-manager";
+import { ModelLoader } from "../entities/model-loader";
 
 export interface PlatformDef {
   position: [number, number, number];
@@ -12,11 +12,11 @@ export interface PlatformDef {
   texture?: string;
   textureRepeat?: [number, number];
   solid?: boolean;
-  type?: 'static' | 'moving' | 'rotating' | 'crumbling';
-  moveAxis?: 'x' | 'y' | 'z';
+  type?: "static" | "moving" | "rotating" | "crumbling";
+  moveAxis?: "x" | "y" | "z";
   moveRange?: number;
   moveSpeed?: number;
-  rotateAxis?: 'x' | 'y' | 'z';
+  rotateAxis?: "x" | "y" | "z";
   rotateSpeed?: number;
 }
 
@@ -24,7 +24,7 @@ export interface LevelConfig {
   name: string;
   spawnPosition: [number, number, number];
   platforms: PlatformDef[];
-  decorations?: DecorationDef[];
+  decorations: DecorationDef[];
   skyColor?: number;
   fogColor?: number;
   fogNear?: number;
@@ -32,7 +32,14 @@ export interface LevelConfig {
 }
 
 export interface DecorationDef {
-  type: 'sphere' | 'cone' | 'cylinder' | 'torus' | 'torusknot' | 'model' | 'river';
+  type:
+    | "sphere"
+    | "cone"
+    | "cylinder"
+    | "torus"
+    | "torusknot"
+    | "model"
+    | "river";
   position: [number, number, number];
   scale?: [number, number, number];
   rotation?: [number, number, number];
@@ -57,7 +64,6 @@ export interface DecorationDef {
     orbitSpeed?: number;
     /** Offset rotation for orbiting models (e.g. to fix moonwalking or sideways models) */
     orbitRotationOffset?: number;
-
   };
   /** If set, this decoration is a collectible that grants the named block type id. */
   collectible?: string;
@@ -121,7 +127,6 @@ export class LevelManager {
     const generation = this.levelGeneration;
     this.currentConfig = config;
 
-
     for (const platDef of config.platforms) {
       this.createPlatform(platDef);
     }
@@ -180,7 +185,7 @@ export class LevelManager {
       body = new CANNON.Body({
         mass: 0,
         type:
-          def.type === 'moving' || def.type === 'rotating'
+          def.type === "moving" || def.type === "rotating"
             ? CANNON.Body.KINEMATIC
             : CANNON.Body.STATIC,
         shape,
@@ -204,7 +209,7 @@ export class LevelManager {
   }
 
   private createDecoration(def: DecorationDef, generation: number): void {
-    if (def.type === 'model') {
+    if (def.type === "model") {
       if (!def.modelPath) {
         console.warn('Decoration of type "model" is missing modelPath.', def);
         return;
@@ -238,22 +243,22 @@ export class LevelManager {
 
     let geometry: THREE.BufferGeometry;
     switch (def.type) {
-      case 'sphere':
+      case "sphere":
         geometry = new THREE.SphereGeometry(0.5, 24, 24);
         break;
-      case 'cone':
+      case "cone":
         geometry = new THREE.ConeGeometry(0.5, 1, 24);
         break;
-      case 'cylinder':
+      case "cylinder":
         geometry = new THREE.CylinderGeometry(0.5, 0.5, 1, 24);
         break;
-      case 'torus':
+      case "torus":
         geometry = new THREE.TorusGeometry(0.5, 0.15, 16, 48);
         break;
-      case 'torusknot':
+      case "torusknot":
         geometry = new THREE.TorusKnotGeometry(0.4, 0.12, 100, 16);
         break;
-      case 'river':
+      case "river":
         geometry = new THREE.PlaneGeometry(15, 295);
         break;
       default:
@@ -262,19 +267,19 @@ export class LevelManager {
 
     const material = new THREE.MeshStandardMaterial({
       color: def.color || 0xffaa00,
-      roughness: def.type === 'river' ? 0.1 : 0.2,
-      metalness: def.type === 'river' ? 0.1 : 0.8,
-      transparent: def.type === 'river',
-      opacity: def.type === 'river' ? 0.8 : 1,
+      roughness: def.type === "river" ? 0.1 : 0.2,
+      metalness: def.type === "river" ? 0.1 : 0.8,
+      transparent: def.type === "river",
+      opacity: def.type === "river" ? 0.8 : 1,
       emissive: new THREE.Color(def.emissive || 0x000000),
       emissiveIntensity: def.emissive ? 0.5 : 0,
     });
 
     const mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(...def.position);
-    if (def.type === 'river') mesh.rotation.x = -Math.PI / 2;
+    if (def.type === "river") mesh.rotation.x = -Math.PI / 2;
     if (def.scale) mesh.scale.set(...def.scale);
-    mesh.castShadow = def.type !== 'river';
+    mesh.castShadow = def.type !== "river";
     this.engine.scene.add(mesh);
 
     const initialTime = Math.random() * Math.PI * 2;
@@ -308,22 +313,27 @@ export class LevelManager {
 
         const anchor = dec.mesh as THREE.Group;
         const def = dec.def;
-        
+
         let objectToAdd: THREE.Object3D = model;
 
         if (def.childName) {
           const found = model.getObjectByName(def.childName);
           objectToAdd = found ?? model;
         } else if (def.childIndex !== undefined) {
-          const collectLeafGroups = (root: THREE.Object3D): THREE.Object3D[] => {
-            const meaningful = root.children.filter(c => {
+          const collectLeafGroups = (
+            root: THREE.Object3D,
+          ): THREE.Object3D[] => {
+            const meaningful = root.children.filter((c) => {
               let hasMesh = false;
-              c.traverse(x => { if (x instanceof THREE.Mesh) hasMesh = true; });
+              c.traverse((x) => {
+                if (x instanceof THREE.Mesh) hasMesh = true;
+              });
               return hasMesh;
             });
             if (meaningful.length > 1) return meaningful;
-            if (meaningful.length === 1) return collectLeafGroups(meaningful[0]);
-            return [root]; 
+            if (meaningful.length === 1)
+              return collectLeafGroups(meaningful[0]);
+            return [root];
           };
 
           const leafGroups = collectLeafGroups(model);
@@ -339,14 +349,14 @@ export class LevelManager {
         objectToAdd.position.y -= bounds.min.y;
         objectToAdd.position.z -= center.z;
 
-        if (def.modelPath && def.modelPath.includes('clouds')) {
+        if (def.modelPath && def.modelPath.includes("clouds")) {
           objectToAdd.traverse((child) => {
             if (child instanceof THREE.Mesh) {
               child.material = new THREE.MeshStandardMaterial({
                 color: 0xffffff,
                 roughness: 0.9,
                 metalness: 0.0,
-                emissive: new THREE.Color(0xddeeFF),
+                emissive: new THREE.Color(0xddeeff),
                 emissiveIntensity: 0.18,
               });
               // Disable heavy shadow calculations for clouds
@@ -356,7 +366,7 @@ export class LevelManager {
           });
         }
 
-        if (def.modelPath && def.modelPath.includes('Low_poly_sun')) {
+        if (def.modelPath && def.modelPath.includes("Low_poly_sun")) {
           objectToAdd.traverse((child) => {
             if (child instanceof THREE.Mesh) {
               child.material = new THREE.MeshStandardMaterial({
@@ -411,7 +421,10 @@ export class LevelManager {
               }
 
               const trimeshShape = new CANNON.Trimesh(vertices, faces);
-              const body = new CANNON.Body({ mass: 0, type: CANNON.Body.STATIC });
+              const body = new CANNON.Body({
+                mass: 0,
+                type: CANNON.Body.STATIC,
+              });
               body.addShape(trimeshShape);
               // Only add to physics if not currently culled
               if (!dec.isCulled) {
@@ -424,7 +437,10 @@ export class LevelManager {
         dec.isModelLoaded = true;
       })
       .catch((error) => {
-        console.warn(`Failed to load decoration model: ${dec.def.modelPath}`, error);
+        console.warn(
+          `Failed to load decoration model: ${dec.def.modelPath}`,
+          error,
+        );
       });
   }
 
@@ -439,9 +455,9 @@ export class LevelManager {
       const dx = playerPos.x - plat.initialPosition.x;
       const dz = playerPos.z - plat.initialPosition.z;
       const distSq = dx * dx + dz * dz;
-      
+
       const shouldBeVisible = distSq <= RENDER_DISTANCE_SQ;
-      
+
       if (shouldBeVisible && plat.isCulled) {
         plat.isCulled = false;
         plat.mesh.visible = true;
@@ -456,16 +472,16 @@ export class LevelManager {
 
       plat.time += dt;
 
-      if (plat.def.type === 'moving' && plat.def.moveAxis) {
+      if (plat.def.type === "moving" && plat.def.moveAxis) {
         const range = plat.def.moveRange || 3;
         const speed = plat.def.moveSpeed || 1;
         const offset = Math.sin(plat.time * speed) * range;
         const axis = plat.def.moveAxis;
 
         const newPos = plat.initialPosition.clone();
-        if (axis === 'x') newPos.x += offset;
-        if (axis === 'y') newPos.y += offset;
-        if (axis === 'z') newPos.z += offset;
+        if (axis === "x") newPos.x += offset;
+        if (axis === "y") newPos.y += offset;
+        if (axis === "z") newPos.z += offset;
 
         plat.mesh.position.copy(newPos);
         if (plat.body) {
@@ -480,12 +496,12 @@ export class LevelManager {
         plat.previousPosition.copy(newPos);
       }
 
-      if (plat.def.type === 'rotating') {
+      if (plat.def.type === "rotating") {
         const speed = plat.def.rotateSpeed || 1;
-        const axis = plat.def.rotateAxis || 'y';
-        if (axis === 'x') plat.mesh.rotation.x += speed * dt;
-        if (axis === 'y') plat.mesh.rotation.y += speed * dt;
-        if (axis === 'z') plat.mesh.rotation.z += speed * dt;
+        const axis = plat.def.rotateAxis || "y";
+        if (axis === "x") plat.mesh.rotation.x += speed * dt;
+        if (axis === "y") plat.mesh.rotation.y += speed * dt;
+        if (axis === "z") plat.mesh.rotation.z += speed * dt;
 
         if (plat.body) {
           plat.body.quaternion.set(
@@ -508,8 +524,12 @@ export class LevelManager {
       const distSq = dx * dx + dy * dy + dz * dz;
 
       // Lazy Loading for models
-      if (dec.def.type === 'model') {
-        if (!dec.isModelLoaded && !dec.isLoadingModel && distSq <= LAZY_LOAD_DISTANCE_SQ) {
+      if (dec.def.type === "model") {
+        if (
+          !dec.isModelLoaded &&
+          !dec.isLoadingModel &&
+          distSq <= LAZY_LOAD_DISTANCE_SQ
+        ) {
           dec.isLoadingModel = true;
           this.loadDecorationModel(dec);
         }
@@ -517,7 +537,7 @@ export class LevelManager {
 
       // Visibility & Physics Culling
       const shouldBeVisible = distSq <= RENDER_DISTANCE_SQ;
-      
+
       if (shouldBeVisible && dec.isCulled) {
         dec.isCulled = false;
         dec.mesh.visible = true;
@@ -543,18 +563,20 @@ export class LevelManager {
           dec.mesh.position.y =
             dec.initialY +
             Math.sin(dec.time * dec.def.animate.bobSpeed) *
-            dec.def.animate.bobHeight;
+              dec.def.animate.bobHeight;
         }
         if (dec.def.animate.orbitRadius && dec.def.animate.orbitSpeed) {
           const angle = dec.time * dec.def.animate.orbitSpeed;
           const radius = dec.def.animate.orbitRadius;
 
           // Position — orbit on XZ plane
-          dec.mesh.position.x = dec.initialPosition.x + Math.cos(angle) * radius;
-          dec.mesh.position.z = dec.initialPosition.z + Math.sin(angle) * radius;
+          dec.mesh.position.x =
+            dec.initialPosition.x + Math.cos(angle) * radius;
+          dec.mesh.position.z =
+            dec.initialPosition.z + Math.sin(angle) * radius;
 
           // Heading — face direction of travel (tangent to circle)
-          // Three.js default forward is -Z. 
+          // Three.js default forward is -Z.
           const rotOffset = dec.def.animate.orbitRotationOffset || 0;
           dec.mesh.rotation.y = -angle + rotOffset;
         }
@@ -594,11 +616,7 @@ export class LevelManager {
             return;
           }
           const s = 1 - t;
-          mesh.scale.set(
-            startScale.x * s,
-            startScale.y * s,
-            startScale.z * s,
-          );
+          mesh.scale.set(startScale.x * s, startScale.y * s, startScale.z * s);
           mesh.position.y += 0.08; // float upward
           requestAnimationFrame(shrink);
         };
@@ -622,13 +640,13 @@ export class LevelManager {
         plat.body.position.set(
           plat.initialPosition.x,
           plat.initialPosition.y,
-          plat.initialPosition.z
+          plat.initialPosition.z,
         );
         plat.body.quaternion.set(
           plat.mesh.quaternion.x,
           plat.mesh.quaternion.y,
           plat.mesh.quaternion.z,
-          plat.mesh.quaternion.w
+          plat.mesh.quaternion.w,
         );
         plat.body.velocity.set(0, 0, 0);
         plat.body.angularVelocity.set(0, 0, 0);
@@ -638,7 +656,7 @@ export class LevelManager {
 
     for (const dec of this.decorations) {
       dec.time = dec.initialTime;
-      
+
       // If we bobbed or rotated, reset rotation and Y-position
       if (dec.def.animate) {
         if (dec.def.rotation) {
@@ -693,13 +711,8 @@ export class LevelManager {
   }
 
   isPlayerAtFinish(position: THREE.Vector3): boolean {
-    return (
-      position.z <= -131 &&
-      position.z >= -141 &&
-      position.x >= 10 &&
-      position.x <= 20 &&
-      position.y >= 12
-    );
+    // Player wins by reaching the very top of the vertical tower
+    return position.y >= 105;
   }
 }
 
