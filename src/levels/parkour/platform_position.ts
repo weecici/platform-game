@@ -1,12 +1,13 @@
 export const platforms = [
   // === GROUND PLANE (death plane visual) ===
   {
-    position: [0, -5, 0],
-    size: [1500, 0.1, 1500],
+    position: [0, -0.1, 0],
+    size: [1000, 0.1, 1000],
     color: 0x1a1a2e,
-    texture: "asphalt",
-    textureRepeat: [24, 36],
+    texture: "grass-rock",
+    textureRepeat: [240, 360],
     solid: true,
+    noCull: true,
   },
   // === THE VERTICAL ASCENT ===
   {

@@ -13,11 +13,11 @@ import { clouds } from "./deco/cloud_position";
 
 export const LEVEL_PARKOUR_CITY: LevelConfig = {
   name: "Urban Parkour",
-  spawnPosition: [0, -4, 0],
+  spawnPosition: [0, 5, 0],
   skyColor: 0x87ceeb,
   fogColor: 0xc8ddf0,
-  fogNear: 40,
-  fogFar: 180,
+  fogNear: 100,
+  fogFar: 400,
   platforms: platforms as LevelConfig["platforms"],
   decorations: [
     // ===MODEL DECORATIONS ===
@@ -25,22 +25,24 @@ export const LEVEL_PARKOUR_CITY: LevelConfig = {
     {
       type: "model",
       modelPath: "/assets/models/low_poly_mountain.usdz",
-      position: [-75, -4.5, -60],
-      scale: [0.06, 0.5, 0.5],
+      position: [-200, -4.5, -60],
+      scale: [0.35, 0.5, 0.5],
       rotation: [0, Math.PI, 0],
+      solid: true,
+      noCull: true,
     },
-    // Low poly mountain — right border, stretched along map length
-    {
-      type: "model",
-      modelPath: "/assets/models/low_poly_mountain.usdz",
-      position: [95, -4.5, -60],
-      scale: [0.06, 0.5, 0.5],
-      rotation: [0, Math.PI, 0],
-    },
+    // {
+    //   type: "model",
+    //   modelPath: "/assets/models/tree2.usdz",
+    //   position: [-5, 0, -2],
+    //   scale: [0.5, 0.5, 0.5],
+    //   rotation: [0, 0.3, 0],
+    //   childIndex: 3,
+    // },
     // ...clouds,
     ...planes,
     ...houses,
-    ...trees,
+    // ...trees,
     ...collectibles,
   ],
 };

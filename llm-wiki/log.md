@@ -48,3 +48,10 @@ Append-only chronological log of operations on the wiki.
 - Injected a massive spiral array of vertical platforms (Static -> Moving -> Rotating -> Tiny).
 - Relocated the Victory condition to require the player to reach `y = 105`.
 - Scattered 60 hidden Block Pickups across the ground level to force players to scavenge resources before using the placement system to creatively scale the vertical tower.
+
+## [2026-05-09] update | World Expansion & Culling Fix
+
+- Re-expanded `RENDER_DISTANCE` to 150 and `LAZY_LOAD_DISTANCE` to 200.
+- Pushed atmospheric fog back to `fogFar: 400` and Camera clipping plane to `3000`.
+- Expanded the main ground width to `1000` units.
+- Introduced a `noCull: true` flag to prevent massive objects (like the 10,000-unit-long ground) from deleting their physics when the player steps away from their exact center.

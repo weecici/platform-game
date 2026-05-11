@@ -3,16 +3,8 @@ import { LevelConfig } from "../level-manager";
 export const houses: LevelConfig["decorations"] = [
   {
     type: "model",
-    modelPath: "/assets/models/pubg-house.usdz",
-    position: [0, -5, 20.9],
-    scale: [0.05, 0.05, 0.05],
-    rotation: [0, 0.2, 0],
-    solid: true,
-  },
-  {
-    type: "model",
     modelPath: "/assets/models/barn_1.usdz",
-    position: [-50, -4.5, -10],
+    position: [-50, 0, -10],
     scale: [0.05, 0.05, 0.05],
     rotation: [0, 0.2, 0],
     solid: true,
@@ -20,7 +12,7 @@ export const houses: LevelConfig["decorations"] = [
   {
     type: "model",
     modelPath: "/assets/models/barn_2.usdz",
-    position: [-50, -4.5, -28],
+    position: [-50, 0, -28],
     scale: [0.05, 0.05, 0.05],
     rotation: [0, -0.4, 0],
     solid: true,
@@ -28,15 +20,7 @@ export const houses: LevelConfig["decorations"] = [
   {
     type: "model",
     modelPath: "/assets/models/barn_3.usdz",
-    position: [-50, -4.5, -50],
-    scale: [0.1, 0.1, 0.1],
-    rotation: [0, 0.6, 0],
-    solid: true,
-  },
-  {
-    type: "model",
-    modelPath: "/assets/models/barn_4.usdz",
-    position: [-50, -4.5, -82],
+    position: [-50, 0, -82],
     scale: [0.1, 0.1, 0.1],
     rotation: [0, -0.3, 0],
     solid: true,
@@ -44,7 +28,7 @@ export const houses: LevelConfig["decorations"] = [
   {
     type: "model",
     modelPath: "/assets/models/barn_1.usdz",
-    position: [-50, -4.5, -115],
+    position: [-50, 0, -115],
     scale: [0.05, 0.05, 0.05],
     rotation: [0, 0.5, 0],
     solid: true,
@@ -52,7 +36,7 @@ export const houses: LevelConfig["decorations"] = [
   {
     type: "model",
     modelPath: "/assets/models/barn_2.usdz",
-    position: [-50, -4.5, -150],
+    position: [-50, 0, -150],
     scale: [0.05, 0.05, 0.05],
     rotation: [0, -0.7, 0],
     solid: true,
@@ -60,15 +44,7 @@ export const houses: LevelConfig["decorations"] = [
   {
     type: "model",
     modelPath: "/assets/models/barn_3.usdz",
-    position: [48, -4.5, -10],
-    scale: [0.1, 0.1, 0.1],
-    rotation: [0, -0.2, 0],
-    solid: true,
-  },
-  {
-    type: "model",
-    modelPath: "/assets/models/barn_4.usdz",
-    position: [48, -4.5, -32],
+    position: [48, 0, -32],
     scale: [0.1, 0.1, 0.1],
     rotation: [0, 0.4, 0],
     solid: true,
@@ -76,7 +52,7 @@ export const houses: LevelConfig["decorations"] = [
   {
     type: "model",
     modelPath: "/assets/models/barn_1.usdz",
-    position: [48, -4.5, -60],
+    position: [48, 0, -60],
     scale: [0.05, 0.05, 0.05],
     rotation: [0, -0.5, 0],
     solid: true,
@@ -84,7 +60,7 @@ export const houses: LevelConfig["decorations"] = [
   {
     type: "model",
     modelPath: "/assets/models/barn_2.usdz",
-    position: [48, -4.5, -100],
+    position: [48, 0, -100],
     scale: [0.05, 0.05, 0.05],
     rotation: [0, 0.3, 0],
     solid: true,
@@ -92,15 +68,7 @@ export const houses: LevelConfig["decorations"] = [
   {
     type: "model",
     modelPath: "/assets/models/barn_3.usdz",
-    position: [48, -4.5, -130],
-    scale: [0.1, 0.1, 0.1],
-    rotation: [0, -0.6, 0],
-    solid: true,
-  },
-  {
-    type: "model",
-    modelPath: "/assets/models/barn_4.usdz",
-    position: [48, -4.5, -150],
+    position: [48, 0, -150],
     scale: [0.1, 0.1, 0.1],
     rotation: [0, 0.1, 0],
     solid: true,

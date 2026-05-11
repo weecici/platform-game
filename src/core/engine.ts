@@ -175,7 +175,7 @@ export class Engine {
     this.perspectiveParams = {
       fov: 75,
       near: 0.1,
-      far: 1000,
+      far: 3000,
       positionX: 0,
       positionY: 5,
       positionZ: 10,

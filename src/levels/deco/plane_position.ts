@@ -4,7 +4,7 @@ export const planes: LevelConfig["decorations"] = [
   {
     type: "model",
     modelPath: "/assets/models/sbd_3.usdz",
-    position: [10, 40, -60],
+    position: [10, 45, -60],
     scale: [0.025, 0.025, 0.025],
     animate: {
       orbitRadius: 60,
@@ -17,7 +17,7 @@ export const planes: LevelConfig["decorations"] = [
   {
     type: "model",
     modelPath: "/assets/models/blue_plane.usdz",
-    position: [10, 50, -60],
+    position: [10, 55, -60],
     scale: [0.025, 0.025, 0.025],
     animate: {
       orbitRadius: 60,

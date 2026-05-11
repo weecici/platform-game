@@ -18,6 +18,8 @@ export interface PlatformDef {
   moveSpeed?: number;
   rotateAxis?: "x" | "y" | "z";
   rotateSpeed?: number;
+  /** If true, this platform will ignore distance-based culling */
+  noCull?: boolean;
 }
 
 export interface LevelConfig {
@@ -69,6 +71,8 @@ export interface DecorationDef {
   collectible?: string;
   /** Whether the decoration acts as a solid physical obstacle */
   solid?: boolean;
+  /** If true, this decoration will ignore distance-based culling */
+  noCull?: boolean;
 }
 
 interface PlatformRuntime {
@@ -445,9 +449,9 @@ export class LevelManager {
   }
 
   update(dt: number, playerPos: THREE.Vector3): void {
-    const RENDER_DISTANCE = 75;
+    const RENDER_DISTANCE = 150;
     const RENDER_DISTANCE_SQ = RENDER_DISTANCE * RENDER_DISTANCE;
-    const LAZY_LOAD_DISTANCE = 100;
+    const LAZY_LOAD_DISTANCE = 200;
     const LAZY_LOAD_DISTANCE_SQ = LAZY_LOAD_DISTANCE * LAZY_LOAD_DISTANCE;
 
     for (const plat of this.platforms) {
@@ -456,7 +460,7 @@ export class LevelManager {
       const dz = playerPos.z - plat.initialPosition.z;
       const distSq = dx * dx + dz * dz;
 
-      const shouldBeVisible = distSq <= RENDER_DISTANCE_SQ;
+      const shouldBeVisible = plat.def.noCull || distSq <= RENDER_DISTANCE_SQ;
 
       if (shouldBeVisible && plat.isCulled) {
         plat.isCulled = false;
@@ -536,7 +540,7 @@ export class LevelManager {
       }
 
       // Visibility & Physics Culling
-      const shouldBeVisible = distSq <= RENDER_DISTANCE_SQ;
+      const shouldBeVisible = dec.def.noCull || distSq <= RENDER_DISTANCE_SQ;
 
       if (shouldBeVisible && dec.isCulled) {
         dec.isCulled = false;
