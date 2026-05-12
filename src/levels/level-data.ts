@@ -24,7 +24,7 @@ export const LEVEL_PARKOUR_CITY: LevelConfig = {
     // Low poly mountain — left border, stretched along map length
     {
       type: "model",
-      modelPath: "/assets/models/low_poly_mountain.usdz",
+      modelPath: "/assets/models/scene/low_poly_mountain.usdz",
       position: [-200, -4.5, -60],
       scale: [0.35, 0.5, 0.5],
       rotation: [0, Math.PI, 0],

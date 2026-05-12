@@ -3,7 +3,7 @@ import { LevelConfig } from "../level-manager";
 export const planes: LevelConfig["decorations"] = [
   {
     type: "model",
-    modelPath: "/assets/models/sbd_3.usdz",
+    modelPath: "/assets/models/plane/sbd_3.usdz",
     position: [10, 45, -60],
     scale: [0.025, 0.025, 0.025],
     animate: {
@@ -16,7 +16,7 @@ export const planes: LevelConfig["decorations"] = [
   },
   {
     type: "model",
-    modelPath: "/assets/models/blue_plane.usdz",
+    modelPath: "/assets/models/plane/blue_plane.usdz",
     position: [10, 55, -60],
     scale: [0.025, 0.025, 0.025],
     animate: {
@@ -29,7 +29,7 @@ export const planes: LevelConfig["decorations"] = [
   },
   {
     type: "model",
-    modelPath: "/assets/models/fly_plane.usdz",
+    modelPath: "/assets/models/plane/fly_plane.usdz",
     position: [10, 35, -60],
     scale: [0.025, 0.025, 0.025],
     animate: {
