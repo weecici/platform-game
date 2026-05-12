@@ -11,58 +11,64 @@ export class InputManager {
   private canvas: HTMLCanvasElement;
   private keyDownCallbacks: Map<string, Array<() => void>> = new Map();
   private readonly gameplayKeys = new Set([
-    'w',
-    'a',
-    's',
-    'd',
-    ' ',
-    'shift',
-    'p',
-    'g',
-    'r',
-    'v',
-    'b',
-    '1',
-    '2',
-    '3',
-    '4',
-    '5',
-    '6',
-    '7',
-    '8',
-    '9',
-    '0',
-    '!',
-    '@',
-    '#',
-    '$',
-    '%',
-    '^',
-    '&',
-    '*',
-    '(',
-    ')',
-    'backspace',
-    'arrowup',
-    'arrowdown',
-    'arrowleft',
-    'arrowright',
+    "w",
+    "a",
+    "s",
+    "d",
+    " ",
+    "shift",
+    "p",
+    "g",
+    "r",
+    "v",
+    "b",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "0",
+    "!",
+    "@",
+    "#",
+    "$",
+    "%",
+    "^",
+    "&",
+    "*",
+    "(",
+    ")",
+    "backspace",
+    "arrowup",
+    "arrowdown",
+    "arrowleft",
+    "arrowright",
   ]);
 
-  private readonly handleKeyDown = (e: KeyboardEvent): void => this.onKeyDown(e);
+  private readonly handleKeyDown = (e: KeyboardEvent): void =>
+    this.onKeyDown(e);
   private readonly handleKeyUp = (e: KeyboardEvent): void => this.onKeyUp(e);
-  private readonly handleMouseMove = (e: MouseEvent): void => this.onMouseMove(e);
-  private readonly handlePointerLockChange = (): void => this.onPointerLockChange();
+  private readonly handleMouseMove = (e: MouseEvent): void =>
+    this.onMouseMove(e);
+  private readonly handlePointerLockChange = (): void =>
+    this.onPointerLockChange();
   private readonly handleBlur = (): void => this.resetAllKeys();
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
 
-    document.addEventListener('keydown', this.handleKeyDown);
-    document.addEventListener('keyup', this.handleKeyUp);
-    document.addEventListener('mousemove', this.handleMouseMove);
-    document.addEventListener('pointerlockchange', this.handlePointerLockChange);
-    window.addEventListener('blur', this.handleBlur);
+    document.addEventListener("keydown", this.handleKeyDown);
+    document.addEventListener("keyup", this.handleKeyUp);
+    document.addEventListener("mousemove", this.handleMouseMove);
+    document.addEventListener(
+      "pointerlockchange",
+      this.handlePointerLockChange,
+    );
+    window.addEventListener("blur", this.handleBlur);
   }
 
   onKeyPress(key: string, callback: () => void): void {
@@ -101,21 +107,21 @@ export class InputManager {
 
   private normalizeKey(e: KeyboardEvent): string {
     switch (e.code) {
-      case 'Space':
-        return ' ';
-      case 'ShiftLeft':
-      case 'ShiftRight':
-        return 'shift';
-      case 'Backspace':
-        return 'backspace';
-      case 'ArrowUp':
-        return 'arrowup';
-      case 'ArrowDown':
-        return 'arrowdown';
-      case 'ArrowLeft':
-        return 'arrowleft';
-      case 'ArrowRight':
-        return 'arrowright';
+      case "Space":
+        return " ";
+      case "ShiftLeft":
+      case "ShiftRight":
+        return "shift";
+      case "Backspace":
+        return "backspace";
+      case "ArrowUp":
+        return "arrowup";
+      case "ArrowDown":
+        return "arrowdown";
+      case "ArrowLeft":
+        return "arrowleft";
+      case "ArrowRight":
+        return "arrowright";
       default:
         return e.key.toLowerCase();
     }
@@ -163,10 +169,13 @@ export class InputManager {
   }
 
   dispose(): void {
-    document.removeEventListener('keydown', this.handleKeyDown);
-    document.removeEventListener('keyup', this.handleKeyUp);
-    document.removeEventListener('mousemove', this.handleMouseMove);
-    document.removeEventListener('pointerlockchange', this.handlePointerLockChange);
-    window.removeEventListener('blur', this.handleBlur);
+    document.removeEventListener("keydown", this.handleKeyDown);
+    document.removeEventListener("keyup", this.handleKeyUp);
+    document.removeEventListener("mousemove", this.handleMouseMove);
+    document.removeEventListener(
+      "pointerlockchange",
+      this.handlePointerLockChange,
+    );
+    window.removeEventListener("blur", this.handleBlur);
   }
 }
