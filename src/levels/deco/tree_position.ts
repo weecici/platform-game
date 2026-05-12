@@ -6,7 +6,7 @@ export const trees: LevelConfig["decorations"] = [
   // Scale 0.05 (lớn hơn cũ ~4x). Nếu cây quá to/nhỏ hãy báo để điều chỉnh.
   {
     type: "model",
-    modelPath: "/assets/models/low_poly_tree.usdz",
+    modelPath: "/assets/models/tree/low_poly_tree.usdz",
     position: [-25, 0, -2],
     scale: [2, 2, 2],
     rotation: [0, 0.3, 0],
@@ -14,7 +14,7 @@ export const trees: LevelConfig["decorations"] = [
   },
   {
     type: "model",
-    modelPath: "/assets/models/low_poly_tree.usdz",
+    modelPath: "/assets/models/tree/low_poly_tree.usdz",
     position: [-15, 0, -2],
     scale: [2, 2, 2],
     rotation: [0, 0.8, 0],
@@ -22,7 +22,7 @@ export const trees: LevelConfig["decorations"] = [
   },
   {
     type: "model",
-    modelPath: "/assets/models/low_poly_tree.usdz",
+    modelPath: "/assets/models/tree/low_poly_tree.usdz",
     position: [-16, 0, -2],
     scale: [2, 2, 2],
     rotation: [0, 1.5, 0],
@@ -30,7 +30,7 @@ export const trees: LevelConfig["decorations"] = [
   },
   {
     type: "model",
-    modelPath: "/assets/models/low_poly_tree.usdz",
+    modelPath: "/assets/models/tree/low_poly_tree.usdz",
     position: [-0, 0, -1],
     scale: [2, 2, 2],
     rotation: [0, 0.5, 0],
@@ -38,7 +38,7 @@ export const trees: LevelConfig["decorations"] = [
   },
   {
     type: "model",
-    modelPath: "/assets/models/low_poly_tree.usdz",
+    modelPath: "/assets/models/tree/low_poly_tree.usdz",
     position: [22, 0, -20],
     scale: [2, 2, 2],
     rotation: [0, 1.2, 0],
@@ -46,7 +46,7 @@ export const trees: LevelConfig["decorations"] = [
   },
   {
     type: "model",
-    modelPath: "/assets/models/low_poly_tree.usdz",
+    modelPath: "/assets/models/tree/low_poly_tree.usdz",
     position: [-28, 0, -35],
     scale: [2, 2, 2],
     rotation: [0, 2.0, 0],
@@ -54,7 +54,7 @@ export const trees: LevelConfig["decorations"] = [
   },
   {
     type: "model",
-    modelPath: "/assets/models/low_poly_tree.usdz",
+    modelPath: "/assets/models/tree/low_poly_tree.usdz",
     position: [30, 0, -50],
     scale: [2, 2, 2],
     rotation: [0, 0.7, 0],
@@ -62,7 +62,7 @@ export const trees: LevelConfig["decorations"] = [
   },
   {
     type: "model",
-    modelPath: "/assets/models/low_poly_tree.usdz",
+    modelPath: "/assets/models/tree/low_poly_tree.usdz",
     position: [-25, 0, -68],
     scale: [2, 2, 2],
     rotation: [0, 1.8, 0],
@@ -70,7 +70,7 @@ export const trees: LevelConfig["decorations"] = [
   },
   {
     type: "model",
-    modelPath: "/assets/models/low_poly_tree.usdz",
+    modelPath: "/assets/models/tree/low_poly_tree.usdz",
     position: [28, 0, -82],
     scale: [2, 2, 2],
     rotation: [0, 0.4, 0],
@@ -78,7 +78,7 @@ export const trees: LevelConfig["decorations"] = [
   },
   {
     type: "model",
-    modelPath: "/assets/models/low_poly_tree.usdz",
+    modelPath: "/assets/models/tree/low_poly_tree.usdz",
     position: [-22, 0, -100],
     scale: [2, 2, 2],
     rotation: [0, 2.5, 0],
@@ -86,7 +86,7 @@ export const trees: LevelConfig["decorations"] = [
   },
   {
     type: "model",
-    modelPath: "/assets/models/low_poly_tree.usdz",
+    modelPath: "/assets/models/tree/low_poly_tree.usdz",
     position: [32, 0, -120],
     scale: [2, 2, 2],
     rotation: [0, 0.9, 0],
@@ -94,7 +94,7 @@ export const trees: LevelConfig["decorations"] = [
   },
   {
     type: "model",
-    modelPath: "/assets/models/low_poly_tree.usdz",
+    modelPath: "/assets/models/tree/low_poly_tree.usdz",
     position: [-18, 0, -138],
     scale: [2, 2, 2],
     rotation: [0, 1.4, 0],

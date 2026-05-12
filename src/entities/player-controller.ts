@@ -63,7 +63,7 @@ export class PlayerController {
     input: InputManager,
     physics: PhysicsWorld,
     spawnPosition: THREE.Vector3 = new THREE.Vector3(0, 5, 0),
-    modelPath: string = '/assets/characters/Astronaut_RaeTheRedPanda.gltf',
+    modelPath: string = "/assets/characters/Astronaut_RaeTheRedPanda.gltf",
   ) {
     this.engine = engine;
     this.input = input;
@@ -81,8 +81,8 @@ export class PlayerController {
       // Momentum — these are percentages per second (0-0.99)
       groundAccel: 0.99, // 99% of top speed reached in 1 second
       groundDecel: 0.95, // 95% of current speed lost in 1 second (simulates friction/inertia)
-      airControl: 1.0,   // percentage of ground acceleration while airborne
-      airDrag: 0.92,      // percentage of speed after 1s airborne
+      airControl: 1.0, // percentage of ground acceleration while airborne
+      airDrag: 0.93, // percentage of speed after 1s airborne
     };
 
     const shape = new CANNON.Sphere(this.config.playerRadius);
@@ -169,7 +169,7 @@ export class PlayerController {
     // Cleanup previous model
     if (this.modelGroup) {
       this.engine.scene.remove(this.modelGroup);
-      // NOTE: Strictly speaking, we should dispose of geometries/materials, 
+      // NOTE: Strictly speaking, we should dispose of geometries/materials,
       // but for a quick swap in browser this garbage collection overhead is acceptable.
     }
     if (this.mixer) {
@@ -231,8 +231,7 @@ export class PlayerController {
       }
     } else {
       this.modelGroup.rotation.x +=
-        (0 - this.modelGroup.rotation.x) *
-        Math.min(1, dt * 12);
+        (0 - this.modelGroup.rotation.x) * Math.min(1, dt * 12);
     }
 
     // Smoothly rotate model to face movement direction
@@ -393,8 +392,8 @@ export class PlayerController {
     }
 
     if (this.isGrounded) {
-      this.isSprinting = this.input.isKeyDown('shift');
-    } else if (!this.input.isKeyDown('shift')) {
+      this.isSprinting = this.input.isKeyDown("shift");
+    } else if (!this.input.isKeyDown("shift")) {
       this.isSprinting = false;
     }
 
@@ -413,15 +412,14 @@ export class PlayerController {
     this.sideVector.applyQuaternion(yawQuat);
 
     this.direction.set(0, 0, 0);
-    if (this.input.isKeyDown('w')) this.direction.add(this.frontVector);
-    if (this.input.isKeyDown('s')) this.direction.sub(this.frontVector);
-    if (this.input.isKeyDown('d')) this.direction.add(this.sideVector);
-    if (this.input.isKeyDown('a')) this.direction.sub(this.sideVector);
+    if (this.input.isKeyDown("w")) this.direction.add(this.frontVector);
+    if (this.input.isKeyDown("s")) this.direction.sub(this.frontVector);
+    if (this.input.isKeyDown("d")) this.direction.add(this.sideVector);
+    if (this.input.isKeyDown("a")) this.direction.sub(this.sideVector);
 
     const hasInput = this.direction.lengthSq() > 0;
     let vx = this.body.velocity.x;
     let vz = this.body.velocity.z;
-
 
     // ------------------------------------------------------------------
     // Step 1: Air drag (applied FIRST whenever airborne)
@@ -448,7 +446,6 @@ export class PlayerController {
         ? this.config.groundAccel
         : this.config.groundAccel * this.config.airControl;
 
-
       // Math.pow expects base > 0. Valid parameter range is 0 to 0.9999.
       const validAccel = Math.max(0, Math.min(accelP, 0.9999));
 
@@ -467,12 +464,14 @@ export class PlayerController {
       } else if (this.isGrounded) {
         vz = tvz;
       }
-
     } else {
       // No input → decelerate
       if (this.isGrounded) {
         // groundDecel is the percentage of speed lost per second.
-        const validDecel = Math.max(0, Math.min(this.config.groundDecel, 0.9999));
+        const validDecel = Math.max(
+          0,
+          Math.min(this.config.groundDecel, 0.9999),
+        );
 
         // Compute how much velocity remains after dt seconds.
         const dampFactor = Math.pow(1 - validDecel, dt);
