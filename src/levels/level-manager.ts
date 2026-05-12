@@ -396,7 +396,7 @@ export class LevelManager {
         if (def.solid) {
           anchor.updateMatrixWorld(true);
 
-          model.traverse((child) => {
+          objectToAdd.traverse((child) => {
             if (child instanceof THREE.Mesh) {
               const geometry = child.geometry as THREE.BufferGeometry;
               if (!geometry.attributes.position) return;

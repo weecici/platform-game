@@ -1,5 +1,5 @@
-import * as THREE from 'three';
-import type { Engine } from '../core/engine';
+import * as THREE from "three";
+import type { Engine } from "../core/engine";
 
 /**
  * LightingSystem - Manages all lighting including:
@@ -34,8 +34,8 @@ export class LightingSystem {
     this.engine = engine;
 
     this.config = {
-      ambientColor: 0x7c8fb0,
-      ambientIntensity: 0.82,
+      ambientColor: 0xe0e0ff,
+      ambientIntensity: 0.9,
       directionalColor: 0xfff4e6,
       directionalIntensity: 1.5,
       directionalPosition: { x: 50, y: 80, z: 30 },
