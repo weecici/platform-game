@@ -82,7 +82,7 @@ export class PlayerController {
       groundAccel: 0.99, // 99% of top speed reached in 1 second
       groundDecel: 0.95, // 95% of current speed lost in 1 second (simulates friction/inertia)
       airControl: 1.0, // percentage of ground acceleration while airborne
-      airDrag: 0.93, // percentage of speed after 1s airborne
+      airDrag: 0.95, // percentage of speed after 1s airborne
     };
 
     const shape = new CANNON.Sphere(this.config.playerRadius);
