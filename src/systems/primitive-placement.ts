@@ -448,8 +448,8 @@ function disposeObject(obj: THREE.Object3D): void {
  */
 function aimDirection(yaw: number, pitch: number): THREE.Vector3 {
   return new THREE.Vector3(
-    -Math.sin(yaw),
-    Math.cos(yaw) * Math.sin(pitch),
+    -Math.sin(yaw) * Math.cos(pitch),
+    Math.sin(pitch),
     -Math.cos(yaw) * Math.cos(pitch),
   );
 }
