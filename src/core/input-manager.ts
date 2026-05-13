@@ -23,6 +23,8 @@ export class InputManager {
     "v",
     "b",
     "i",
+    "o",
+    "t",
     "1",
     "2",
     "3",

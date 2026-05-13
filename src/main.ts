@@ -227,7 +227,8 @@ class Game {
         e.button === 0 &&
         this.isStarted &&
         this.isRunning &&
-        this.input.isPointerLocked
+        this.input.isPointerLocked &&
+        !this.engine.isSpectatorMode
       ) {
         const placed = this.primitivePlacement.confirmPlace(
           this.engine.camera,
@@ -283,6 +284,31 @@ class Game {
     this.input.onKeyPress("r", () => {
       if (this.isStarted) {
         this.restartGame();
+      }
+    });
+
+    this.input.onKeyPress("o", () => {
+      if (this.isStarted && !this.isDead) {
+        this.engine.setSpectatorMode(!this.engine.isSpectatorMode);
+        this.player.isActive = !this.engine.isSpectatorMode;
+        
+        const helper = document.getElementById("spectator-hint");
+        if (helper) {
+          if (this.engine.isSpectatorMode) helper.classList.add("visible");
+          else helper.classList.remove("visible");
+        }
+      }
+    });
+
+    this.input.onKeyPress("t", () => {
+      if (this.engine.isSpectatorMode && this.isStarted && !this.isDead) {
+        this.engine.setSpectatorMode(false);
+        this.player.teleportToSpectator(this.engine.camera);
+        
+        const helper = document.getElementById("spectator-hint");
+        if (helper) helper.classList.remove("visible");
+        
+        this.showNotification("Teleported!", 1500);
       }
     });
 
@@ -652,21 +678,26 @@ class Game {
 
     const dt = Math.min(this.engine.clock.getDelta(), 0.05);
     this.physics.step(dt);
-    // Skip player update when in spectator mode
-    if (!this.engine.isSpectatorMode) {
-      this.player.update(dt);
-    }
+    
+    // Player controller still updates animations and physics even if inactive
+    this.player.update(dt);
+    
     this.input.resetMouseDelta();
 
     const playerPos = this.player.getPosition();
     this.levelManager.update(dt, playerPos);
 
-    // Update ghost preview position every frame
-    this.primitivePlacement.updateGhost(
-      playerPos,
-      this.player.aimYaw,
-      this.player.aimPitch,
-    );
+    // Only update ghost preview if not in spectator mode
+    if (!this.engine.isSpectatorMode) {
+      this.primitivePlacement.updateGhost(
+        playerPos,
+        this.player.aimYaw,
+        this.player.aimPitch,
+      );
+    } else {
+      // Hide ghost in spectator mode
+      this.primitivePlacement.clear();
+    }
 
     this.lighting.updateSunPosition(playerPos.x, playerPos.z);
 

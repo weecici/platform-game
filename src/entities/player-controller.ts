@@ -58,6 +58,8 @@ export class PlayerController {
   private thirdPersonView: "back" | "front" = "back";
   private modelPath: string;
 
+  public isActive = true;
+
   constructor(
     engine: Engine,
     input: InputManager,
@@ -315,7 +317,7 @@ export class PlayerController {
   }
 
   private handleMouseLook(): void {
-    if (this.isDead) {
+    if (this.isDead || !this.isActive) {
       return;
     }
 
@@ -412,10 +414,12 @@ export class PlayerController {
     this.sideVector.applyQuaternion(yawQuat);
 
     this.direction.set(0, 0, 0);
-    if (this.input.isKeyDown("w")) this.direction.add(this.frontVector);
-    if (this.input.isKeyDown("s")) this.direction.sub(this.frontVector);
-    if (this.input.isKeyDown("d")) this.direction.add(this.sideVector);
-    if (this.input.isKeyDown("a")) this.direction.sub(this.sideVector);
+    if (this.isActive) {
+      if (this.input.isKeyDown("w")) this.direction.add(this.frontVector);
+      if (this.input.isKeyDown("s")) this.direction.sub(this.frontVector);
+      if (this.input.isKeyDown("d")) this.direction.add(this.sideVector);
+      if (this.input.isKeyDown("a")) this.direction.sub(this.sideVector);
+    }
 
     const hasInput = this.direction.lengthSq() > 0;
     let vx = this.body.velocity.x;
@@ -490,7 +494,7 @@ export class PlayerController {
   }
 
   private handleJump(): void {
-    if (this.isDead) return;
+    if (this.isDead || !this.isActive) return;
 
     if (this.input.isKeyDown(" ") && this.isGrounded) {
       this.body.velocity.y = this.config.jumpForce;
@@ -535,6 +539,8 @@ export class PlayerController {
   }
 
   private syncCameraToBody(): void {
+    if (!this.isActive) return;
+
     if (this.viewMode === "first") {
       this.engine.camera.position.set(
         this.body.position.x,
@@ -574,6 +580,7 @@ export class PlayerController {
 
   respawn(position: THREE.Vector3): void {
     this.isDead = false;
+    this.isActive = true;
     this.deadBodyFrozen = false;
     this.body.type = CANNON.Body.DYNAMIC;
     this.body.updateMassProperties();
@@ -590,6 +597,19 @@ export class PlayerController {
       this.modelGroup.rotation.z = 0;
     }
 
+    this.syncCameraToBody();
+  }
+
+  teleportToSpectator(camera: THREE.PerspectiveCamera): void {
+    const euler = new THREE.Euler().setFromQuaternion(camera.quaternion, "YXZ");
+    this.yaw = euler.y;
+    this.pitch = euler.x;
+    
+    // Teleport physics body to camera position, adjusted for player height
+    this.body.position.set(camera.position.x, camera.position.y - 1.5, camera.position.z);
+    this.body.velocity.set(0, 0, 0);
+    
+    this.isActive = true;
     this.syncCameraToBody();
   }
 
