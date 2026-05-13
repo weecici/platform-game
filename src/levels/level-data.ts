@@ -1,10 +1,10 @@
 import type { LevelConfig } from "./level-manager";
-import { platforms } from "./parkour/platform_position";
-import { collectibles } from "./parkour/collectible_position";
-import { houses } from "./deco/house_position";
-import { trees } from "./deco/tree_position";
-import { planes } from "./deco/plane_position";
-import { clouds } from "./deco/cloud_position";
+import { platforms } from "./parkour/platform-position";
+import { collectibles } from "./parkour/collectible-position";
+import { houses } from "./deco/house-position";
+import { trees } from "./deco/tree-position";
+import { vehicles } from "./deco/vehicle-position";
+import { clouds } from "./deco/cloud-position";
 
 /**
  * Parkour level definitions
@@ -33,16 +33,16 @@ export const LEVEL_PARKOUR_CITY: LevelConfig = {
     },
     // {
     //   type: "model",
-    //   modelPath: "/assets/models/tree2.usdz",
+    //   modelPath: "/assets/models/scene/test.usdz",
     //   position: [-5, 0, -2],
-    //   scale: [0.5, 0.5, 0.5],
+    //   scale: [0.1, 0.1, 0.1],
     //   rotation: [0, 0.3, 0],
-    //   childIndex: 3,
+    //   // childIndex: 1,
     // },
     // ...clouds,
-    ...planes,
+    ...vehicles,
     ...houses,
-    // ...trees,
+    ...trees,
     ...collectibles,
   ],
 };

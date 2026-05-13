@@ -56,7 +56,7 @@ class Game {
   private btnSelectPlay!: HTMLButtonElement;
   private charPreviewCanvas!: HTMLCanvasElement;
   private selectedCharacterPath: string =
-    "/assets/characters/Astronaut_RaeTheRedPanda.gltf";
+    "/assets/characters/Astronaut_FernandoTheFlamingo.gltf";
 
   private previewRenderer!: THREE.WebGLRenderer;
   private previewScene!: THREE.Scene;
@@ -75,12 +75,6 @@ class Game {
     this.physics = new PhysicsWorld();
 
     this.textureManager = new TextureManager();
-    this.textureManager.createCheckerboard();
-    this.textureManager.createBrickTexture();
-    this.textureManager.createMetalTexture();
-    this.textureManager.createGrassTexture();
-    this.textureManager.createStoneTexture();
-    this.textureManager.createWoodTexture();
 
     this.lighting = new LightingSystem(this.engine);
     this.levelManager = new LevelManager(
@@ -148,59 +142,14 @@ class Game {
   private async loadExternalTextureSets(): Promise<void> {
     try {
       await Promise.all([
-        this.textureManager.loadTextureSet("stone", {
-          baseColor: "/assets/textures/stone-city/basecolor.jpg",
-          normal: "/assets/textures/stone-city/normal.jpg",
-          roughness: "/assets/textures/stone-city/roughness.jpg",
-          ao: "/assets/textures/stone-city/ao.jpg",
+        this.textureManager.loadTextureSet("grass", {
+          baseColor: "/assets/textures/grass/baseColor.jpg",
         }),
-        this.textureManager.loadTextureSet("concrete-moss", {
-          baseColor:
-            "/assets/textures/concrete-moss/textures/concrete_moss_diff_1k.jpg",
-          normal:
-            "/assets/textures/concrete-moss/textures/concrete_moss_nor_gl_1k.jpg",
-          roughness:
-            "/assets/textures/concrete-moss/textures/concrete_moss_arm_1k.jpg",
-          ao: "/assets/textures/concrete-moss/textures/concrete_moss_arm_1k.jpg",
+        this.textureManager.loadTextureSet("stone-1", {
+          baseColor: "/assets/textures/stone-1/baseColor.jpg",
         }),
-        this.textureManager.loadTextureSet("metal", {
-          baseColor: "/assets/textures/metal-industrial/basecolor.jpg",
-          normal: "/assets/textures/metal-industrial/normal.jpg",
-          roughness: "/assets/textures/metal-industrial/roughness.jpg",
-          ao: "/assets/textures/metal-industrial/ao.jpg",
-          metallic: "/assets/textures/metal-industrial/metallic.jpg",
-        }),
-        this.textureManager.loadTextureSet("metal-plate", {
-          baseColor:
-            "/assets/textures/metal-plate/textures/metal_plate_diff_1k.jpg",
-          normal:
-            "/assets/textures/metal-plate/textures/metal_plate_nor_gl_1k.jpg",
-          roughness:
-            "/assets/textures/metal-plate/textures/metal_plate_rough_1k.jpg",
-        }),
-        this.textureManager.loadTextureSet("brick", {
-          baseColor: "/assets/textures/brick-weathered/basecolor.jpg",
-          normal: "/assets/textures/brick-weathered/normal.jpg",
-          roughness: "/assets/textures/brick-weathered/roughness.jpg",
-          ao: "/assets/textures/brick-weathered/ao.jpg",
-        }),
-        this.textureManager.loadTextureSet("grass-rock", {
-          baseColor: "/assets/textures/grass-rock/basecolor.jpg",
-          normal: "/assets/textures/grass-rock/normal.jpg",
-          roughness: "/assets/textures/grass-rock/roughness.jpg",
-          ao: "/assets/textures/grass-rock/ao.jpg",
-        }),
-        this.textureManager.loadTextureSet("wood", {
-          baseColor: "/assets/textures/wood-aged-planks/basecolor.jpg",
-          normal: "/assets/textures/wood-aged-planks/normal.jpg",
-          roughness: "/assets/textures/wood-aged-planks/roughness.jpg",
-          ao: "/assets/textures/wood-aged-planks/ao.jpg",
-        }),
-        this.textureManager.loadTextureSet("asphalt-dark", {
-          baseColor: "/assets/textures/asphalt-dark/basecolor.jpg",
-          normal: "/assets/textures/asphalt-dark/normal.jpg",
-          roughness: "/assets/textures/asphalt-dark/roughness.jpg",
-          ao: "/assets/textures/asphalt-dark/ao.jpg",
+        this.textureManager.loadTextureSet("stone-2", {
+          baseColor: "/assets/textures/stone-2/baseColor.jpg",
         }),
       ]);
 
@@ -216,13 +165,16 @@ class Game {
 
   private setupSkybox(): void {
     const cubeLoader = new THREE.CubeTextureLoader();
+
+    const basePath = "/assets/textures/skybox/skybox-3-morning/";
+
     const texturePaths = [
-      "/assets/textures/sky-box/px.png",
-      "/assets/textures/sky-box/nx.png",
-      "/assets/textures/sky-box/py.png",
-      "/assets/textures/sky-box/ny.png",
-      "/assets/textures/sky-box/pz.png",
-      "/assets/textures/sky-box/nz.png",
+      basePath + "px.png",
+      basePath + "nx.png",
+      basePath + "py.png",
+      basePath + "ny.png",
+      basePath + "pz.png",
+      basePath + "nz.png",
     ];
 
     const skyboxTexture = cubeLoader.load(
@@ -238,14 +190,10 @@ class Game {
 
     skyboxTexture.colorSpace = THREE.SRGBColorSpace;
     this.engine.scene.background = skyboxTexture;
-    // Tăng cường độ phát sáng của riêng bầu trời (Cách hiệu quả nhất)
-    // Bạn có thể thay đổi số này thành 1.5, 2.0 hoặc 3.0 để test độ sáng
-    this.engine.scene.backgroundIntensity = 1.5;
+    this.engine.scene.backgroundIntensity = 1.0;
 
-    // Kéo độ phơi sáng của toàn bộ Game Engine lên (Làm sáng cả bầu trời lẫn bệ đỡ)
     if (this.engine.renderer) {
-      // Giá trị mặc định là 1.0, tăng lên để ảnh rực rỡ hơn
-      this.engine.renderer.toneMappingExposure = 1.5;
+      this.engine.renderer.toneMappingExposure = 1.0;
     }
   }
   private setupEventListeners(): void {
