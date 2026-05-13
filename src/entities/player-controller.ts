@@ -544,6 +544,7 @@ export class PlayerController {
       this.engine.camera.rotation.order = "YXZ";
       this.engine.camera.rotation.y = this.yaw;
       this.engine.camera.rotation.x = this.pitch;
+      this.engine.camera.rotation.z = 0; // Fix residual roll from 3rd-person lookAt
     } else {
       const targetPosition = this.getPosition();
       targetPosition.y += 1.5; // Target head level for looking
