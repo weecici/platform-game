@@ -44,6 +44,7 @@ class Game {
   private timeEl: HTMLElement;
   private speedEl: HTMLElement;
   private deathsEl: HTMLElement;
+  private coordsEl: HTMLElement;
   private startScreen: HTMLElement;
   private deathScreen: HTMLElement;
   private pauseScreen: HTMLElement;
@@ -114,6 +115,7 @@ class Game {
     this.timeEl = document.getElementById("hud-time")!;
     this.speedEl = document.getElementById("hud-speed")!;
     this.deathsEl = document.getElementById("hud-deaths")!;
+    this.coordsEl = document.getElementById("hud-coords")!;
     this.startScreen = document.getElementById("start-screen")!;
     this.deathScreen = document.getElementById("death-screen")!;
     this.pauseScreen = document.getElementById("pause-screen")!;
@@ -282,6 +284,10 @@ class Game {
       if (this.isStarted) {
         this.restartGame();
       }
+    });
+
+    this.input.onKeyPress("i", () => {
+      this.inspectObjectSize();
     });
 
     // Keys 1-6: select block type for placement (ghost preview)
@@ -561,6 +567,41 @@ class Game {
     this.gameLoop();
   }
 
+  private inspectObjectSize(): void {
+    if (!this.isRunning || !this.isStarted) return;
+
+    const raycaster = new THREE.Raycaster();
+    raycaster.setFromCamera(new THREE.Vector2(0, 0), this.engine.camera);
+
+    const intersects = raycaster.intersectObjects(this.engine.scene.children, true);
+    
+    if (intersects.length > 0) {
+      let object: THREE.Object3D | null = intersects[0].object;
+
+      // Ignore the player's own body
+      if (object === this.player.modelGroup || object.parent === this.player.modelGroup) {
+         if (intersects.length > 1) object = intersects[1].object;
+         else return;
+      }
+
+      // Walk up the hierarchy to find the main group inserted by level-manager
+      let root = object;
+      while (root.parent && root.parent !== this.engine.scene) {
+        root = root.parent;
+      }
+
+      const box = new THREE.Box3().setFromObject(root);
+      const size = new THREE.Vector3();
+      box.getSize(size);
+
+      const msg = `Size: ${size.x.toFixed(2)} x ${size.y.toFixed(2)} x ${size.z.toFixed(2)}`;
+      this.showNotification(msg, 4000);
+      console.log(`[INSPECT] Object:`, root, `\nSize:`, size);
+    } else {
+      this.showNotification("No object in crosshair", 1500);
+    }
+  }
+
   private playerDied(reason = "You fell out of the course."): void {
     if (this.isDead) return;
 
@@ -673,6 +714,9 @@ class Game {
     this.timeEl.textContent = `Time: ${this.elapsedTime.toFixed(1)}s`;
     this.speedEl.textContent = `Speed: ${this.player.getSpeed().toFixed(1)}`;
     this.deathsEl.textContent = `Deaths: ${this.deathCount}`;
+    
+    const pos = this.player.getPosition();
+    this.coordsEl.textContent = `XYZ: ${pos.x.toFixed(1)}, ${pos.y.toFixed(1)}, ${pos.z.toFixed(1)}`;
   }
 
   /** Flash the placement-distance hint briefly when scroll wheel is used */
@@ -692,19 +736,24 @@ class Game {
   /** Show a brief pickup notification */
   private pickupNotificationTimeout: ReturnType<typeof setTimeout> | null =
     null;
-  private showPickupNotification(blockId: string): void {
-    const bt = BLOCK_CATALOGUE.find((b) => b.id === blockId);
-    if (!bt) return;
+
+  private showNotification(message: string, duration = 1500): void {
     const el = document.getElementById("pickup-notification");
     if (!el) return;
-    el.textContent = `${bt.icon} +1 ${bt.label}`;
+    el.textContent = message;
     el.classList.add("visible");
     if (this.pickupNotificationTimeout)
       clearTimeout(this.pickupNotificationTimeout);
     this.pickupNotificationTimeout = setTimeout(
       () => el.classList.remove("visible"),
-      1500,
+      duration,
     );
+  }
+
+  private showPickupNotification(blockId: string): void {
+    const bt = BLOCK_CATALOGUE.find((b) => b.id === blockId);
+    if (!bt) return;
+    this.showNotification(`${bt.icon} +1 ${bt.label}`);
   }
 
   /** Update the block inventory HUD panel */

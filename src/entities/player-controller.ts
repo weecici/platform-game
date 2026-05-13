@@ -42,7 +42,7 @@ export class PlayerController {
   private readonly coyoteTime = 0.15; // 150ms of leniency when leaving ground
 
   // Character Model
-  private modelGroup!: THREE.Group;
+  public modelGroup!: THREE.Group;
   private mixer!: THREE.AnimationMixer;
   private actions: Map<string, THREE.AnimationAction> = new Map();
   private currentActionName = "";
