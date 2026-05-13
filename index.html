@@ -476,6 +476,35 @@
       #pickup-notification.visible {
         opacity: 1;
       }
+      
+      #spectator-hint {
+        position: absolute;
+        top: 10%;
+        left: 49%;
+        transform: translateX(-50%);
+        color: #fff;
+        background: rgba(123, 47, 255, 0.6);
+        border: 1px solid rgba(0, 212, 255, 0.4);
+        padding: 8px 24px;
+        border-radius: 999px;
+        font-size: 14px;
+        font-weight: bold;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        box-shadow: 0 0 15px rgba(123, 47, 255, 0.4);
+        z-index: 20;
+      }
+      #spectator-hint.visible {
+        opacity: 1;
+      }
+      #spectator-hint kbd {
+        background: rgba(0,0,0,0.4);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: monospace;
+        margin: 0 2px;
+      }
     </style>
   </head>
   <body>
@@ -494,6 +523,7 @@
       <div id="capture-hint">Click to lock cursor</div>
       <div id="placement-distance"></div>
       <div id="pickup-notification"></div>
+      <div id="spectator-hint"><kbd>O</kbd> Cancel  |  <kbd>T</kbd> Teleport Here</div>
 
       <!-- Block Inventory Panel -->
       <div id="block-inventory">

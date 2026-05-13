@@ -217,14 +217,11 @@ export class Engine {
 
     // Handle resize
     window.addEventListener('resize', this.onResize.bind(this));
+  }
 
-    // Toggle spectator mode with 'O'
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'o' || e.key === 'O') {
-        this.isSpectatorMode = !this.isSpectatorMode;
-        this.spectator.enabled = this.isSpectatorMode;
-      }
-    });
+  public setSpectatorMode(enabled: boolean): void {
+    this.isSpectatorMode = enabled;
+    this.spectator.enabled = enabled;
   }
 
   /**
