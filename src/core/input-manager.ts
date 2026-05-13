@@ -22,6 +22,7 @@ export class InputManager {
     "r",
     "v",
     "b",
+    "i",
     "1",
     "2",
     "3",

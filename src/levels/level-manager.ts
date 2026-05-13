@@ -43,7 +43,11 @@ export interface DecorationDef {
     | "model"
     | "river";
   position: [number, number, number];
-  scale?: [number, number, number];
+  scale?: number | [number, number, number];
+  targetSize?: [number, number, number];
+  targetSizeX?: number;
+  targetSizeY?: number;
+  targetSizeZ?: number;
   rotation?: [number, number, number];
   color?: number;
   emissive?: number;
@@ -258,7 +262,7 @@ export class LevelManager {
 
       const anchor = new THREE.Group();
       anchor.position.set(...def.position);
-      if (def.scale) anchor.scale.set(...def.scale);
+      // Wait for model load to apply scale/targetSize so we know the raw bounding box first
       if (def.rotation) anchor.rotation.set(...def.rotation);
       this.engine.scene.add(anchor);
 
@@ -319,7 +323,12 @@ export class LevelManager {
     const mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(...def.position);
     if (def.type === "river") mesh.rotation.x = -Math.PI / 2;
-    if (def.scale) mesh.scale.set(...def.scale);
+
+    const bounds = new THREE.Box3().setFromObject(mesh);
+    const rawSize = new THREE.Vector3();
+    bounds.getSize(rawSize);
+    this.applyScaleAndTargetSize(mesh, def, rawSize);
+
     mesh.castShadow = def.type !== "river";
     this.engine.scene.add(mesh);
 
@@ -339,6 +348,46 @@ export class LevelManager {
       generation: this.levelGeneration,
       isCulled: false,
     });
+  }
+
+  private applyScaleAndTargetSize(mesh: THREE.Object3D, def: DecorationDef, rawSize: THREE.Vector3): void {
+    // 1. Base Scale
+    if (def.scale !== undefined) {
+      if (typeof def.scale === "number") {
+        mesh.scale.set(def.scale, def.scale, def.scale);
+      } else {
+        mesh.scale.set(...def.scale);
+      }
+    } else {
+      mesh.scale.set(1, 1, 1); // Ensure clean state
+    }
+
+    // 2. Target Sizing (Overrides Base Scale)
+    let factor = 1.0;
+    let scalingProportionally = false;
+
+    if (def.targetSizeX !== undefined && rawSize.x > 0.001) {
+      factor = def.targetSizeX / rawSize.x;
+      scalingProportionally = true;
+    } else if (def.targetSizeY !== undefined && rawSize.y > 0.001) {
+      factor = def.targetSizeY / rawSize.y;
+      scalingProportionally = true;
+    } else if (def.targetSizeZ !== undefined && rawSize.z > 0.001) {
+      factor = def.targetSizeZ / rawSize.z;
+      scalingProportionally = true;
+    }
+
+    if (scalingProportionally) {
+      // Multiply current scale by factor to retain aspect ratio
+      mesh.scale.multiplyScalar(factor);
+    }
+
+    // 3. Absolute Target Size Override (Destroys aspect ratio if not careful)
+    if (def.targetSize !== undefined) {
+      if (rawSize.x > 0.001) mesh.scale.x = def.targetSize[0] / rawSize.x;
+      if (rawSize.y > 0.001) mesh.scale.y = def.targetSize[1] / rawSize.y;
+      if (rawSize.z > 0.001) mesh.scale.z = def.targetSize[2] / rawSize.z;
+    }
   }
 
   private loadDecorationModel(dec: DecorationRuntime): void {
@@ -385,6 +434,16 @@ export class LevelManager {
         }
 
         const bounds = new THREE.Box3().setFromObject(objectToAdd);
+        const rawSize = new THREE.Vector3();
+        bounds.getSize(rawSize);
+
+        // Apply advanced scaling logic directly to the anchor
+        this.applyScaleAndTargetSize(anchor, def, rawSize);
+        dec.initialScale.copy(anchor.scale); // Save for death reset
+
+        // Recompute bounds after scale to fix centering offsets
+        const scaledBounds = new THREE.Box3().setFromObject(objectToAdd);
+        // However, we actually want to center the original object local position, so we use the unscaled center
         const center = bounds.getCenter(new THREE.Vector3());
         objectToAdd.position.x -= center.x;
         objectToAdd.position.y -= bounds.min.y;
