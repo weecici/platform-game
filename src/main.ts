@@ -590,9 +590,18 @@ class Game {
         root = root.parent;
       }
 
+      // Temporarily remove rotation to measure the true local size, not the inflated AABB
+      const originalRotation = root.rotation.clone();
+      root.rotation.set(0, 0, 0);
+      root.updateMatrixWorld(true);
+
       const box = new THREE.Box3().setFromObject(root);
       const size = new THREE.Vector3();
       box.getSize(size);
+
+      // Restore original rotation
+      root.rotation.copy(originalRotation);
+      root.updateMatrixWorld(true);
 
       const msg = `Size: ${size.x.toFixed(2)} x ${size.y.toFixed(2)} x ${size.z.toFixed(2)}`;
       this.showNotification(msg, 4000);
