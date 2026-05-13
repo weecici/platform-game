@@ -10,6 +10,7 @@ export const trees: LevelConfig["decorations"] = [
     scale: [0.1, 0.1, 0.1],
     rotation: [0, 0.3, 0],
     childIndex: 1,
+    solid: true,
   },
   {
     type: "model",
@@ -18,6 +19,7 @@ export const trees: LevelConfig["decorations"] = [
     scale: [0.1, 0.1, 0.1],
     rotation: [0, 0.8, 0],
     childIndex: 2,
+    solid: true,
   },
   {
     type: "model",
@@ -26,14 +28,16 @@ export const trees: LevelConfig["decorations"] = [
     scale: [0.1, 0.1, 0.1],
     rotation: [0, 1.5, 0],
     childIndex: 3,
+    solid: true,
   },
   {
     type: "model",
     modelPath: "/assets/models/scene/low_poly_trees.usdz",
-    position: [-0, 0, -1],
+    position: [10, 0, 10],
     scale: [0.1, 0.1, 0.1],
     rotation: [0, 0.5, 0],
     childIndex: 4,
+    solid: true,
   },
   {
     type: "model",
@@ -42,22 +46,25 @@ export const trees: LevelConfig["decorations"] = [
     scale: [0.1, 0.1, 0.1],
     rotation: [0, 1.2, 0],
     childIndex: 5,
+    solid: true,
   },
   {
     type: "model",
     modelPath: "/assets/models/scene/low_poly_trees.usdz",
-    position: [-28, -3, -35],
+    position: [-28, -1, -35],
     scale: [0.1, 0.1, 0.1],
     rotation: [0, 2.0, 0],
     childIndex: 6,
+    solid: true,
   },
   {
     type: "model",
     modelPath: "/assets/models/scene/low_poly_trees.usdz",
-    position: [30, -3, -50],
+    position: [30, -2, -50],
     scale: [0.1, 0.1, 0.1],
     rotation: [0, 0.7, 0],
     childIndex: 7,
+    solid: true,
   },
   {
     type: "model",
@@ -66,6 +73,7 @@ export const trees: LevelConfig["decorations"] = [
     scale: [0.1, 0.1, 0.1],
     rotation: [0, 1.8, 0],
     childIndex: 8,
+    solid: true,
   },
   {
     type: "model",
@@ -74,14 +82,16 @@ export const trees: LevelConfig["decorations"] = [
     scale: [0.1, 0.1, 0.1],
     rotation: [0, 0.4, 0],
     childIndex: 9,
+    solid: true,
   },
   {
     type: "model",
     modelPath: "/assets/models/scene/low_poly_trees.usdz",
-    position: [-22, -3, -100],
+    position: [-22, -1, -100],
     scale: [0.1, 0.1, 0.1],
     rotation: [0, 2.5, 0],
     childIndex: 10,
+    solid: true,
   },
   {
     type: "model",
@@ -90,6 +100,7 @@ export const trees: LevelConfig["decorations"] = [
     scale: [0.1, 0.1, 0.1],
     rotation: [0, 0.9, 0],
     childIndex: 11,
+    solid: true,
   },
   {
     type: "model",
@@ -98,5 +109,6 @@ export const trees: LevelConfig["decorations"] = [
     scale: [0.1, 0.1, 0.1],
     rotation: [0, 1.4, 0],
     childIndex: 12,
+    solid: true,
   },
 ];

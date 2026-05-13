@@ -147,6 +147,45 @@ export class LevelManager {
     const [px, py, pz] = def.position;
 
     const geometry = new THREE.BoxGeometry(sx, sy, sz);
+    
+    // World-space UV mapping for perfect aspect ratio without squishing
+    const positionAttribute = geometry.getAttribute("position");
+    const normalAttribute = geometry.getAttribute("normal");
+    const uvAttribute = geometry.getAttribute("uv");
+
+    const vertex = new THREE.Vector3();
+    const normal = new THREE.Vector3();
+    
+    // Default tiles per world unit (e.g. 0.5 = 1 tile every 2 units)
+    // We ignore def.textureRepeat now to enforce a globally consistent texture scale
+    const tileScale = 0.5;
+
+    for (let i = 0; i < positionAttribute.count; i++) {
+      vertex.fromBufferAttribute(positionAttribute, i);
+      normal.fromBufferAttribute(normalAttribute, i);
+
+      let u = 0, v = 0;
+
+      // Top / Bottom face (normal points along Y)
+      if (Math.abs(normal.y) > 0.5) {
+        u = vertex.x * tileScale;
+        v = vertex.z * tileScale;
+      }
+      // Front / Back face (normal points along Z)
+      else if (Math.abs(normal.z) > 0.5) {
+        u = vertex.x * tileScale;
+        v = vertex.y * tileScale;
+      }
+      // Left / Right face (normal points along X)
+      else if (Math.abs(normal.x) > 0.5) {
+        u = vertex.z * tileScale;
+        v = vertex.y * tileScale;
+      }
+
+      uvAttribute.setXY(i, u, v);
+    }
+    uvAttribute.needsUpdate = true;
+
     const material = new THREE.MeshStandardMaterial({
       color: def.color || 0x668899,
       roughness: 0.6,
@@ -156,21 +195,19 @@ export class LevelManager {
     const mesh = new THREE.Mesh(geometry, material);
 
     if (def.texture) {
-      const repeatX = def.textureRepeat?.[0] || sx / 2;
-      const repeatY = def.textureRepeat?.[1] || sz / 2;
-
+      // Pass 1, 1 since the geometry UVs handle the tiling now
       const appliedSet = this.textureManager.applyTextureSet(
         mesh,
         def.texture,
-        repeatX,
-        repeatY,
+        1,
+        1,
       );
 
       if (!appliedSet) {
         const tex = this.textureManager.getTexture(def.texture);
         if (tex) {
           const cloned = tex.clone();
-          cloned.repeat.set(repeatX, repeatY);
+          cloned.repeat.set(1, 1);
           cloned.needsUpdate = true;
           material.map = cloned;
         }
