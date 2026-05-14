@@ -4,7 +4,7 @@ import { collectibles } from "./parkour/collectible-position";
 import { houses } from "./deco/house-position";
 import { trees } from "./deco/tree-position";
 import { vehicles } from "./deco/vehicle-position";
-import { clouds } from "./deco/cloud-position";
+import { scene } from "./deco/scene-position";
 
 /**
  * Parkour level definitions
@@ -19,32 +19,5 @@ export const LEVEL_PARKOUR_CITY: LevelConfig = {
   fogNear: 100,
   fogFar: 400,
   platforms: platforms as LevelConfig["platforms"],
-  decorations: [
-    // ===MODEL DECORATIONS ===
-    // Low poly mountain — left border, stretched along map length
-    {
-      type: "model",
-      modelPath: "/assets/models/scene/low_poly_mountain.usdz",
-      position: [-200, -4.5, -60],
-      scale: [0.35, 0.5, 0.5],
-      rotation: [0, Math.PI, 0],
-      solid: true,
-      noCull: true,
-    },
-    {
-      type: "model",
-      modelPath: "/assets/models/scene/road.usdz",
-      position: [-5, 0, -2],
-      scale: 1,
-      targetSizeX: 30.0,
-      rotation: [0, Math.PI / 3, 0],
-      childIndex: 1,
-      solid: true,
-    },
-    // ...clouds,
-    ...vehicles,
-    ...houses,
-    ...trees,
-    ...collectibles,
-  ],
+  decorations: [...scene, ...houses, ...trees, ...vehicles, ...collectibles],
 };
