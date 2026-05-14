@@ -3,7 +3,7 @@ import { LevelConfig } from "../level-manager";
 export const vehicles: LevelConfig["decorations"] = [
   {
     type: "model",
-    modelPath: "/assets/models/vehicle/truck.usdz",
+    modelPath: "vehicle/truck.usdz",
     position: [0, 0, 0],
     scale: [0.01, 0.01, 0.01],
     animate: {
@@ -14,7 +14,7 @@ export const vehicles: LevelConfig["decorations"] = [
   },
   {
     type: "model",
-    modelPath: "/assets/models/vehicle/sbd_3.usdz",
+    modelPath: "vehicle/sbd_3.usdz",
     position: [10, 45, -60],
     scale: [0.025, 0.025, 0.025],
     animate: {
@@ -27,7 +27,7 @@ export const vehicles: LevelConfig["decorations"] = [
   },
   {
     type: "model",
-    modelPath: "/assets/models/vehicle/blue_plane.usdz",
+    modelPath: "vehicle/blue_plane.usdz",
     position: [10, 55, -60],
     scale: [0.025, 0.025, 0.025],
     animate: {
@@ -40,7 +40,7 @@ export const vehicles: LevelConfig["decorations"] = [
   },
   {
     type: "model",
-    modelPath: "/assets/models/vehicle/fly_plane.usdz",
+    modelPath: "vehicle/fly_plane.usdz",
     position: [10, 35, -60],
     scale: [0.025, 0.025, 0.025],
     animate: {

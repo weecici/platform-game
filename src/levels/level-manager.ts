@@ -5,6 +5,8 @@ import type { PhysicsWorld } from "../core/physics-world";
 import type { TextureManager } from "../systems/texture-manager";
 import { ModelLoader } from "../entities/model-loader";
 
+const baseModelPath = "/assets/models/";
+
 export interface PlatformDef {
   position: [number, number, number];
   size: [number, number, number];
@@ -151,7 +153,7 @@ export class LevelManager {
     const [px, py, pz] = def.position;
 
     const geometry = new THREE.BoxGeometry(sx, sy, sz);
-    
+
     // World-space UV mapping for perfect aspect ratio without squishing
     const positionAttribute = geometry.getAttribute("position");
     const normalAttribute = geometry.getAttribute("normal");
@@ -159,7 +161,7 @@ export class LevelManager {
 
     const vertex = new THREE.Vector3();
     const normal = new THREE.Vector3();
-    
+
     // Default tiles per world unit (e.g. 0.5 = 1 tile every 2 units)
     // We ignore def.textureRepeat now to enforce a globally consistent texture scale
     const tileScale = 0.5;
@@ -168,7 +170,8 @@ export class LevelManager {
       vertex.fromBufferAttribute(positionAttribute, i);
       normal.fromBufferAttribute(normalAttribute, i);
 
-      let u = 0, v = 0;
+      let u = 0,
+        v = 0;
 
       // Top / Bottom face (normal points along Y)
       if (Math.abs(normal.y) > 0.5) {
@@ -350,7 +353,11 @@ export class LevelManager {
     });
   }
 
-  private applyScaleAndTargetSize(mesh: THREE.Object3D, def: DecorationDef, rawSize: THREE.Vector3): void {
+  private applyScaleAndTargetSize(
+    mesh: THREE.Object3D,
+    def: DecorationDef,
+    rawSize: THREE.Vector3,
+  ): void {
     // 1. Base Scale
     if (def.scale !== undefined) {
       if (typeof def.scale === "number") {
@@ -392,6 +399,8 @@ export class LevelManager {
 
   private loadDecorationModel(dec: DecorationRuntime): void {
     if (!dec.def.modelPath) return;
+
+    dec.def.modelPath = baseModelPath + dec.def.modelPath; // Prepend base path for convenience
 
     void this.modelLoader
       .load(dec.def.modelPath)
@@ -448,44 +457,6 @@ export class LevelManager {
         objectToAdd.position.x -= center.x;
         objectToAdd.position.y -= bounds.min.y;
         objectToAdd.position.z -= center.z;
-
-        if (def.modelPath && def.modelPath.includes("clouds")) {
-          objectToAdd.traverse((child) => {
-            if (child instanceof THREE.Mesh) {
-              child.material = new THREE.MeshStandardMaterial({
-                color: 0xffffff,
-                roughness: 0.9,
-                metalness: 0.0,
-                emissive: new THREE.Color(0xddeeff),
-                emissiveIntensity: 0.18,
-              });
-              // Disable heavy shadow calculations for clouds
-              child.castShadow = false;
-              child.receiveShadow = false;
-            }
-          });
-        }
-
-        if (def.modelPath && def.modelPath.includes("Low_poly_sun")) {
-          objectToAdd.traverse((child) => {
-            if (child instanceof THREE.Mesh) {
-              child.material = new THREE.MeshStandardMaterial({
-                color: 0xffdd44,
-                roughness: 0.1,
-                metalness: 0.0,
-                emissive: new THREE.Color(0xffaa00),
-                emissiveIntensity: 2.0,
-              });
-              child.castShadow = false;
-              child.receiveShadow = false;
-            }
-          });
-
-          const sunLight = new THREE.PointLight(0xffaa44, 8, 120);
-          sunLight.position.copy(anchor.position);
-          sunLight.position.y += 2;
-          this.engine.scene.add(sunLight);
-        }
 
         anchor.add(objectToAdd);
 
