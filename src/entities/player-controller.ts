@@ -73,8 +73,8 @@ export class PlayerController {
     this.modelPath = modelPath;
 
     this.config = {
-      moveSpeed: 7,
-      sprintMultiplier: 1.6,
+      moveSpeed: 5,
+      sprintMultiplier: 3.0,
       jumpForce: 10,
       mouseSensitivity: 0.002,
       playerHeight: 1.8,
@@ -604,11 +604,15 @@ export class PlayerController {
     const euler = new THREE.Euler().setFromQuaternion(camera.quaternion, "YXZ");
     this.yaw = euler.y;
     this.pitch = euler.x;
-    
+
     // Teleport physics body to camera position, adjusted for player height
-    this.body.position.set(camera.position.x, camera.position.y - 1.5, camera.position.z);
+    this.body.position.set(
+      camera.position.x,
+      camera.position.y - 1.5,
+      camera.position.z,
+    );
     this.body.velocity.set(0, 0, 0);
-    
+
     this.isActive = true;
     this.syncCameraToBody();
   }

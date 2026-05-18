@@ -1,112 +1,73 @@
 import { LevelConfig } from "../level-manager";
 
+function createTree(
+  childIndex: number,
+  position: [number, number, number],
+  targetSizeY: number,
+  rotation: [number, number, number],
+): LevelConfig["decorations"] {
+  let modifiedPosition = [...position] as [number, number, number];
+  if (childIndex == 6 || childIndex == 9) {
+    modifiedPosition[2] += targetSizeY * 0.12 * Math.cos(rotation[1]);
+    if (childIndex == 9) {
+      modifiedPosition[0] -= targetSizeY * 0.03 * Math.cos(rotation[1]);
+    }
+  }
+  return [
+    {
+      type: "model",
+      modelPath: "scene/trees.usdz",
+      position: modifiedPosition,
+      targetSizeY: targetSizeY,
+      rotation: rotation,
+      childIndex: childIndex,
+      solid: true,
+    },
+    {
+      type: "model",
+      modelPath: "scene/tree_grate.usdz",
+      position: [position[0], 0, position[2]],
+      targetSizeY: 0.2,
+      solid: true,
+    },
+  ];
+}
+
 export const trees: LevelConfig["decorations"] = [
-  {
-    type: "model",
-    modelPath: "scene/trees.usdz",
-    position: [-25, 0, -2],
-    scale: [0.1, 0.1, 0.1],
-    rotation: [0, 0.3, 0],
-    childIndex: 1,
-    solid: true,
-  },
-  {
-    type: "model",
-    modelPath: "scene/trees.usdz",
-    position: [-15, 0, -2],
-    scale: [0.1, 0.1, 0.1],
-    rotation: [0, 0.8, 0],
-    childIndex: 2,
-    solid: true,
-  },
-  {
-    type: "model",
-    modelPath: "scene/trees.usdz",
-    position: [-16, 0, -2],
-    scale: [0.1, 0.1, 0.1],
-    rotation: [0, 1.5, 0],
-    childIndex: 3,
-    solid: true,
-  },
-  {
-    type: "model",
-    modelPath: "scene/trees.usdz",
-    position: [10, 0, 10],
-    scale: [0.1, 0.1, 0.1],
-    rotation: [0, 0.5, 0],
-    childIndex: 4,
-    solid: true,
-  },
-  {
-    type: "model",
-    modelPath: "scene/trees.usdz",
-    position: [22, 0, -20],
-    scale: [0.1, 0.1, 0.1],
-    rotation: [0, 1.2, 0],
-    childIndex: 5,
-    solid: true,
-  },
-  {
-    type: "model",
-    modelPath: "scene/trees.usdz",
-    position: [-28, -1, -35],
-    scale: [0.1, 0.1, 0.1],
-    rotation: [0, 2.0, 0],
-    childIndex: 6,
-    solid: true,
-  },
-  {
-    type: "model",
-    modelPath: "scene/trees.usdz",
-    position: [30, -2, -50],
-    scale: [0.1, 0.1, 0.1],
-    rotation: [0, 0.7, 0],
-    childIndex: 7,
-    solid: true,
-  },
-  {
-    type: "model",
-    modelPath: "scene/trees.usdz",
-    position: [-25, 0, -68],
-    scale: [0.1, 0.1, 0.1],
-    rotation: [0, 1.8, 0],
-    childIndex: 8,
-    solid: true,
-  },
-  {
-    type: "model",
-    modelPath: "scene/trees.usdz",
-    position: [28, 0, -82],
-    scale: [0.1, 0.1, 0.1],
-    rotation: [0, 0.4, 0],
-    childIndex: 9,
-    solid: true,
-  },
-  {
-    type: "model",
-    modelPath: "scene/trees.usdz",
-    position: [-22, -1, -100],
-    scale: [0.1, 0.1, 0.1],
-    rotation: [0, 2.5, 0],
-    childIndex: 10,
-    solid: true,
-  },
-  {
-    type: "model",
-    modelPath: "scene/trees.usdz",
-    position: [32, 0, -120],
-    scale: [0.1, 0.1, 0.1],
-    rotation: [0, 0.9, 0],
-    childIndex: 11,
-    solid: true,
-  },
-  {
-    type: "model",
-    modelPath: "scene/trees.usdz",
-    position: [-18, 0, -138],
-    scale: [0.1, 0.1, 0.1],
-    rotation: [0, 1.4, 0],
-    childIndex: 12,
-    solid: true,
-  },
+  // Chosen indices: 4, 5, 6, 7. 9
+
+  // ### Right 1 ###
+
+  // ### Left 1  ###
+  ...createTree(4, [-20, 0, -58], 15, [0, 0, 0]),
+  ...createTree(4, [-20, 0, -43], 15, [0, 0, 0]),
+  ...createTree(4, [-20, 0, -35], 15, [0, 0, 0]),
+
+  ...createTree(5, [-23, 0, -117], 15, [0, 0, 0]),
+
+  ...createTree(7, [-85, -1, -141], 15, [0, Math.PI, 0]),
+
+  ...createTree(4, [-128, 0, -66], 14, [0, 0, 0]),
+  ...createTree(5, [-128, 0, -56], 12, [0, 0, 0]),
+  ...createTree(5, [-128, 0, -45], 12, [0, 0, 0]),
+  ...createTree(4, [-128, 0, -33], 16, [0, 0, 0]),
+
+  // ### Right 2 ###
+  ...createTree(6, [86, -1, -182.5], 10, [0, 0, 0]),
+
+  ...createTree(9, [108, -1, -220], 20, [0, 0, 0]),
+  ...createTree(5, [108, 0, -244], 17, [0, 0, 0]),
+
+  ...createTree(5, [114, 0, -289], 17, [0, 0, 0]),
+  ...createTree(4, [106, 0, -275], 15, [0, 0, 0]),
+
+  // ### Left 2 ###
+  ...createTree(6, [-40, -1.0, -258], 15, [0, 0, 0]),
+  ...createTree(9, [-52, -1.0, -258], 15, [0, Math.PI, 0]),
+  ...createTree(6, [-64, -1.0, -258], 15, [0, 0, 0]),
+  ...createTree(9, [-76, -1.0, -258], 15, [0, 0, 0]),
+  ...createTree(9, [-88, -1.0, -258], 15, [0, Math.PI, 0]),
+  ...createTree(9, [-100, -1.0, -258], 15, [0, 0, 0]),
+
+  ...createTree(4, [-47, 0, -184], 12, [0, 0, 0]),
 ];

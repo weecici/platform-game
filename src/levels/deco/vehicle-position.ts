@@ -1,54 +1,35 @@
 import { LevelConfig } from "../level-manager";
 
+// heavy_vehicles.usdz
+// Ambulance: 1
+// Police: 7
+// Van: 2, 4, 8
+// Truck: 13, 15, 18
+
+// cars.usdz
+// 4-seat car: 0, 1
+// 7-seat car: 2, 3, 4
+// Pickup truck: 5
+
 export const vehicles: LevelConfig["decorations"] = [
+  // {
+  //   type: "model",
+  //   modelPath: "vehicle/heavy_vehicles.usdz",
+  //   position: [0, 0.3, -15],
+  //   targetSizeY: 4,
+  //   rotation: [0, 0, 0],
+  //   childIndex: 0,
+  //   solid: true,
+  //   doubleSided: true,
+  // },
   {
     type: "model",
-    modelPath: "vehicle/truck.usdz",
-    position: [0, 0, 0],
-    scale: [0.01, 0.01, 0.01],
-    animate: {
-      orbitRadius: 30,
-      orbitSpeed: 0.2,
-      orbitRotationOffset: -Math.PI / 2,
-    },
-  },
-  {
-    type: "model",
-    modelPath: "vehicle/sbd_3.usdz",
-    position: [10, 45, -60],
-    scale: [0.025, 0.025, 0.025],
-    animate: {
-      orbitRadius: 60,
-      orbitSpeed: 0.2,
-      bobSpeed: 0.3,
-      bobHeight: 1.5,
-      orbitRotationOffset: -Math.PI / 2,
-    },
-  },
-  {
-    type: "model",
-    modelPath: "vehicle/blue_plane.usdz",
-    position: [10, 55, -60],
-    scale: [0.025, 0.025, 0.025],
-    animate: {
-      orbitRadius: 60,
-      orbitSpeed: 0.2,
-      bobSpeed: 0.25,
-      bobHeight: 2.0,
-      orbitRotationOffset: 0,
-    },
-  },
-  {
-    type: "model",
-    modelPath: "vehicle/fly_plane.usdz",
-    position: [10, 35, -60],
-    scale: [0.025, 0.025, 0.025],
-    animate: {
-      orbitRadius: 60,
-      orbitSpeed: 0.2,
-      bobSpeed: 0.35,
-      bobHeight: 1.2,
-      orbitRotationOffset: 0,
-    },
+    modelPath: "vehicle/cars.usdz",
+    position: [0, 0.3, -15],
+    targetSizeY: 2.5,
+    rotation: [0, 0, 0],
+    childIndex: 2,
+    solid: true,
+    doubleSided: true,
   },
 ];

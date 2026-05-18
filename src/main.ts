@@ -217,7 +217,9 @@ class Game {
   }
   private setupEventListeners(): void {
     this.commandContainer = document.getElementById("command-container")!;
-    this.commandInput = document.getElementById("command-input") as HTMLInputElement;
+    this.commandInput = document.getElementById(
+      "command-input",
+    ) as HTMLInputElement;
 
     // Command console listener
     this.commandInput.addEventListener("keydown", (e) => {
@@ -231,7 +233,12 @@ class Game {
     });
 
     this.input.onKeyPress("/", () => {
-      if (this.isStarted && !this.isDead && !this.isFinished && !this.isPaused) {
+      if (
+        this.isStarted &&
+        !this.isDead &&
+        !this.isFinished &&
+        !this.isPaused
+      ) {
         if (!this.isCommandConsoleActive) {
           this.showCommandConsole();
         }
@@ -585,9 +592,12 @@ class Game {
     setTimeout(() => {
       this.commandInput.focus();
       // Move cursor to end
-      this.commandInput.setSelectionRange(this.commandInput.value.length, this.commandInput.value.length);
+      this.commandInput.setSelectionRange(
+        this.commandInput.value.length,
+        this.commandInput.value.length,
+      );
     }, 10);
-    
+
     this.input.exitPointerLock();
     // Disable inputs so WASD doesn't move character while typing
     this.input.setGameplayActive(false);
@@ -598,7 +608,7 @@ class Game {
     this.isCommandConsoleActive = false;
     this.commandContainer.classList.remove("active");
     this.commandInput.blur();
-    
+
     // Regain game focus
     this.input.setGameplayActive(true);
     this.engine.renderer.domElement.requestPointerLock();
@@ -608,7 +618,10 @@ class Game {
     const raw = cmdString.trim();
     if (!raw.startsWith("/")) return;
 
-    const parts = raw.substring(1).split(" ").filter(p => p.length > 0);
+    const parts = raw
+      .substring(1)
+      .split(" ")
+      .filter((p) => p.length > 0);
     if (parts.length === 0) return;
 
     const cmd = parts[0].toLowerCase();
@@ -627,9 +640,13 @@ class Game {
             // Teleport
             this.player.body.position.set(x, y, z);
             this.player.update(0); // force sync
-            this.showNotification(`Teleported to ${x.toFixed(1)}, ${y.toFixed(1)}, ${z.toFixed(1)}`);
+            this.showNotification(
+              `Teleported to ${x.toFixed(1)}, ${y.toFixed(1)}, ${z.toFixed(1)}`,
+            );
           } else {
-            this.showNotification("Invalid coordinates for /tp (use: /tp x y z)");
+            this.showNotification(
+              "Invalid coordinates for /tp (use: /tp x y z)",
+            );
           }
         } else {
           this.showNotification("Usage: /tp <x> <y> <z>");
@@ -668,16 +685,19 @@ class Game {
         if (args.length >= 2) {
           const bType = args[0];
           const amt = parseInt(args[1], 10);
-          
+
           if (isNaN(amt) || amt <= 0) {
             this.showNotification("Invalid amount");
             return;
           }
-          
-          let blockTypeObj: typeof BLOCK_CATALOGUE[0] | null = null;
+
+          let blockTypeObj: (typeof BLOCK_CATALOGUE)[0] | null = null;
           // Find block by lowercase name
           for (let i = 0; i < BLOCK_CATALOGUE.length; i++) {
-            if (BLOCK_CATALOGUE[i].label.toLowerCase() === bType.toLowerCase() || BLOCK_CATALOGUE[i].id.toLowerCase() === bType.toLowerCase()) {
+            if (
+              BLOCK_CATALOGUE[i].label.toLowerCase() === bType.toLowerCase() ||
+              BLOCK_CATALOGUE[i].id.toLowerCase() === bType.toLowerCase()
+            ) {
               blockTypeObj = BLOCK_CATALOGUE[i];
               break;
             }
