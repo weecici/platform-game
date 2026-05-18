@@ -1,14 +1,4 @@
 export const platforms = [
-  // === GROUND PLANE ===
-  {
-    position: [0, -0.1, 0],
-    size: [1000, 0.1, 1000],
-    color: 0x1a1a2e,
-    texture: "grass",
-    textureRepeat: [240, 360],
-    solid: true,
-    noCull: true,
-  },
   // === THE VERTICAL ASCENT ===
   {
     position: [15.0, 0.0, -20.0],
