@@ -54,6 +54,7 @@ export interface DecorationDef {
   color?: number;
   emissive?: number;
   modelPath?: string;
+  doubleSided?: boolean;
   /**
    * Extract a single child by index from the loaded model.
    * Useful when a USDZ file contains multiple objects (e.g. a forest of trees)
@@ -449,6 +450,22 @@ export class LevelManager {
         // Apply advanced scaling logic directly to the anchor
         this.applyScaleAndTargetSize(anchor, def, rawSize);
         dec.initialScale.copy(anchor.scale); // Save for death reset
+
+        if (def.doubleSided) {
+          objectToAdd.traverse((child) => {
+            if (child instanceof THREE.Mesh && child.material) {
+              if (Array.isArray(child.material)) {
+                child.material.forEach((m) => {
+                  m.side = THREE.DoubleSide;
+                  m.needsUpdate = true;
+                });
+              } else {
+                child.material.side = THREE.DoubleSide;
+                child.material.needsUpdate = true;
+              }
+            }
+          });
+        }
 
         // Recompute bounds after scale to fix centering offsets
         const scaledBounds = new THREE.Box3().setFromObject(objectToAdd);
