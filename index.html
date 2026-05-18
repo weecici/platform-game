@@ -505,6 +505,36 @@
         font-family: monospace;
         margin: 0 2px;
       }
+
+      /* Command Console */
+      #command-container {
+        position: absolute;
+        bottom: 80px;
+        left: 20px;
+        width: 400px;
+        display: none;
+        z-index: 100;
+      }
+      #command-container.active {
+        display: block;
+      }
+      #command-input {
+        width: 100%;
+        padding: 10px 15px;
+        font-size: 16px;
+        font-family: monospace;
+        color: #fff;
+        background: rgba(0, 0, 0, 0.75);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 8px;
+        outline: none;
+        box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        transition: border-color 0.2s;
+      }
+      #command-input:focus {
+        border-color: #00d4ff;
+        box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
+      }
     </style>
   </head>
   <body>
@@ -574,6 +604,11 @@
         <div class="hotbar-slot" id="slot-5"><div class="key-hint">5</div><div class="item-icon">🍩</div></div>
         <div class="hotbar-slot" id="slot-6"><div class="key-hint">6</div><div class="item-icon">🫖</div></div>
       </div>
+    </div>
+
+    <!-- Command Console -->
+    <div id="command-container">
+      <input type="text" id="command-input" autocomplete="off" spellcheck="false" placeholder="Enter command..." />
     </div>
 
     <!-- Start Screen -->
