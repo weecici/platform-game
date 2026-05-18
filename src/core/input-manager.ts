@@ -25,6 +25,7 @@ export class InputManager {
     "i",
     "o",
     "t",
+    "/",
     "1",
     "2",
     "3",

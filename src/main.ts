@@ -39,6 +39,11 @@ class Game {
   private readonly deathSequenceDuration = 1.2;
   private deathReason = "You fell out of the course.";
 
+  // Command console state
+  private isCommandConsoleActive = false;
+  private commandContainer!: HTMLElement;
+  private commandInput!: HTMLInputElement;
+
   private hudEl: HTMLElement;
   private scoreEl: HTMLElement;
   private timeEl: HTMLElement;
@@ -147,6 +152,18 @@ class Game {
         this.textureManager.loadTextureSet("grass", {
           baseColor: "/assets/textures/grass/baseColor.jpg",
         }),
+        this.textureManager.loadTextureSet("marble-tiles", {
+          baseColor: "/assets/textures/marble-tiles/baseColor.jpg",
+        }),
+        this.textureManager.loadTextureSet("ground-tiles-09", {
+          baseColor: "/assets/textures/ground-tiles-09/baseColor.jpg",
+        }),
+        this.textureManager.loadTextureSet("ground-tiles-14", {
+          baseColor: "/assets/textures/ground-tiles-14/baseColor.jpg",
+        }),
+        this.textureManager.loadTextureSet("ground-tiles-22", {
+          baseColor: "/assets/textures/ground-tiles-22/baseColor.jpg",
+        }),
         this.textureManager.loadTextureSet("stone-1", {
           baseColor: "/assets/textures/stone-1/baseColor.jpg",
         }),
@@ -199,6 +216,28 @@ class Game {
     }
   }
   private setupEventListeners(): void {
+    this.commandContainer = document.getElementById("command-container")!;
+    this.commandInput = document.getElementById("command-input") as HTMLInputElement;
+
+    // Command console listener
+    this.commandInput.addEventListener("keydown", (e) => {
+      e.stopPropagation(); // prevent input manager from catching
+      if (e.key === "Enter") {
+        this.processCommand(this.commandInput.value);
+        this.hideCommandConsole();
+      } else if (e.key === "Escape") {
+        this.hideCommandConsole();
+      }
+    });
+
+    this.input.onKeyPress("/", () => {
+      if (this.isStarted && !this.isDead && !this.isFinished && !this.isPaused) {
+        if (!this.isCommandConsoleActive) {
+          this.showCommandConsole();
+        }
+      }
+    });
+
     document.getElementById("btn-start")!.addEventListener("click", () => {
       this.showCharacterSelection();
     });
@@ -291,7 +330,7 @@ class Game {
       if (this.isStarted && !this.isDead) {
         this.engine.setSpectatorMode(!this.engine.isSpectatorMode);
         this.player.isActive = !this.engine.isSpectatorMode;
-        
+
         const helper = document.getElementById("spectator-hint");
         if (helper) {
           if (this.engine.isSpectatorMode) helper.classList.add("visible");
@@ -304,10 +343,10 @@ class Game {
       if (this.engine.isSpectatorMode && this.isStarted && !this.isDead) {
         this.engine.setSpectatorMode(false);
         this.player.teleportToSpectator(this.engine.camera);
-        
+
         const helper = document.getElementById("spectator-hint");
         if (helper) helper.classList.remove("visible");
-        
+
         this.showNotification("Teleported!", 1500);
       }
     });
@@ -538,6 +577,137 @@ class Game {
     this.gameLoop();
   }
 
+  private showCommandConsole(): void {
+    this.isCommandConsoleActive = true;
+    this.commandContainer.classList.add("active");
+    this.commandInput.value = "/";
+    // We must wait for the DOM to update to focus
+    setTimeout(() => {
+      this.commandInput.focus();
+      // Move cursor to end
+      this.commandInput.setSelectionRange(this.commandInput.value.length, this.commandInput.value.length);
+    }, 10);
+    
+    this.input.exitPointerLock();
+    // Disable inputs so WASD doesn't move character while typing
+    this.input.setGameplayActive(false);
+  }
+
+  private hideCommandConsole(): void {
+    if (!this.isCommandConsoleActive) return;
+    this.isCommandConsoleActive = false;
+    this.commandContainer.classList.remove("active");
+    this.commandInput.blur();
+    
+    // Regain game focus
+    this.input.setGameplayActive(true);
+    this.engine.renderer.domElement.requestPointerLock();
+  }
+
+  private processCommand(cmdString: string): void {
+    const raw = cmdString.trim();
+    if (!raw.startsWith("/")) return;
+
+    const parts = raw.substring(1).split(" ").filter(p => p.length > 0);
+    if (parts.length === 0) return;
+
+    const cmd = parts[0].toLowerCase();
+    const args = parts.slice(1);
+
+    switch (cmd) {
+      case "tp":
+        if (args.length >= 3) {
+          const x = parseFloat(args[0]);
+          const y = parseFloat(args[1]);
+          const z = parseFloat(args[2]);
+          if (!isNaN(x) && !isNaN(y) && !isNaN(z)) {
+            // Cancel current velocity
+            this.player.body.velocity.set(0, 0, 0);
+            this.player.body.angularVelocity.set(0, 0, 0);
+            // Teleport
+            this.player.body.position.set(x, y, z);
+            this.player.update(0); // force sync
+            this.showNotification(`Teleported to ${x.toFixed(1)}, ${y.toFixed(1)}, ${z.toFixed(1)}`);
+          } else {
+            this.showNotification("Invalid coordinates for /tp (use: /tp x y z)");
+          }
+        } else {
+          this.showNotification("Usage: /tp <x> <y> <z>");
+        }
+        break;
+
+      case "speed":
+        if (args.length >= 1) {
+          const s = parseFloat(args[0]);
+          if (!isNaN(s) && s > 0) {
+            this.player.config.moveSpeed = s;
+            this.showNotification(`Set speed to ${s}`);
+          } else {
+            this.showNotification("Invalid speed value");
+          }
+        } else {
+          this.showNotification("Usage: /speed <number>");
+        }
+        break;
+
+      case "jump":
+        if (args.length >= 1) {
+          const j = parseFloat(args[0]);
+          if (!isNaN(j) && j > 0) {
+            this.player.config.jumpForce = j;
+            this.showNotification(`Set jump force to ${j}`);
+          } else {
+            this.showNotification("Invalid jump value");
+          }
+        } else {
+          this.showNotification("Usage: /jump <number>");
+        }
+        break;
+
+      case "give":
+        if (args.length >= 2) {
+          const bType = args[0];
+          const amt = parseInt(args[1], 10);
+          
+          if (isNaN(amt) || amt <= 0) {
+            this.showNotification("Invalid amount");
+            return;
+          }
+          
+          let blockTypeObj: typeof BLOCK_CATALOGUE[0] | null = null;
+          // Find block by lowercase name
+          for (let i = 0; i < BLOCK_CATALOGUE.length; i++) {
+            if (BLOCK_CATALOGUE[i].label.toLowerCase() === bType.toLowerCase() || BLOCK_CATALOGUE[i].id.toLowerCase() === bType.toLowerCase()) {
+              blockTypeObj = BLOCK_CATALOGUE[i];
+              break;
+            }
+          }
+
+          if (blockTypeObj !== null) {
+            for (let i = 0; i < amt; i++) {
+              this.blockInventory.add(blockTypeObj.id);
+            }
+            this.updateInventoryHUD();
+            this.showNotification(`Gave ${amt} ${blockTypeObj.label}(s)`);
+          } else {
+            this.showNotification(`Unknown block type: ${bType}`);
+          }
+        } else {
+          this.showNotification("Usage: /give <block_name> <amount>");
+        }
+        break;
+
+      case "kill":
+      case "reset":
+        this.playerDied("Killed via console.");
+        break;
+
+      default:
+        this.showNotification(`Unknown command: ${cmd}`);
+        break;
+    }
+  }
+
   private pauseGame(): void {
     this.cancelLoop();
     this.isRunning = false;
@@ -599,15 +769,21 @@ class Game {
     const raycaster = new THREE.Raycaster();
     raycaster.setFromCamera(new THREE.Vector2(0, 0), this.engine.camera);
 
-    const intersects = raycaster.intersectObjects(this.engine.scene.children, true);
-    
+    const intersects = raycaster.intersectObjects(
+      this.engine.scene.children,
+      true,
+    );
+
     if (intersects.length > 0) {
       let object: THREE.Object3D | null = intersects[0].object;
 
       // Ignore the player's own body
-      if (object === this.player.modelGroup || object.parent === this.player.modelGroup) {
-         if (intersects.length > 1) object = intersects[1].object;
-         else return;
+      if (
+        object === this.player.modelGroup ||
+        object.parent === this.player.modelGroup
+      ) {
+        if (intersects.length > 1) object = intersects[1].object;
+        else return;
       }
 
       // Walk up the hierarchy to find the main group inserted by level-manager
@@ -678,10 +854,10 @@ class Game {
 
     const dt = Math.min(this.engine.clock.getDelta(), 0.05);
     this.physics.step(dt);
-    
+
     // Player controller still updates animations and physics even if inactive
     this.player.update(dt);
-    
+
     this.input.resetMouseDelta();
 
     const playerPos = this.player.getPosition();
@@ -754,7 +930,7 @@ class Game {
     this.timeEl.textContent = `Time: ${this.elapsedTime.toFixed(1)}s`;
     this.speedEl.textContent = `Speed: ${this.player.getSpeed().toFixed(1)}`;
     this.deathsEl.textContent = `Deaths: ${this.deathCount}`;
-    
+
     const pos = this.player.getPosition();
     this.coordsEl.textContent = `XYZ: ${pos.x.toFixed(1)}, ${pos.y.toFixed(1)}, ${pos.z.toFixed(1)}`;
   }
