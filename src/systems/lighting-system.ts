@@ -10,6 +10,9 @@ import type { Engine } from "../core/engine";
 export interface LightingConfig {
   ambientColor: number;
   ambientIntensity: number;
+  hemisphereSkyColor: number;
+  hemisphereGroundColor: number;
+  hemisphereIntensity: number;
   directionalColor: number;
   directionalIntensity: number;
   directionalPosition: { x: number; y: number; z: number };
@@ -36,6 +39,9 @@ export class LightingSystem {
     this.config = {
       ambientColor: 0xe0e0ff,
       ambientIntensity: 0.9,
+      hemisphereSkyColor: 0x87ceeb,
+      hemisphereGroundColor: 0x362907,
+      hemisphereIntensity: 0.45,
       directionalColor: 0xfff4e6,
       directionalIntensity: 1.5,
       directionalPosition: { x: 50, y: 80, z: 30 },
@@ -55,7 +61,11 @@ export class LightingSystem {
     engine.scene.add(this.ambientLight);
 
     // Hemisphere light for subtle sky/ground coloring
-    this.hemisphereLight = new THREE.HemisphereLight(0x87ceeb, 0x362907, 0.45);
+    this.hemisphereLight = new THREE.HemisphereLight(
+      this.config.hemisphereSkyColor,
+      this.config.hemisphereGroundColor,
+      this.config.hemisphereIntensity
+    );
     engine.scene.add(this.hemisphereLight);
 
     // Directional light - sun-like, with shadow mapping
@@ -104,13 +114,13 @@ export class LightingSystem {
   /**
    * Update the directional light to follow the player (for consistent shadows)
    */
-  updateSunPosition(targetX: number, targetZ: number): void {
+  updateSunPosition(targetX: number, targetY: number, targetZ: number): void {
     this.directionalLight.position.set(
       targetX + this.config.directionalPosition.x,
-      this.config.directionalPosition.y,
+      targetY + this.config.directionalPosition.y,
       targetZ + this.config.directionalPosition.z,
     );
-    this.directionalLight.target.position.set(targetX, 0, targetZ);
+    this.directionalLight.target.position.set(targetX, targetY, targetZ);
     this.directionalLight.target.updateMatrixWorld();
   }
 
@@ -122,6 +132,10 @@ export class LightingSystem {
 
     this.ambientLight.color.setHex(this.config.ambientColor);
     this.ambientLight.intensity = this.config.ambientIntensity;
+
+    this.hemisphereLight.color.setHex(this.config.hemisphereSkyColor);
+    this.hemisphereLight.groundColor.setHex(this.config.hemisphereGroundColor);
+    this.hemisphereLight.intensity = this.config.hemisphereIntensity;
 
     this.directionalLight.color.setHex(this.config.directionalColor);
     this.directionalLight.intensity = this.config.directionalIntensity;

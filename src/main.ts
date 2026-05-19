@@ -11,6 +11,7 @@ import { LEVEL_PARKOUR_CITY } from "./levels/level-data";
 import { DebugGUI } from "./ui/debug-ui";
 import { PrimitivePlacementSystem } from "./systems/primitive-placement";
 import { BLOCK_CATALOGUE, BlockInventory } from "./systems/block-system";
+import { DayNightSystem } from "./systems/day-night-system";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 class Game {
@@ -24,6 +25,7 @@ class Game {
   private debugGUI: DebugGUI;
   private primitivePlacement: PrimitivePlacementSystem;
   private blockInventory: BlockInventory;
+  private dayNightSystem: DayNightSystem;
 
   private isRunning = false;
   private isPaused = false;
@@ -104,6 +106,7 @@ class Game {
     );
 
     this.blockInventory = new BlockInventory();
+    this.dayNightSystem = new DayNightSystem(this.engine, this.lighting);
 
     this.debugGUI = new DebugGUI(
       this.engine,
@@ -138,7 +141,6 @@ class Game {
     ) as HTMLCanvasElement;
 
     this.setupEventListeners();
-    this.setupSkybox();
 
     this.loadingScreen.classList.add("hidden");
     setTimeout(() => {
@@ -176,39 +178,6 @@ class Game {
     }
   }
 
-  private setupSkybox(): void {
-    const cubeLoader = new THREE.CubeTextureLoader();
-
-    const basePath = "/assets/textures/skybox/skybox-3-morning/";
-
-    const texturePaths = [
-      basePath + "px.png",
-      basePath + "nx.png",
-      basePath + "py.png",
-      basePath + "ny.png",
-      basePath + "pz.png",
-      basePath + "nz.png",
-    ];
-
-    const skyboxTexture = cubeLoader.load(
-      texturePaths,
-      (texture) => {
-        console.log("Skybox loaded successfully", texture);
-      },
-      undefined,
-      (err) => {
-        console.error("Skybox failed to load:", err);
-      },
-    );
-
-    skyboxTexture.colorSpace = THREE.SRGBColorSpace;
-    this.engine.scene.background = skyboxTexture;
-    this.engine.scene.backgroundIntensity = 1.0;
-
-    if (this.engine.renderer) {
-      this.engine.renderer.toneMappingExposure = 1.0;
-    }
-  }
   private setupEventListeners(): void {
     this.commandContainer = document.getElementById("command-container")!;
     this.commandInput = document.getElementById(
@@ -889,7 +858,8 @@ class Game {
       this.primitivePlacement.clear();
     }
 
-    this.lighting.updateSunPosition(playerPos.x, playerPos.z);
+    // Update Day/Night cycle
+    this.dayNightSystem.update(dt, playerPos);
 
     // Check for collectible pickups
     const collected = this.levelManager.checkCollectibles(playerPos);

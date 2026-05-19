@@ -140,7 +140,7 @@ export const buildings: LevelConfig["decorations"] = [
   {
     type: "model",
     modelPath: "building/downtown_buildings.usdz",
-    position: [-70, 0, -231],
+    position: [-71, 0, -231],
     rotation: [0, 0, 0],
     childIndex: 4,
     solid: true,
