@@ -13,8 +13,8 @@ export const PHASES = [
   "skybox-8-night",
 ];
 
-const BASE_DURATION = 20;
-const CROSSFADE_DURATION = 1;
+const BASE_DURATION = 60;
+const CROSSFADE_DURATION = 0.2;
 
 // A massive box to render our custom skybox shader
 // Use a large size, but within camera far plane
@@ -35,13 +35,18 @@ const skyboxFragmentShader = `
   uniform samplerCube tCube1;
   uniform samplerCube tCube2;
   uniform float mixRatio;
+  uniform float skyboxBrightness;
   varying vec3 vWorldPosition;
   void main() {
     vec3 viewDirection = normalize(vWorldPosition);
     vec4 color1 = textureCube(tCube1, viewDirection);
     vec4 color2 = textureCube(tCube2, viewDirection);
     gl_FragColor = mix(color1, color2, mixRatio);
-    // Linear to sRGB approximation or tone mapping can be added if needed
+    
+    // Apply adjustable brightness (bypassing global ACESFilmic tone mapping to avoid blowout)
+    gl_FragColor.rgb *= skyboxBrightness;
+
+    #include <colorspace_fragment>
   }
 `;
 
@@ -71,6 +76,7 @@ export class DayNightSystem {
         tCube1: { value: null },
         tCube2: { value: null },
         mixRatio: { value: 0.0 },
+        skyboxBrightness: { value: 1.2 }, // Easily adjustable! (1.0 = original image)
       },
       side: THREE.BackSide,
       depthWrite: false, // Ensure it's rendered in background
@@ -217,13 +223,16 @@ export class DayNightSystem {
     } else {
       // Day time, color shift towards orange at dawn/dusk
       const heightFactor = Math.sin(angle); // 0 at dawn/dusk, 1 at peak
-      // Interpolate from orange (0xffaa55) to bright white (0xffeeee)
+      // Interpolate from orange (0xffaa55) to bright white (0xffdddd)
       const r = Math.floor(0xff * heightFactor + 0xff * (1 - heightFactor));
-      const g = Math.floor(0xee * heightFactor + 0xaa * (1 - heightFactor));
-      const b = Math.floor(0xee * heightFactor + 0x55 * (1 - heightFactor));
+      const g = Math.floor(0xdd * heightFactor + 0xaa * (1 - heightFactor));
+      const b = Math.floor(0xdd * heightFactor + 0x55 * (1 - heightFactor));
       color = (r << 16) | (g << 8) | b;
 
-      intensity = 0.5 + heightFactor * 1.5;
+      intensity = 0.5 + heightFactor * 0.3;
+      console.log(
+        `Height factor: ${heightFactor.toFixed(2)}, Sun intensity: ${intensity.toFixed(2)}`,
+      );
 
       const ambR = Math.floor(0xff * heightFactor + 0x66 * (1 - heightFactor));
       const ambG = Math.floor(0xff * heightFactor + 0x66 * (1 - heightFactor));
