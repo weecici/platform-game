@@ -155,14 +155,8 @@ class Game {
         this.textureManager.loadTextureSet("marble-tiles", {
           baseColor: "/assets/textures/marble-tiles/baseColor.jpg",
         }),
-        this.textureManager.loadTextureSet("ground-tiles-09", {
-          baseColor: "/assets/textures/ground-tiles-09/baseColor.jpg",
-        }),
         this.textureManager.loadTextureSet("ground-tiles-14", {
           baseColor: "/assets/textures/ground-tiles-14/baseColor.jpg",
-        }),
-        this.textureManager.loadTextureSet("ground-tiles-22", {
-          baseColor: "/assets/textures/ground-tiles-22/baseColor.jpg",
         }),
         this.textureManager.loadTextureSet("stone-1", {
           baseColor: "/assets/textures/stone-1/baseColor.jpg",
