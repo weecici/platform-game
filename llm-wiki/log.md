@@ -55,3 +55,7 @@ Append-only chronological log of operations on the wiki.
 - Pushed atmospheric fog back to `fogFar: 400` and Camera clipping plane to `3000`.
 - Expanded the main ground width to `1000` units.
 - Introduced a `noCull: true` flag to prevent massive objects (like the 10,000-unit-long ground) from deleting their physics when the player steps away from their exact center.
+
+## [2024-05-19] ingest | Command Console & Day/Night Cycle
+- Added command console documentation (`llm-wiki/concepts/command-console.md`) for `/tp`, `/speed`, `/jump`, `/give`, `/kill`.
+- Added Day & Night cycle documentation (`llm-wiki/systems/day-night-cycle.md`), detailing custom shader crossfading, sun/moon arcs, and 8-phase skybox transitions.

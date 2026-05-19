@@ -15,6 +15,11 @@ Catalog of all knowledge pages in the `llm-wiki/`.
 - [Exact Mesh Collision](./concepts/mesh-collision.md) - Translating GLTF geometry into accurate CANNON.Trimesh colliders.
 - [Momentum Physics](./concepts/momentum-physics.md) - Percentage-based friction and acceleration system for tight controls.
 - [Data-Driven Levels](./concepts/data-driven-levels.md) - Structure of `LEVEL_PARKOUR_CITY` and platform definitions.
+- [Command Console](./concepts/command-console.md) - Developer and debug cheating console mapped to `/`.
+
+## Systems
+
+- [Day & Night Cycle](./systems/day-night-cycle.md) - Manages dynamic time progression, sun/moon trajectory, and skybox blending.
 
 ## Infrastructure
 
