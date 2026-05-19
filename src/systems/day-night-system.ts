@@ -13,7 +13,7 @@ export const PHASES = [
   "skybox-8-night",
 ];
 
-const BASE_DURATION = 60;
+const BASE_DURATION = 10;
 const CROSSFADE_DURATION = 0.2;
 
 // A massive box to render our custom skybox shader
@@ -56,6 +56,7 @@ export class DayNightSystem {
 
   private timeElapsed: number = 0;
   private currentPhaseIndex: number = 0;
+  public isTimeStopped: boolean = false;
 
   private skyboxMesh: THREE.Mesh;
   private skyboxMaterial: THREE.ShaderMaterial;
@@ -134,7 +135,9 @@ export class DayNightSystem {
   }
 
   update(deltaTime: number, playerPos: THREE.Vector3): void {
-    this.timeElapsed += deltaTime;
+    if (!this.isTimeStopped) {
+      this.timeElapsed += deltaTime;
+    }
 
     // Snap skybox to camera/player
     this.skyboxMesh.position.copy(playerPos);

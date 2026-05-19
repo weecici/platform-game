@@ -685,6 +685,15 @@ class Game {
         this.playerDied("Killed via console.");
         break;
 
+      case "timestop":
+        this.dayNightSystem.isTimeStopped = !this.dayNightSystem.isTimeStopped;
+        if (this.dayNightSystem.isTimeStopped) {
+          this.showNotification("ZA WARUDO! (Time Stopped)");
+        } else {
+          this.showNotification("Time has resumed.");
+        }
+        break;
+
       default:
         this.showNotification(`Unknown command: ${cmd}`);
         break;
@@ -890,10 +899,6 @@ class Game {
       return;
     }
 
-    if (this.levelManager.isPlayerAtFinish(playerPos)) {
-      this.finishRun();
-      return;
-    }
 
     this.elapsedTime += dt;
     this.score = Math.max(

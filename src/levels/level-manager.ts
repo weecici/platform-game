@@ -483,17 +483,17 @@ export class LevelManager {
           objectToAdd.traverse((child) => {
             if (child instanceof THREE.Mesh) {
               const geometry = child.geometry as THREE.BufferGeometry;
-              if (!geometry.attributes.position) return;
+              const positionAttribute = geometry.attributes.position;
+              if (!positionAttribute) return;
 
-              const positions = geometry.attributes.position.array;
               const indices = geometry.index ? geometry.index.array : null;
 
               const vertices: number[] = [];
               const faces: number[] = [];
 
               const vertex = new THREE.Vector3();
-              for (let i = 0; i < positions.length; i += 3) {
-                vertex.set(positions[i], positions[i + 1], positions[i + 2]);
+              for (let i = 0; i < positionAttribute.count; i++) {
+                vertex.fromBufferAttribute(positionAttribute, i);
                 vertex.applyMatrix4(child.matrixWorld);
                 vertices.push(vertex.x, vertex.y, vertex.z);
               }
@@ -503,7 +503,7 @@ export class LevelManager {
                   faces.push(indices[i]);
                 }
               } else {
-                for (let i = 0; i < positions.length / 3; i++) {
+                for (let i = 0; i < positionAttribute.count; i++) {
                   faces.push(i);
                 }
               }
@@ -798,10 +798,6 @@ export class LevelManager {
     return new THREE.Vector3(0, 5, 0);
   }
 
-  isPlayerAtFinish(position: THREE.Vector3): boolean {
-    // Player wins by reaching the very top of the vertical tower
-    return position.y >= 105;
-  }
 }
 
 function disposeObject3D(object: THREE.Object3D): void {
