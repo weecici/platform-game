@@ -864,7 +864,7 @@ class Game {
       );
     } else {
       // Hide ghost in spectator mode
-      this.primitivePlacement.clear();
+      this.primitivePlacement.deselectBlock();
     }
 
     // Update Day/Night cycle
@@ -898,7 +898,6 @@ class Game {
       this.playerDied();
       return;
     }
-
 
     this.elapsedTime += dt;
     this.score = Math.max(

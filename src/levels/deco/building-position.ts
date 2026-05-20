@@ -4,11 +4,12 @@ export const buildings: LevelConfig["decorations"] = [
   // ### Right 1 ### (15, 0, -30) -> (135, 0, -150)
   {
     type: "model",
-    modelPath: "building/building_1.usdz",
-    position: [68, 0.3, -90],
-    targetSizeY: 120,
+    modelPath: "building/skyscraper.usdz",
+    position: [75, 0, -90],
+    targetSizeY: 300,
     rotation: [0, 0, 0],
     solid: true,
+    noCull: true,
     doubleSided: true,
   },
 
@@ -131,7 +132,7 @@ export const buildings: LevelConfig["decorations"] = [
   {
     type: "model",
     modelPath: "building/downtown_buildings.usdz",
-    position: [-112, 0, -231],
+    position: [-112, 0, -234],
     rotation: [0, 0, 0],
     childIndex: 12,
     solid: true,

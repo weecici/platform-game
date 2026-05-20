@@ -1,5 +1,6 @@
-export const platforms = [
-  // === THE VERTICAL ASCENT ===
+import type { LevelConfig } from "../level-manager";
+
+export const platforms: LevelConfig["platforms"] = [
   {
     position: [15.0, 0.0, -20.0],
     size: [4, 1, 4],

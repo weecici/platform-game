@@ -1,6 +1,7 @@
 import type { LevelConfig } from "./level-manager";
 import { platforms } from "./parkour/platform-position";
 import { collectibles } from "./parkour/collectible-position";
+import { objects } from "./parkour/object-position";
 import { buildings } from "./deco/building-position";
 import { trees } from "./deco/tree-position";
 import { vehicles } from "./deco/vehicle-position";
@@ -13,7 +14,7 @@ import { scene } from "./deco/scene-position";
 
 export const LEVEL_PARKOUR_CITY: LevelConfig = {
   name: "Urban Parkour",
-  spawnPosition: [0, 5, -30],
+  spawnPosition: [-44, 70, -134],
   skyColor: 0x87ceeb,
   fogColor: 0xc8ddf0,
   fogNear: 100,
@@ -65,13 +66,14 @@ export const LEVEL_PARKOUR_CITY: LevelConfig = {
       solid: true,
       noCull: true,
     },
-    // ...(platforms as LevelConfig["platforms"]),
+    // ...platforms,
   ],
   decorations: [
     ...scene,
     ...buildings,
     ...trees,
     ...vehicles,
-    // ...collectibles
+    ...objects,
+    ...collectibles,
   ],
 };
