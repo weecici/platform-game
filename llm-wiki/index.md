@@ -6,7 +6,7 @@ Catalog of all knowledge pages in the `llm-wiki/`.
 
 - [Game Orchestrator](./entities/game-orchestrator.md) - The main game loop, state machine, and character selection preview (`src/main.ts`).
 - [Player Controller](./entities/player.md) - Player character physics, momentum, coyote time, and death mechanics.
-- [Level Manager](./entities/level-manager.md) - Loads and updates data-driven level platforms and decorations.
+- [Level Manager](./entities/level-manager.md) - Loads and updates data-driven level platforms, decorations, and shared axis-based decoration motion.
 - [Primitive Placement](./entities/primitive-placement.md) - Logic for ghost preview, block instantiation, and debug UI affine transforms.
 - [Block Inventory](./entities/block-inventory.md) - Tracking player collected blocks and hotbar selection.
 
@@ -14,7 +14,7 @@ Catalog of all knowledge pages in the `llm-wiki/`.
 
 - [Exact Mesh Collision](./concepts/mesh-collision.md) - Translating GLTF geometry into accurate CANNON.Trimesh colliders.
 - [Momentum Physics](./concepts/momentum-physics.md) - Percentage-based friction and acceleration system for tight controls.
-- [Data-Driven Levels](./concepts/data-driven-levels.md) - Structure of `LEVEL_PARKOUR_CITY` and platform definitions.
+- [Data-Driven Levels](./concepts/data-driven-levels.md) - Structure of `LEVEL_PARKOUR_CITY`, platform definitions, and decoration motion fields.
 - [Command Console](./concepts/command-console.md) - Developer and debug cheating console mapped to `/`.
 
 ## Systems

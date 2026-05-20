@@ -41,6 +41,12 @@ Append-only chronological log of operations on the wiki.
 
 - Removed the hard `castShadow = false` override for trees, barns, and mountains. Since they are actively distance-culled out of the rendering pipeline beyond 75 units, allowing nearby models to cast shadows provides better visual quality without penalizing overall FPS.
 
+## [2026-05-20] ingest | Simplified decoration animation
+
+- Replaced model decoration bobbing/orbit animation with common axis-based rotation and linear movement fields.
+- Updated `LevelManager` to apply the same decoration motion model to both primitive decorations and loaded models.
+- Migrated the parkour collectible and model decoration data to the new animation fields.
+
 ## [2026-05-09] update | The Vertical Tower Overhaul
 
 - Lowered the death plane from `-4.5` to `-50.0` to enable ground-level exploration.
