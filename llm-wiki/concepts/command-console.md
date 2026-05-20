@@ -18,3 +18,4 @@ The command console allows players to input specific commands to manipulate game
 - `/jump <number>`: Modifies player jump force.
 - `/give <block_name> <amount>`: Grants primitive blocks to the `BlockInventory`.
 - `/kill` or `/reset`: Triggers `playerDied()` for a soft reset.
+- `/timestop`: Toggles the Day/Night cycle timer on and off, freezing the sun/moon in place.

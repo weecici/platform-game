@@ -57,5 +57,15 @@ Append-only chronological log of operations on the wiki.
 - Introduced a `noCull: true` flag to prevent massive objects (like the 10,000-unit-long ground) from deleting their physics when the player steps away from their exact center.
 
 ## [2024-05-19] ingest | Command Console & Day/Night Cycle
+
 - Added command console documentation (`llm-wiki/concepts/command-console.md`) for `/tp`, `/speed`, `/jump`, `/give`, `/kill`.
 - Added Day & Night cycle documentation (`llm-wiki/systems/day-night-cycle.md`), detailing custom shader crossfading, sun/moon arcs, and 8-phase skybox transitions.
+
+## [2024-05-19] update | Solid Submodels, Affine Right-Click & Physics
+
+- Fixed CANNON.Trimesh generation to correctly extract only position data via `vertex.fromBufferAttribute()` for interleaved geometries.
+- Removed artificial Y=105 win height threshold.
+- Fixed placed blocks incorrectly disappearing when entering Spectator mode (switched `clear()` to `deselectBlock()`).
+- Fixed "floaty" rotated physics boxes by temporarily zeroing visual rotation before applying physical bounds.
+- Removed arbitrary `0.6` minimum thickness clamp for physics boxes.
+- Added `/timestop` cheat command to `DayNightSystem`.
