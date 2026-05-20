@@ -64,15 +64,12 @@ export interface DecorationDef {
   /** Extract a single child by name instead of index. */
   childName?: string;
   animate?: {
-    rotateY?: number;
-    bobSpeed?: number;
-    bobHeight?: number;
-    /** Orbit radius — makes the decoration fly in a circle on the XZ plane */
-    orbitRadius?: number;
-    /** Orbit speed in radians per second */
-    orbitSpeed?: number;
-    /** Offset rotation for orbiting models (e.g. to fix moonwalking or sideways models) */
-    orbitRotationOffset?: number;
+    /** Per-axis rotation speed in radians/sec */
+    rotate?: { x?: number; y?: number; z?: number };
+    /** Per-axis movement range in world units */
+    move?: { x?: number; y?: number; z?: number };
+    /** Global movement speed (applies to all move axes) */
+    moveSpeed?: number;
   };
   /** If set, this decoration is a collectible that grants the named block type id. */
   collectible?: string;
@@ -99,6 +96,7 @@ interface DecorationRuntime {
   def: DecorationDef;
   initialPosition: THREE.Vector3;
   initialY: number;
+  initialRotation: THREE.Euler;
   time: number;
   initialTime: number;
   /** Has the player already collected this pickup? */
@@ -276,6 +274,7 @@ export class LevelManager {
         def,
         initialPosition: new THREE.Vector3(...def.position),
         initialY: def.position[1],
+        initialRotation: anchor.rotation.clone(),
         time: initialTime,
         initialTime: initialTime,
         collected: false,
@@ -342,6 +341,7 @@ export class LevelManager {
       def,
       initialPosition: new THREE.Vector3(...def.position),
       initialY: def.position[1],
+      initialRotation: mesh.rotation.clone(),
       time: initialTime,
       initialTime: initialTime,
       collected: false,
@@ -479,6 +479,12 @@ export class LevelManager {
 
         if (def.solid) {
           anchor.updateMatrixWorld(true);
+          const anchorWorldInverse = anchor.matrixWorld.clone().invert();
+          const anchorScaleMatrix = new THREE.Matrix4().makeScale(
+            anchor.scale.x,
+            anchor.scale.y,
+            anchor.scale.z,
+          );
 
           objectToAdd.traverse((child) => {
             if (child instanceof THREE.Mesh) {
@@ -492,9 +498,14 @@ export class LevelManager {
               const faces: number[] = [];
 
               const vertex = new THREE.Vector3();
+              const shapeMatrix = new THREE.Matrix4()
+                .copy(anchorWorldInverse)
+                .multiply(child.matrixWorld);
+              shapeMatrix.premultiply(anchorScaleMatrix);
+
               for (let i = 0; i < positionAttribute.count; i++) {
                 vertex.fromBufferAttribute(positionAttribute, i);
-                vertex.applyMatrix4(child.matrixWorld);
+                vertex.applyMatrix4(shapeMatrix);
                 vertices.push(vertex.x, vertex.y, vertex.z);
               }
 
@@ -511,7 +522,9 @@ export class LevelManager {
               const trimeshShape = new CANNON.Trimesh(vertices, faces);
               const body = new CANNON.Body({
                 mass: 0,
-                type: CANNON.Body.STATIC,
+                type: dec.def.animate
+                  ? CANNON.Body.KINEMATIC
+                  : CANNON.Body.STATIC,
               });
               body.addShape(trimeshShape);
               // Only add to physics if not currently culled
@@ -644,30 +657,34 @@ export class LevelManager {
 
       dec.time += dt;
       if (dec.def.animate) {
-        if (dec.def.animate.rotateY) {
-          dec.mesh.rotation.y += dec.def.animate.rotateY * dt;
-        }
-        if (dec.def.animate.bobSpeed && dec.def.animate.bobHeight) {
-          dec.mesh.position.y =
-            dec.initialY +
-            Math.sin(dec.time * dec.def.animate.bobSpeed) *
-              dec.def.animate.bobHeight;
-        }
-        if (dec.def.animate.orbitRadius && dec.def.animate.orbitSpeed) {
-          const angle = dec.time * dec.def.animate.orbitSpeed;
-          const radius = dec.def.animate.orbitRadius;
+        const animate = dec.def.animate;
+        const move = animate.move;
+        const rotate = animate.rotate;
+        const moveSpeed = animate.moveSpeed ?? 1;
 
-          // Position — orbit on XZ plane
-          dec.mesh.position.x =
-            dec.initialPosition.x + Math.cos(angle) * radius;
-          dec.mesh.position.z =
-            dec.initialPosition.z + Math.sin(angle) * radius;
-
-          // Heading — face direction of travel (tangent to circle)
-          // Three.js default forward is -Z.
-          const rotOffset = dec.def.animate.orbitRotationOffset || 0;
-          dec.mesh.rotation.y = -angle + rotOffset;
+        // Movement: per-axis sinusoidal offset around the initial position
+        dec.mesh.position.copy(dec.initialPosition);
+        if (move) {
+          const t = dec.time * moveSpeed;
+          if (move.x !== undefined) dec.mesh.position.x += Math.sin(t) * move.x;
+          if (move.y !== undefined) dec.mesh.position.y += Math.sin(t) * move.y;
+          if (move.z !== undefined) dec.mesh.position.z += Math.sin(t) * move.z;
         }
+
+        // Rotation: per-axis angular speed (radians/sec) — integrate over total time
+        dec.mesh.rotation.copy(dec.initialRotation);
+        if (rotate) {
+          if (rotate.x !== undefined)
+            dec.mesh.rotation.x += rotate.x * dec.time;
+          if (rotate.y !== undefined)
+            dec.mesh.rotation.y += rotate.y * dec.time;
+          if (rotate.z !== undefined)
+            dec.mesh.rotation.z += rotate.z * dec.time;
+        }
+      }
+
+      if (dec.bodies.length > 0) {
+        this.syncDecorationBodies(dec);
       }
     }
   }
@@ -744,21 +761,15 @@ export class LevelManager {
 
     for (const dec of this.decorations) {
       dec.time = dec.initialTime;
-
-      // If we bobbed or rotated, reset rotation and Y-position
-      if (dec.def.animate) {
-        if (dec.def.rotation) {
-          dec.mesh.rotation.set(...dec.def.rotation);
-        } else {
-          dec.mesh.rotation.set(0, 0, 0);
-        }
-        dec.mesh.position.y = dec.initialY;
-      }
+      dec.mesh.position.copy(dec.initialPosition);
+      dec.mesh.rotation.copy(dec.initialRotation);
 
       if (dec.collected) {
         dec.collected = false;
         dec.mesh.scale.copy(dec.initialScale);
-        dec.mesh.position.y = dec.initialY;
+        dec.mesh.position.copy(dec.initialPosition);
+        dec.mesh.rotation.copy(dec.initialRotation);
+        dec.mesh.visible = true;
         this.engine.scene.add(dec.mesh);
       }
     }
@@ -798,6 +809,21 @@ export class LevelManager {
     return new THREE.Vector3(0, 5, 0);
   }
 
+  private syncDecorationBodies(dec: DecorationRuntime): void {
+    const mesh = dec.mesh;
+    mesh.updateMatrixWorld(true);
+
+    for (const body of dec.bodies) {
+      body.position.set(mesh.position.x, mesh.position.y, mesh.position.z);
+      body.quaternion.set(
+        mesh.quaternion.x,
+        mesh.quaternion.y,
+        mesh.quaternion.z,
+        mesh.quaternion.w,
+      );
+      body.aabbNeedsUpdate = true;
+    }
+  }
 }
 
 function disposeObject3D(object: THREE.Object3D): void {

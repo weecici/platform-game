@@ -88,9 +88,9 @@ export const objects: LevelConfig["decorations"] = [
     rotation: [Math.PI / 2, Math.PI / 2, 0],
     solid: true,
     animate: {
-      rotateY: 2,
-      bobSpeed: 2,
-      bobHeight: 0.5,
+      rotate: { y: 1, z: 2, x: 2 },
+      move: { y: 0.5 },
+      moveSpeed: 2,
     },
   },
   {
@@ -101,9 +101,9 @@ export const objects: LevelConfig["decorations"] = [
     rotation: [Math.PI / 2, Math.PI / 2, 0],
     solid: true,
     animate: {
-      rotateY: 2,
-      bobSpeed: 2,
-      bobHeight: 0.5,
+      rotate: { y: 1, z: 2, x: 2 },
+      move: { y: 0.5 },
+      moveSpeed: 2,
     },
   },
 

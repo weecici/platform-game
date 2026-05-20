@@ -6,7 +6,11 @@ export const collectibles: LevelConfig["decorations"] = [
     position: [-42, 63.0, -136],
     color: 4513279,
     emissive: 4513279,
-    animate: { rotateY: 2, bobSpeed: 2, bobHeight: 0.25 },
+    animate: {
+      rotate: { y: 2 },
+      move: { y: 0.25 },
+      moveSpeed: 2,
+    },
     collectible: "sphere",
   },
   {
@@ -14,7 +18,11 @@ export const collectibles: LevelConfig["decorations"] = [
     position: [-45, 63.0, -136],
     color: 4513279,
     emissive: 4513279,
-    animate: { rotateY: 2, bobSpeed: 2, bobHeight: 0.25 },
+    animate: {
+      rotate: { y: 2 },
+      move: { y: 0.25 },
+      moveSpeed: 2,
+    },
     collectible: "box",
   },
   {
@@ -22,7 +30,11 @@ export const collectibles: LevelConfig["decorations"] = [
     position: [-42, 63.0, -138],
     color: 4513279,
     emissive: 4513279,
-    animate: { rotateY: 2, bobSpeed: 2, bobHeight: 0.25 },
+    animate: {
+      rotate: { y: 2 },
+      move: { y: 0.25 },
+      moveSpeed: 2,
+    },
     collectible: "sphere",
   },
   {
@@ -30,7 +42,11 @@ export const collectibles: LevelConfig["decorations"] = [
     position: [-45, 63.0, -138],
     color: 4513279,
     emissive: 4513279,
-    animate: { rotateY: 2, bobSpeed: 2, bobHeight: 0.25 },
+    animate: {
+      rotate: { y: 2 },
+      move: { y: 0.25 },
+      moveSpeed: 2,
+    },
     collectible: "box",
   },
   {
@@ -38,15 +54,11 @@ export const collectibles: LevelConfig["decorations"] = [
     position: [-45, 63.0, -140],
     color: 4513279,
     emissive: 4513279,
-    animate: { rotateY: 2, bobSpeed: 2, bobHeight: 0.25 },
+    animate: {
+      rotate: { y: 2 },
+      move: { y: 0.25 },
+      moveSpeed: 2,
+    },
     collectible: "cylinder",
-  },
-  {
-    type: "sphere",
-    position: [-42, 63.0, -140],
-    color: 4513279,
-    emissive: 4513279,
-    animate: { rotateY: 2, bobSpeed: 2, bobHeight: 0.25 },
-    collectible: "box",
   },
 ];

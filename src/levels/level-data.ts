@@ -14,7 +14,7 @@ import { scene } from "./deco/scene-position";
 
 export const LEVEL_PARKOUR_CITY: LevelConfig = {
   name: "Urban Parkour",
-  spawnPosition: [-44, 70, -134],
+  spawnPosition: [-68, 55, -63],
   skyColor: 0x87ceeb,
   fogColor: 0xc8ddf0,
   fogNear: 100,
