@@ -226,9 +226,17 @@ export class PrimitivePlacementSystem {
     );
 
     // --- Scale: if size changed, rebuild the physics shape ---
+    // Measure un-inflated local size
+    const originalRotation = object.rotation.clone();
+    object.rotation.set(0, 0, 0);
+    object.updateMatrixWorld(true);
+
     const box = new THREE.Box3().setFromObject(object);
     const newSize = new THREE.Vector3();
     box.getSize(newSize);
+
+    object.rotation.copy(originalRotation);
+    object.updateMatrixWorld(true);
 
     const sizeDiff =
       Math.abs(newSize.x - entry.lastSize.x) +
@@ -242,12 +250,8 @@ export class PrimitivePlacementSystem {
       }
       entry.body.addShape(
         new CANNON.Box(
-          new CANNON.Vec3(
-            Math.max(newSize.x, 0.1) / 2,
-            Math.max(newSize.y, 0.1) / 2,
-            Math.max(newSize.z, 0.1) / 2,
-          ),
-        ),
+          new CANNON.Vec3(newSize.x / 2, newSize.y / 2, newSize.z / 2)
+        )
       );
       entry.lastSize.copy(newSize);
     }
@@ -280,11 +284,20 @@ export class PrimitivePlacementSystem {
   // ----------------------------------------------------------------
 
   private addToWorld(object: THREE.Object3D, blockType: BlockType): PlacedPrimitive {
+    // Temporarily zero rotation to get un-inflated local size
+    const originalRotation = object.rotation.clone();
+    object.rotation.set(0, 0, 0);
+    object.updateMatrixWorld(true);
+
     const box = new THREE.Box3().setFromObject(object);
     const size = new THREE.Vector3();
     const center = new THREE.Vector3();
     box.getSize(size);
     box.getCenter(center);
+
+    // Restore rotation
+    object.rotation.copy(originalRotation);
+    object.updateMatrixWorld(true);
 
     // Build Cannon material from block physics properties
     const mat = new CANNON.Material(blockType.id);
@@ -300,21 +313,17 @@ export class PrimitivePlacementSystem {
       type: CANNON.Body.STATIC,
       material: mat,
       shape: new CANNON.Box(
-        new CANNON.Vec3(
-          Math.max(size.x, 0.1) / 2,
-          Math.max(size.y, 0.1) / 2,
-          Math.max(size.z, 0.1) / 2,
-        ),
+        new CANNON.Vec3(size.x / 2, size.y / 2, size.z / 2),
       ),
-      position: new CANNON.Vec3(center.x, center.y, center.z),
+      position: new CANNON.Vec3(object.position.x, object.position.y, object.position.z),
     });
 
-    // Sync rotation from mesh
+    // Apply the visual object's rotation to the physics body
     body.quaternion.set(
       object.quaternion.x,
       object.quaternion.y,
       object.quaternion.z,
-      object.quaternion.w,
+      object.quaternion.w
     );
 
     this.physics.addBody(body);
@@ -324,24 +333,36 @@ export class PrimitivePlacementSystem {
 
   /** Legacy: add to world without block-type physics properties */
   private addToWorldForObject(object: THREE.Object3D): PlacedPrimitive {
+    // Temporarily zero rotation to get un-inflated local size
+    const originalRotation = object.rotation.clone();
+    object.rotation.set(0, 0, 0);
+    object.updateMatrixWorld(true);
+
     const box = new THREE.Box3().setFromObject(object);
     const size = new THREE.Vector3();
     const center = new THREE.Vector3();
     box.getSize(size);
     box.getCenter(center);
 
+    // Restore rotation
+    object.rotation.copy(originalRotation);
+    object.updateMatrixWorld(true);
+
     const body = new CANNON.Body({
       mass: 0,
       type: CANNON.Body.STATIC,
       shape: new CANNON.Box(
-        new CANNON.Vec3(
-          Math.max(size.x, 0.6) / 2,
-          Math.max(size.y, 0.6) / 2,
-          Math.max(size.z, 0.6) / 2,
-        ),
+        new CANNON.Vec3(size.x / 2, size.y / 2, size.z / 2)
       ),
-      position: new CANNON.Vec3(center.x, center.y, center.z),
+      position: new CANNON.Vec3(object.position.x, object.position.y, object.position.z),
     });
+
+    body.quaternion.set(
+      object.quaternion.x,
+      object.quaternion.y,
+      object.quaternion.z,
+      object.quaternion.w
+    );
 
     this.physics.addBody(body);
     return { object, body, lastSize: size.clone() };
