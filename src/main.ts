@@ -1065,7 +1065,7 @@ class Game {
       await this.npcDialog.show([
         {
           speaker: "Building Owner",
-          text: "No items yet? Remember, I need my Ceremonial Sword, my old Retro Radio, and my Bunch of Books from the high peaks.",
+          text: 'No items yet? Remember, I need my "Knight\'s Softening Blade", my old Retro Radio, and Precious Books from each top of highest building in each zone.',
         },
         { speaker: "You", text: "Got it, I'm still searching." },
       ]);
@@ -1112,7 +1112,7 @@ class Game {
       await this.npcDialog.show([
         {
           speaker: "You",
-          text: "I did it! I've recovered your Ceremonial Twin Swords, your old Retro Radio, and your Bunch of Books!",
+          text: "I did it! I've recovered your \"Knight's Softening Blade\", your old Retro Radio, and your Bunch of Books!",
         },
         {
           speaker: "Building Owner",
@@ -1145,7 +1145,7 @@ class Game {
         },
         {
           speaker: "Narrator",
-          text: "Warm, stylish, and proud, you are now ready for your next galactic adventure. BEST ENDING!",
+          text: "Warm, stylish, and proud, you are now ready for your next galactic adventure.",
         },
       ]);
       this.triggerEndingScreen(true);
@@ -1161,7 +1161,7 @@ class Game {
         },
         {
           speaker: "Narrator",
-          text: "Safe and warm, but forever missing that custom stardust touch. MEDIOCRE ENDING!",
+          text: "Safe and warm, but forever missing that custom stardust touch.",
         },
       ]);
       this.triggerEndingScreen(false);
