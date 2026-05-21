@@ -9,6 +9,7 @@ Catalog of all knowledge pages in the `llm-wiki/`.
 - [Level Manager](./entities/level-manager.md) - Loads and updates data-driven level platforms, decorations, and shared axis-based decoration motion.
 - [Primitive Placement](./entities/primitive-placement.md) - Logic for ghost preview, block instantiation, and debug UI affine transforms.
 - [Block Inventory](./entities/block-inventory.md) - Tracking player collected blocks and hotbar selection.
+- [NPC](./entities/npc.md) - Loading, animating, and updating orientation/interaction bounds of 3D characters (`src/entities/npc.ts`).
 
 ## Concepts
 
@@ -16,6 +17,7 @@ Catalog of all knowledge pages in the `llm-wiki/`.
 - [Momentum Physics](./concepts/momentum-physics.md) - Percentage-based friction and acceleration system for tight controls.
 - [Data-Driven Levels](./concepts/data-driven-levels.md) - Structure of `LEVEL_PARKOUR_CITY`, platform definitions, and decoration motion fields.
 - [Command Console](./concepts/command-console.md) - Developer and debug cheating console mapped to `/`.
+- [Interactive Dialogue System](./concepts/dialogue-system.md) - Two-way glassmorphic dialog typewriter, click skipping, and quest completion triggers.
 
 ## Systems
 

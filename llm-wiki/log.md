@@ -75,3 +75,10 @@ Append-only chronological log of operations on the wiki.
 - Fixed "floaty" rotated physics boxes by temporarily zeroing visual rotation before applying physical bounds.
 - Removed arbitrary `0.6` minimum thickness clamp for physics boxes.
 - Added `/timestop` cheat command to `DayNightSystem`.
+
+## [2026-05-20] ingest | NPC Quest, Glassmorphism Dialogue Box & Multiple Endings
+
+- Created new Entity documentation for [NPC](./entities/npc.md) detailing GLTF skeletal loading, Idle fallback animations, flat look-at tracking, and spatial bounds.
+- Created new Concept documentation for [Interactive Dialogue System](./concepts/dialogue-system.md) outlining typewriter animations, click-skipping, dynamic speaker classes, and quantum teleporter integration.
+- Refactored `imp-obj-position.ts` to map the Swords, Radio, and Books as key quest items, leaving the UFO as the game exit trigger.
+- Rewrote the main interaction loop in `main.ts` to seamlessly handle multi-turn dialog branching, control freezing, and Ending overlays.
