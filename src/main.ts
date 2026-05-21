@@ -9,6 +9,8 @@ import { PlayerController } from "./entities/player-controller";
 import { LevelManager } from "./levels/level-manager";
 import { LEVEL_PARKOUR_CITY } from "./levels/level-data";
 import { DebugGUI } from "./ui/debug-ui";
+import { NPC } from "./entities/npc";
+import { NPCDialog } from "./ui/npc-dialog";
 import { PrimitivePlacementSystem } from "./systems/primitive-placement";
 import { BLOCK_CATALOGUE, BlockInventory } from "./systems/block-system";
 import { DayNightSystem } from "./systems/day-night-system";
@@ -26,6 +28,13 @@ class Game {
   private primitivePlacement: PrimitivePlacementSystem;
   private blockInventory: BlockInventory;
   private dayNightSystem: DayNightSystem;
+  private npc: NPC | null = null;
+  private npcDialog: NPCDialog | null = null;
+
+  // Quest and ending state tracking
+  private hasTalkedToOwner = false;
+  private teleportedToRoof = false;
+  private gameWon = false;
 
   private isRunning = false;
   private isPaused = false;
@@ -91,6 +100,14 @@ class Game {
       this.textureManager,
     );
     this.levelManager.loadLevel(LEVEL_PARKOUR_CITY);
+    // Spawn building owner NPC
+    this.npc = new NPC(this.engine, {
+      modelPath: "/assets/npcs/building_owner.gltf",
+      position: [70, 0.2, -70],
+      interactionRadius: 4,
+      name: "Building Owner",
+    });
+    this.npcDialog = new NPCDialog();
     void this.loadExternalTextureSets();
 
     this.player = new PlayerController(
@@ -206,6 +223,35 @@ class Game {
           this.showCommandConsole();
         }
       }
+    });
+
+    // Interaction key for NPCs (building owner) and UFO
+    this.input.onKeyPress("f", () => {
+      if (!this.isStarted || this.isDead || this.isFinished || this.isPaused)
+        return;
+
+      const playerPos = this.player.getPosition();
+      const ufoPos = new THREE.Vector3(-13, 47, 209);
+      const isNearUfo = playerPos.distanceTo(ufoPos) <= 8.0;
+      const isNearNpc = this.npc && this.npc.isPlayerNearby(playerPos);
+
+      if (!isNearNpc && !isNearUfo) return;
+
+      void (async () => {
+        // Freeze controls and exit pointer lock during dialogue
+        this.input.setGameplayActive(false);
+        this.input.exitPointerLock();
+
+        if (isNearUfo) {
+          await this.handleUfoInteraction();
+        } else if (isNearNpc) {
+          await this.handleNpcInteraction();
+        }
+
+        // Restore game controls and cursor lock
+        this.input.setGameplayActive(true);
+        this.input.requestPointerLock();
+      })();
     });
 
     document.getElementById("btn-start")!.addEventListener("click", () => {
@@ -741,6 +787,11 @@ class Game {
     this.deathReason = "You fell out of the course.";
     this.input.setGameplayActive(true);
 
+    // Reset quest state variables
+    this.hasTalkedToOwner = false;
+    this.teleportedToRoof = false;
+    this.gameWon = false;
+
     this.deathScreen.classList.remove("active");
     this.pauseScreen.classList.remove("active");
     this.hudEl.style.display = "";
@@ -873,9 +924,44 @@ class Game {
     // Check for collectible pickups
     const collected = this.levelManager.checkCollectibles(playerPos);
     for (const blockId of collected) {
-      this.blockInventory.add(blockId);
-      this.updateInventoryHUD();
-      this.showPickupNotification(blockId);
+      if (blockId === "jeans") {
+        // Intercept player's pants retrieval
+        void (async () => {
+          this.input.setGameplayActive(false);
+          this.input.exitPointerLock();
+
+          await this.npcDialog!.show([
+            {
+              speaker: "You",
+              text: "YES! My grandmother's legendary cosmic shorts! Still warm and smelling of stardust <3!",
+            },
+            {
+              speaker: "You",
+              text: "Now, I must make my way back to my UFO at the eastern launch pad and head home!",
+            },
+          ]);
+
+          this.input.setGameplayActive(true);
+          this.input.requestPointerLock();
+        })();
+      } else if (
+        blockId === "waifu_pillow" ||
+        blockId === "radio" ||
+        blockId === "books"
+      ) {
+        // Collect quest items
+        const itemName =
+          blockId === "waifu_pillow"
+            ? "🗡️ The Knight\'s Softening Blade"
+            : blockId === "radio"
+              ? "📻 Retro Radio"
+              : "📚 Precious Books";
+        this.showNotification(`Collected Key Item: ${itemName}!`, 4000);
+      } else {
+        this.blockInventory.add(blockId);
+        this.updateInventoryHUD();
+        this.showPickupNotification(blockId);
+      }
     }
 
     this.engine.perspectiveParams.positionX = this.engine.camera.position.x;
@@ -910,6 +996,7 @@ class Game {
     );
 
     this.updateHUD();
+    if (this.npc) this.npc.update(dt, playerPos);
     this.engine.render(dt);
   }
 
@@ -935,6 +1022,280 @@ class Game {
       () => el.classList.remove("visible"),
       1200,
     );
+  }
+
+  private async handleNpcInteraction(): Promise<void> {
+    if (!this.npcDialog) return;
+    const collected = this.levelManager.getCollectedSet();
+    const required = ["waifu_pillow", "radio", "books"];
+    const gathered = required.filter((id) => collected.has(id));
+    const count = gathered.length;
+
+    if (!this.hasTalkedToOwner) {
+      this.hasTalkedToOwner = true;
+      await this.npcDialog.show([
+        {
+          speaker: "You",
+          text: "Wait, is that... my grandmother's handcrafted cosmic shorts up there? On top of this giant tower?!",
+        },
+        {
+          speaker: "Building Owner",
+          text: "Hey! Watch it, Cosmic Little Fella. No unauthorized citizens allowed inside the Apex Tower. Security is tight.",
+        },
+        {
+          speaker: "You",
+          text: "But you don't understand! A solar storm blew them right off my ship while I was changing, and they've landed right on your roof!",
+        },
+        {
+          speaker: "Building Owner",
+          text: "Handcrafted stardust shorts... Right. Sure. Look, I've also got my own problems. Some damn f**king kids pulled a prank and stole my absolute favorite belongings and stashed them on the highest summits in the city.",
+        },
+        { speaker: "You", text: "If I find them, will you let me up there?" },
+        {
+          speaker: "Building Owner",
+          text: 'Tell you what. Bring back "The Knight\'s Softening Blade", my old Retro Radio, and my Precious Books.',
+        },
+        {
+          speaker: "Building Owner",
+          text: "Do that, and I'll use my personal quantum teleporter to send you straight to the roof of Apex Tower. Deal?",
+        },
+        { speaker: "You", text: "Deal! I'm on it!" },
+      ]);
+    } else if (count === 0) {
+      await this.npcDialog.show([
+        {
+          speaker: "Building Owner",
+          text: "No items yet? Remember, I need my Ceremonial Sword, my old Retro Radio, and my Bunch of Books from the high peaks.",
+        },
+        { speaker: "You", text: "Got it, I'm still searching." },
+      ]);
+    } else if (count < required.length) {
+      var itemNames = gathered
+        .map((id) =>
+          id.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase()),
+        )
+        .join(", ");
+      await this.npcDialog.show([
+        {
+          speaker: "You",
+          text: `I found some of your things! I have the ${itemNames} here.`,
+        },
+      ]);
+      if (gathered.includes("waifu_pillow")) {
+        itemNames = itemNames.replace(
+          "Waifu Pillow",
+          "Knight's Softening Blade",
+        );
+        await this.npcDialog.show([
+          {
+            speaker: "Building Owner",
+            text: `Ahem... The Knight's Softening Blade, you say?`,
+          },
+          {
+            speaker: "You",
+            text: `Oh, right! Sorry, I forgot the name, teehee. Yes, I have the Knight's Softening Blade.`,
+          },
+        ]);
+      }
+      await this.npcDialog.show([
+        {
+          speaker: "Building Owner",
+          text: `Ah! Outstanding! You actually recovered the ${itemNames}! Excellent work.`,
+        },
+        {
+          speaker: "Building Owner",
+          text: `But I still need the rest of my collection before I can activate the quantum teleporter. Keep climbing!`,
+        },
+        { speaker: "You", text: "I'll be back with the rest soon." },
+      ]);
+    } else {
+      await this.npcDialog.show([
+        {
+          speaker: "You",
+          text: "I did it! I've recovered your Ceremonial Twin Swords, your old Retro Radio, and your Bunch of Books!",
+        },
+        {
+          speaker: "Building Owner",
+          text: "Incredible! You're a hero! A deal's a deal. Hold onto your helmet... activating the quantum teleporter... ZAP!",
+        },
+      ]);
+
+      // Teleport player to skyscraper roof
+      this.player.body.position.set(75, 300, -90);
+      this.player.body.velocity.set(0, 0, 0);
+      this.player.body.angularVelocity.set(0, 0, 0);
+      this.teleportedToRoof = true;
+    }
+  }
+
+  private async handleUfoInteraction(): Promise<void> {
+    if (!this.npcDialog) return;
+    const collected = this.levelManager.getCollectedSet();
+    const hasPants = collected.has("jeans");
+
+    if (hasPants) {
+      await this.npcDialog.show([
+        {
+          speaker: "You",
+          text: "Ah, home sweet UFO! My grandmother's legendary stardust shorts are safely back on!",
+        },
+        {
+          speaker: "Narrator",
+          text: "With the heirloom retrieved and your dignity fully restored, you fired up the cosmic thrusters and soared into the endless night sky.",
+        },
+        {
+          speaker: "Narrator",
+          text: "Warm, stylish, and proud, you are now ready for your next galactic adventure. BEST ENDING!",
+        },
+      ]);
+      this.triggerEndingScreen(true);
+    } else {
+      await this.npcDialog.show([
+        {
+          speaker: "You",
+          text: "Well... I couldn't get my shorts. But I can't fly around the galaxy in my underwear forever...",
+        },
+        {
+          speaker: "Narrator",
+          text: "You decided to fire up the engines, flew to the nearest mega space-mall, and bought a generic pair of gray sweatpants.",
+        },
+        {
+          speaker: "Narrator",
+          text: "Safe and warm, but forever missing that custom stardust touch. MEDIOCRE ENDING!",
+        },
+      ]);
+      this.triggerEndingScreen(false);
+    }
+  }
+
+  private triggerEndingScreen(isBestEnding: boolean): void {
+    this.cancelLoop();
+    this.isRunning = false;
+    this.isFinished = true;
+    this.input.setGameplayActive(false);
+    this.input.exitPointerLock();
+
+    const overlay = document.createElement("div");
+    overlay.className = "victory-overlay";
+
+    const titleText = isBestEnding
+      ? "BEST ENDING ACHIEVED!"
+      : "MEDIOCRE ENDING ACHIEVED";
+    const titleClass = isBestEnding ? "best-ending" : "mediocre-ending";
+    const descriptionText = isBestEnding
+      ? "You retrieved your grandmother's handcrafted cosmic stardust trousers! You are officially the most stylish alien in this quadrant."
+      : "You flew to a space-mall and settled for generic sweatpants. Safe, warm, but your grandmother would be disappointed.";
+
+    const emoji = isBestEnding ? "👖🚀✨" : "🛸️🛍🛒";
+
+    overlay.innerHTML = `
+      <style>
+        .victory-overlay {
+          position: fixed;
+          top: 0; left: 0; width: 100%; height: 100%;
+          background: rgba(4, 4, 12, 0.85);
+          backdrop-filter: blur(20px) saturate(180%);
+          z-index: 10000;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          color: #fff;
+          font-family: system-ui, -apple-system, sans-serif;
+          opacity: 0;
+          transition: opacity 0.5s ease;
+        }
+        .victory-card {
+          background: rgba(20, 20, 35, 0.7);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          padding: 40px 50px;
+          border-radius: 24px;
+          text-align: center;
+          max-width: 600px;
+          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+          transform: scale(0.9);
+          transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .victory-overlay.active {
+          opacity: 1;
+        }
+        .victory-overlay.active .victory-card {
+          transform: scale(1);
+        }
+        .victory-emoji {
+          font-size: 64px;
+          margin-bottom: 20px;
+          animation: victoryFloat 3s infinite ease-in-out;
+        }
+        .victory-title {
+          font-size: 38px;
+          font-weight: 900;
+          letter-spacing: 2px;
+          margin-bottom: 15px;
+        }
+        .best-ending {
+          background: linear-gradient(45deg, #00e5ff, #7b2fff, #ff2d95);
+          -webkit-background-clip: text;
+          background-clip: text;
+          -webkit-text-fill-color: transparent;
+          text-shadow: 0 0 30px rgba(0, 229, 255, 0.2);
+        }
+        .mediocre-ending {
+          background: linear-gradient(45deg, #ffd54f, #ff9100);
+          -webkit-background-clip: text;
+          background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+        .victory-desc {
+          font-size: 16px;
+          color: rgba(255, 255, 255, 0.7);
+          line-height: 1.6;
+          margin-bottom: 35px;
+        }
+        .victory-btn {
+          padding: 14px 40px;
+          font-size: 16px;
+          font-weight: 700;
+          color: #fff;
+          background: linear-gradient(45deg, #7b2fff, #00d4ff);
+          border: none;
+          border-radius: 50px;
+          cursor: pointer;
+          letter-spacing: 1px;
+          box-shadow: 0 8px 24px rgba(123, 47, 255, 0.4);
+          transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .victory-btn:hover {
+          transform: scale(1.05);
+          box-shadow: 0 12px 30px rgba(123, 47, 255, 0.6);
+        }
+        @keyframes victoryFloat {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
+        }
+      </style>
+      <div class="victory-card">
+        <div class="victory-emoji">${emoji}</div>
+        <h2 class="victory-title ${titleClass}">${titleText}</h2>
+        <p class="victory-desc">${descriptionText}</p>
+        <button class="victory-btn" id="btn-victory-restart">PLAY AGAIN</button>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    // Force reflow
+    overlay.offsetHeight;
+    overlay.classList.add("active");
+
+    const restartBtn = overlay.querySelector("#btn-victory-restart")!;
+    restartBtn.addEventListener("click", () => {
+      overlay.classList.remove("active");
+      setTimeout(() => {
+        overlay.remove();
+        this.restartGame();
+      }, 500);
+    });
   }
 
   /** Show a brief pickup notification */

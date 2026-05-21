@@ -6,6 +6,7 @@ import { buildings } from "./deco/building-position";
 import { trees } from "./deco/tree-position";
 import { vehicles } from "./deco/vehicle-position";
 import { scene } from "./deco/scene-position";
+import { importantObjects } from "./parkour/imp-obj-position";
 
 /**
  * Parkour level definitions
@@ -14,7 +15,7 @@ import { scene } from "./deco/scene-position";
 
 export const LEVEL_PARKOUR_CITY: LevelConfig = {
   name: "Urban Parkour",
-  spawnPosition: [-68, 55, -63],
+  spawnPosition: [-29, 37, 199],
   skyColor: 0x87ceeb,
   fogColor: 0xc8ddf0,
   fogNear: 100,
@@ -75,5 +76,6 @@ export const LEVEL_PARKOUR_CITY: LevelConfig = {
     ...vehicles,
     ...objects,
     ...collectibles,
+    ...importantObjects,
   ],
 };

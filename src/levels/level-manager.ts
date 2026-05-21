@@ -809,6 +809,19 @@ export class LevelManager {
     return new THREE.Vector3(0, 5, 0);
   }
 
+  /**
+   * Return a set of collectible ids that have been collected in the current level.
+   */
+  getCollectedSet(): Set<string> {
+    const s = new Set<string>();
+    for (const dec of this.decorations) {
+      if (dec.def.collectible && dec.collected) {
+        s.add(dec.def.collectible as string);
+      }
+    }
+    return s;
+  }
+
   private syncDecorationBodies(dec: DecorationRuntime): void {
     const mesh = dec.mesh;
     mesh.updateMatrixWorld(true);

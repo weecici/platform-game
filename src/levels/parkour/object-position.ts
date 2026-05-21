@@ -1,6 +1,9 @@
 import { LevelConfig } from "../level-manager";
 
 export const objects: LevelConfig["decorations"] = [
+  // ### Right 1 ###
+  // Final Object
+
   // ### Left 1 ###
 
   // Group 1

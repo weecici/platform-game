@@ -3,6 +3,15 @@ import { LevelConfig } from "../level-manager";
 const roadBlockSize: [number, number, number] = [30, 30, 1.0];
 
 export const scene: LevelConfig["decorations"] = [
+  {
+    type: "model",
+    modelPath: "scene/mountain.usdz",
+    position: [0, 0, 200],
+    targetSizeY: 100,
+    solid: true,
+    noCull: true,
+    doubleSided: true,
+  },
   // 0: straight road, 1: crossroad, 2: cut-off, 3: T-junction
   // ### Center 1 ###
   {

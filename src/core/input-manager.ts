@@ -17,6 +17,7 @@ export class InputManager {
     "d",
     " ",
     "shift",
+    "f",
     "p",
     "g",
     "r",
