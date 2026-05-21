@@ -82,3 +82,12 @@ Append-only chronological log of operations on the wiki.
 - Created new Concept documentation for [Interactive Dialogue System](./concepts/dialogue-system.md) outlining typewriter animations, click-skipping, dynamic speaker classes, and quantum teleporter integration.
 - Refactored `imp-obj-position.ts` to map the Swords, Radio, and Books as key quest items, leaving the UFO as the game exit trigger.
 - Rewrote the main interaction loop in `main.ts` to seamlessly handle multi-turn dialog branching, control freezing, and Ending overlays.
+
+## [2026-05-21] update | Dynamic Quest & Dialogue Registry Engine
+
+- Created an infinitely scalable Quest & Dialogue Registry schema inside `src/data/story-data.ts`.
+- Encapsulated spawning coordinates, interaction range, required items list, custom complete hooks (e.g. dynamic teleports or item rewards), and dialogue script generators under a unified `STORY_CONFIG.npcs` registry list.
+- Refactored `src/main.ts` to dynamically spawn, tick, head-track, and route interaction handlers based on whichever characters are configured in the registry.
+- Implemented a unified F-keypress proximity router that dynamically calculates nearest interactive entities, builds runtime `GameQuestState` wrappers, and launches dialog interfaces.
+- Decoupled key-item pickup interception in `gameLoop()`, dynamically checking if an item is required by any active quest in the registry.
+- Registered the original Building Owner quest and a new **Space Philosopher** NPC near spawn who grants 5 Dirt blocks and meta-game dialogue on first talk to verify infinite extensibility.

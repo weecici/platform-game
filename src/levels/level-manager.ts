@@ -73,6 +73,8 @@ export interface DecorationDef {
   };
   /** If set, this decoration is a collectible that grants the named block type id. */
   collectible?: string;
+  /** Friendly label for the collectible (e.g. "Ceremonial Swords") used in story dialogs */
+  collectibleLabel?: string;
   /** Whether the decoration acts as a solid physical obstacle */
   solid?: boolean;
   /** If true, this decoration will ignore distance-based culling */
@@ -820,6 +822,19 @@ export class LevelManager {
       }
     }
     return s;
+  }
+
+  /**
+   * Retrieve the friendly label for a collectible by its ID.
+   */
+  getCollectibleLabel(id: string): string {
+    for (const dec of this.decorations) {
+      if (dec.def.collectible === id && dec.def.collectibleLabel) {
+        return dec.def.collectibleLabel;
+      }
+    }
+    // Fallback: capitalize first letter
+    return id.charAt(0).toUpperCase() + id.slice(1);
   }
 
   private syncDecorationBodies(dec: DecorationRuntime): void {

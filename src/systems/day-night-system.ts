@@ -13,7 +13,7 @@ export const PHASES = [
   "skybox-8-night",
 ];
 
-const BASE_DURATION = 10;
+const BASE_DURATION = 120;
 const CROSSFADE_DURATION = 0.2;
 
 // A massive box to render our custom skybox shader
@@ -233,9 +233,6 @@ export class DayNightSystem {
       color = (r << 16) | (g << 8) | b;
 
       intensity = 0.5 + heightFactor * 0.3;
-      console.log(
-        `Height factor: ${heightFactor.toFixed(2)}, Sun intensity: ${intensity.toFixed(2)}`,
-      );
 
       const ambR = Math.floor(0xff * heightFactor + 0x66 * (1 - heightFactor));
       const ambG = Math.floor(0xff * heightFactor + 0x66 * (1 - heightFactor));

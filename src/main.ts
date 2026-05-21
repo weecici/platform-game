@@ -15,6 +15,12 @@ import { PrimitivePlacementSystem } from "./systems/primitive-placement";
 import { BLOCK_CATALOGUE, BlockInventory } from "./systems/block-system";
 import { DayNightSystem } from "./systems/day-night-system";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import {
+  STORY_CONFIG,
+  GameQuestState,
+  getPantsRetrievedDialogue,
+  getUfoBoardingDialogue
+} from "./data/story-data";
 
 class Game {
   private engine: Engine;
@@ -28,11 +34,12 @@ class Game {
   private primitivePlacement: PrimitivePlacementSystem;
   private blockInventory: BlockInventory;
   private dayNightSystem: DayNightSystem;
-  private npc: NPC | null = null;
+  private npcs: { [id: string]: NPC } = {};
   private npcDialog: NPCDialog | null = null;
 
   // Quest and ending state tracking
-  private hasTalkedToOwner = false;
+  private npcTalkStates: { [npcId: string]: boolean } = {};
+  private npcCompleteStates: { [npcId: string]: boolean } = {};
   private teleportedToRoof = false;
   private gameWon = false;
 
@@ -100,13 +107,17 @@ class Game {
       this.textureManager,
     );
     this.levelManager.loadLevel(LEVEL_PARKOUR_CITY);
-    // Spawn building owner NPC
-    this.npc = new NPC(this.engine, {
-      modelPath: "/assets/npcs/building_owner.gltf",
-      position: [70, 0.2, -70],
-      interactionRadius: 4,
-      name: "Building Owner",
-    });
+    // Spawn all dynamic NPCs configured in the story registry
+    for (const conf of STORY_CONFIG.npcs) {
+      this.npcs[conf.id] = new NPC(this.engine, {
+        modelPath: conf.modelPath,
+        position: conf.position,
+        interactionRadius: conf.interactionRadius,
+        name: conf.name,
+      });
+      this.npcTalkStates[conf.id] = false;
+      this.npcCompleteStates[conf.id] = false;
+    }
     this.npcDialog = new NPCDialog();
     void this.loadExternalTextureSets();
 
@@ -225,17 +236,25 @@ class Game {
       }
     });
 
-    // Interaction key for NPCs (building owner) and UFO
+    // Interaction key for NPCs and UFO
     this.input.onKeyPress("f", () => {
       if (!this.isStarted || this.isDead || this.isFinished || this.isPaused)
         return;
 
       const playerPos = this.player.getPosition();
-      const ufoPos = new THREE.Vector3(-13, 47, 209);
+      const ufoPos = new THREE.Vector3(...STORY_CONFIG.ufoPosition);
       const isNearUfo = playerPos.distanceTo(ufoPos) <= 8.0;
-      const isNearNpc = this.npc && this.npc.isPlayerNearby(playerPos);
 
-      if (!isNearNpc && !isNearUfo) return;
+      // Find the nearest active NPC within range dynamically from registry
+      let activeNpcId: string | null = null;
+      for (const id in this.npcs) {
+        if (this.npcs[id].isPlayerNearby(playerPos)) {
+          activeNpcId = id;
+          break;
+        }
+      }
+
+      if (!activeNpcId && !isNearUfo) return;
 
       void (async () => {
         // Freeze controls and exit pointer lock during dialogue
@@ -244,8 +263,8 @@ class Game {
 
         if (isNearUfo) {
           await this.handleUfoInteraction();
-        } else if (isNearNpc) {
-          await this.handleNpcInteraction();
+        } else if (activeNpcId) {
+          await this.handleNpcRegistryInteraction(activeNpcId);
         }
 
         // Restore game controls and cursor lock
@@ -788,9 +807,15 @@ class Game {
     this.input.setGameplayActive(true);
 
     // Reset quest state variables
-    this.hasTalkedToOwner = false;
+    // Reset quest state variables dynamically
     this.teleportedToRoof = false;
     this.gameWon = false;
+    for (const key in this.npcTalkStates) {
+      this.npcTalkStates[key] = false;
+    }
+    for (const key in this.npcCompleteStates) {
+      this.npcCompleteStates[key] = false;
+    }
 
     this.deathScreen.classList.remove("active");
     this.pauseScreen.classList.remove("active");
@@ -925,38 +950,21 @@ class Game {
     const collected = this.levelManager.checkCollectibles(playerPos);
     for (const blockId of collected) {
       if (blockId === "jeans") {
-        // Intercept player's pants retrieval
+        // Intercept player's pants retrieval dynamically
         void (async () => {
           this.input.setGameplayActive(false);
           this.input.exitPointerLock();
 
-          await this.npcDialog!.show([
-            {
-              speaker: "You",
-              text: "YES! My grandmother's legendary cosmic shorts! Still warm and smelling of stardust <3!",
-            },
-            {
-              speaker: "You",
-              text: "Now, I must make my way back to my UFO at the eastern launch pad and head home!",
-            },
-          ]);
+          const pantsLabel = this.levelManager.getCollectibleLabel("jeans");
+          await this.npcDialog!.show(getPantsRetrievedDialogue(pantsLabel));
 
           this.input.setGameplayActive(true);
           this.input.requestPointerLock();
         })();
-      } else if (
-        blockId === "waifu_pillow" ||
-        blockId === "radio" ||
-        blockId === "books"
-      ) {
-        // Collect quest items
-        const itemName =
-          blockId === "waifu_pillow"
-            ? "🗡️ The Knight\'s Softening Blade"
-            : blockId === "radio"
-              ? "📻 Retro Radio"
-              : "📚 Precious Books";
-        this.showNotification(`Collected Key Item: ${itemName}!`, 4000);
+      } else if (STORY_CONFIG.npcs.some((npc) => npc.requiredItems?.includes(blockId))) {
+        // Collect quest items dynamically
+        const itemLabel = this.levelManager.getCollectibleLabel(blockId);
+        this.showNotification(`✨ Collected Key Item: ${itemLabel}!`, 4000);
       } else {
         this.blockInventory.add(blockId);
         this.updateInventoryHUD();
@@ -996,7 +1004,10 @@ class Game {
     );
 
     this.updateHUD();
-    if (this.npc) this.npc.update(dt, playerPos);
+    // Update all dynamic NPCs configured in the story registry
+    for (const id in this.npcs) {
+      this.npcs[id].update(dt, playerPos);
+    }
     this.engine.render(dt);
   }
 
@@ -1024,107 +1035,56 @@ class Game {
     );
   }
 
-  private async handleNpcInteraction(): Promise<void> {
+  private async handleNpcRegistryInteraction(npcId: string): Promise<void> {
     if (!this.npcDialog) return;
+    const conf = STORY_CONFIG.npcs.find((n) => n.id === npcId);
+    if (!conf) return;
+
     const collected = this.levelManager.getCollectedSet();
-    const required = ["waifu_pillow", "radio", "books"];
-    const gathered = required.filter((id) => collected.has(id));
-    const count = gathered.length;
 
-    if (!this.hasTalkedToOwner) {
-      this.hasTalkedToOwner = true;
-      await this.npcDialog.show([
-        {
-          speaker: "You",
-          text: "Wait, is that... my grandmother's handcrafted cosmic shorts up there? On top of this giant tower?!",
-        },
-        {
-          speaker: "Building Owner",
-          text: "Hey! Watch it, Cosmic Little Fella. No unauthorized citizens allowed inside the Apex Tower. Security is tight.",
-        },
-        {
-          speaker: "You",
-          text: "But you don't understand! A solar storm blew them right off my ship while I was changing, and they've landed right on your roof!",
-        },
-        {
-          speaker: "Building Owner",
-          text: "Handcrafted stardust shorts... Right. Sure. Look, I've also got my own problems. Some damn f**king kids pulled a prank and stole my absolute favorite belongings and stashed them on the highest summits in the city.",
-        },
-        { speaker: "You", text: "If I find them, will you let me up there?" },
-        {
-          speaker: "Building Owner",
-          text: 'Tell you what. Bring back "The Knight\'s Softening Blade", my old Retro Radio, and my Precious Books.',
-        },
-        {
-          speaker: "Building Owner",
-          text: "Do that, and I'll use my personal quantum teleporter to send you straight to the roof of Apex Tower. Deal?",
-        },
-        { speaker: "You", text: "Deal! I'm on it!" },
-      ]);
-    } else if (count === 0) {
-      await this.npcDialog.show([
-        {
-          speaker: "Building Owner",
-          text: 'No items yet? Remember, I need my "Knight\'s Softening Blade", my old Retro Radio, and Precious Books from each top of highest building in each zone.',
-        },
-        { speaker: "You", text: "Got it, I'm still searching." },
-      ]);
-    } else if (count < required.length) {
-      var itemNames = gathered
-        .map((id) =>
-          id.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase()),
-        )
-        .join(", ");
-      await this.npcDialog.show([
-        {
-          speaker: "You",
-          text: `I found some of your things! I have the ${itemNames} here.`,
-        },
-      ]);
-      if (gathered.includes("waifu_pillow")) {
-        itemNames = itemNames.replace(
-          "Waifu Pillow",
-          "Knight's Softening Blade",
-        );
-        await this.npcDialog.show([
-          {
-            speaker: "Building Owner",
-            text: `Ahem... The Knight's Softening Blade, you say?`,
-          },
-          {
-            speaker: "You",
-            text: `Oh, right! Sorry, I forgot the name, teehee. Yes, I have the Knight's Softening Blade.`,
-          },
-        ]);
+    const state: GameQuestState = {
+      collectedSet: collected,
+      getLabel: (id) => this.levelManager.getCollectibleLabel(id),
+      npcTalkStates: this.npcTalkStates,
+      npcCompleteStates: this.npcCompleteStates,
+      teleport: (x, y, z) => {
+        this.player.body.position.set(x, y, z);
+        this.player.body.velocity.set(0, 0, 0);
+        this.player.body.angularVelocity.set(0, 0, 0);
+        this.teleportedToRoof = true;
+      },
+      grantBlock: (blockId, count = 1) => {
+        const bt = BLOCK_CATALOGUE.find((b) => b.id === blockId);
+        if (bt) {
+          for (let i = 0; i < count; i++) {
+            this.blockInventory.add(blockId);
+          }
+          this.updateInventoryHUD();
+          this.showNotification(`🎁 Received: ${bt.icon} ${count}x ${bt.label}!`, 4000);
+        }
+      },
+    };
+
+    // Retrieve dynamic dialogues from registry
+    const dialogue = conf.getDialogue(state);
+    await this.npcDialog.show(dialogue);
+
+    // Dynamic quest completion check
+    if (conf.requiredItems) {
+      const hasAll = conf.requiredItems.every((id) => collected.has(id));
+      if (hasAll && !this.npcCompleteStates[npcId]) {
+        this.npcCompleteStates[npcId] = true;
+        if (conf.onComplete) {
+          conf.onComplete(state);
+        }
       }
-      await this.npcDialog.show([
-        {
-          speaker: "Building Owner",
-          text: `Ah! Outstanding! You actually recovered the ${itemNames}! Excellent work.`,
-        },
-        {
-          speaker: "Building Owner",
-          text: `But I still need the rest of my collection before I can activate the quantum teleporter. Keep climbing!`,
-        },
-        { speaker: "You", text: "I'll be back with the rest soon." },
-      ]);
     } else {
-      await this.npcDialog.show([
-        {
-          speaker: "You",
-          text: "I did it! I've recovered your \"Knight's Softening Blade\", your old Retro Radio, and your Bunch of Books!",
-        },
-        {
-          speaker: "Building Owner",
-          text: "Incredible! You're a hero! A deal's a deal. Hold onto your helmet... activating the quantum teleporter... ZAP!",
-        },
-      ]);
-
-      // Teleport player to skyscraper roof
-      this.player.body.position.set(75, 300, -90);
-      this.player.body.velocity.set(0, 0, 0);
-      this.player.body.angularVelocity.set(0, 0, 0);
-      this.teleportedToRoof = true;
+      if (!this.npcCompleteStates[npcId]) {
+        this.npcCompleteStates[npcId] = true;
+        if (conf.onComplete) {
+          conf.onComplete(state);
+        }
+      }
     }
   }
 
@@ -1132,38 +1092,13 @@ class Game {
     if (!this.npcDialog) return;
     const collected = this.levelManager.getCollectedSet();
     const hasPants = collected.has("jeans");
+    const pantsLabel = this.levelManager.getCollectibleLabel("jeans");
+
+    await this.npcDialog.show(getUfoBoardingDialogue(hasPants, pantsLabel));
 
     if (hasPants) {
-      await this.npcDialog.show([
-        {
-          speaker: "You",
-          text: "Ah, home sweet UFO! My grandmother's legendary stardust shorts are safely back on!",
-        },
-        {
-          speaker: "Narrator",
-          text: "With the heirloom retrieved and your dignity fully restored, you fired up the cosmic thrusters and soared into the endless night sky.",
-        },
-        {
-          speaker: "Narrator",
-          text: "Warm, stylish, and proud, you are now ready for your next galactic adventure.",
-        },
-      ]);
       this.triggerEndingScreen(true);
     } else {
-      await this.npcDialog.show([
-        {
-          speaker: "You",
-          text: "Well... I couldn't get my shorts. But I can't fly around the galaxy in my underwear forever...",
-        },
-        {
-          speaker: "Narrator",
-          text: "You decided to fire up the engines, flew to the nearest mega space-mall, and bought a generic pair of gray sweatpants.",
-        },
-        {
-          speaker: "Narrator",
-          text: "Safe and warm, but forever missing that custom stardust touch.",
-        },
-      ]);
       this.triggerEndingScreen(false);
     }
   }

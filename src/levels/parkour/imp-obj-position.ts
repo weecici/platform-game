@@ -18,6 +18,7 @@ export const importantObjects: LevelConfig["decorations"] = [
     rotation: [0, 0, 0],
     solid: true,
     collectible: "jeans",
+    collectibleLabel: "Handcrafted Cosmic Pants",
   },
   {
     type: "model",
@@ -32,6 +33,7 @@ export const importantObjects: LevelConfig["decorations"] = [
       moveSpeed: 2,
     },
     collectible: "waifu_pillow",
+    collectibleLabel: "Waifu Pillow",
   },
   {
     type: "model",
@@ -45,11 +47,12 @@ export const importantObjects: LevelConfig["decorations"] = [
       moveSpeed: 2,
     },
     collectible: "radio",
+    collectibleLabel: "Retro Radio",
   },
   {
     type: "model",
     modelPath: "important-obj/books.usdz",
-    position: [121, 87, -265],
+    position: [121, 86, -265],
     targetSizeY: 1.5,
     rotation: [0, 0, 0],
     solid: true,
@@ -58,5 +61,6 @@ export const importantObjects: LevelConfig["decorations"] = [
       moveSpeed: 2,
     },
     collectible: "books",
+    collectibleLabel: "Precious Books",
   },
 ];
