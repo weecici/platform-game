@@ -121,4 +121,5 @@ export const objects: LevelConfig["decorations"] = [
   },
 
   // Group 4
+  //Left 2
 ];

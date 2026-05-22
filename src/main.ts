@@ -14,6 +14,7 @@ import { NPCDialog } from "./ui/npc-dialog";
 import { PrimitivePlacementSystem } from "./systems/primitive-placement";
 import { BLOCK_CATALOGUE, BlockInventory } from "./systems/block-system";
 import { DayNightSystem } from "./systems/day-night-system";
+import { SoundManager } from "./systems/sound-manager";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import {
   STORY_CONFIG,
@@ -34,6 +35,7 @@ class Game {
   private primitivePlacement: PrimitivePlacementSystem;
   private blockInventory: BlockInventory;
   private dayNightSystem: DayNightSystem;
+  private soundManager: SoundManager;
   private npcs: { [id: string]: NPC } = {};
   private npcDialog: NPCDialog | null = null;
 
@@ -118,7 +120,14 @@ class Game {
       this.npcTalkStates[conf.id] = false;
       this.npcCompleteStates[conf.id] = false;
     }
+    this.soundManager = new SoundManager();
+    void this.soundManager.load("jump", "/assets/sfx/jump.wav");
+    void this.soundManager.load("step", "/assets/sfx/step.wav");
+    void this.soundManager.load("typing", "/assets/sfx/typing.wav");
+    void this.soundManager.load("bgm", "/assets/sfx/bgm.mp3");
+
     this.npcDialog = new NPCDialog();
+    this.npcDialog.setOnCharTyped(() => this.soundManager.play("typing", 0.3));
     void this.loadExternalTextureSets();
 
     this.player = new PlayerController(
@@ -126,6 +135,8 @@ class Game {
       this.input,
       this.physics,
       this.levelManager.getSpawnPosition(),
+      undefined,
+      this.soundManager,
     );
 
     this.primitivePlacement = new PrimitivePlacementSystem(
@@ -274,6 +285,7 @@ class Game {
     });
 
     document.getElementById("btn-start")!.addEventListener("click", () => {
+      this.soundManager.resume();
       this.showCharacterSelection();
     });
 
@@ -609,6 +621,7 @@ class Game {
 
     this.input.requestPointerLock();
     this.engine.clock.start();
+    this.soundManager.playMusic("bgm", 1);
     this.gameLoop();
   }
 
@@ -772,6 +785,7 @@ class Game {
     this.input.setGameplayActive(false);
     this.pauseScreen.classList.add("active");
     this.input.exitPointerLock();
+    this.soundManager.stopMusic(0.3);
   }
 
   private resumeGame(): void {
@@ -782,6 +796,7 @@ class Game {
     this.pauseScreen.classList.remove("active");
     this.input.requestPointerLock();
     this.engine.clock.start();
+    this.soundManager.playMusic("bgm", 1);
     this.gameLoop();
   }
 
