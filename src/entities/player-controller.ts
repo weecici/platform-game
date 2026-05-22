@@ -4,6 +4,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import type { Engine } from "../core/engine";
 import type { InputManager } from "../core/input-manager";
 import type { PhysicsWorld } from "../core/physics-world";
+import type { SoundManager } from "../systems/sound-manager";
 
 export interface PlayerConfig {
   moveSpeed: number;
@@ -52,6 +53,10 @@ export class PlayerController {
   private deadBodyFrozen = false;
   private readonly normalLinearDamping = 0.05;
 
+  // Sound
+  private soundManager: SoundManager | null = null;
+  private footstepTimer = 0;
+
   // Camera Settings
   private cameraOffset = new THREE.Vector3(0, 1.5, 4); // 3rd person offset
   private viewMode: "first" | "third" = "third";
@@ -66,11 +71,13 @@ export class PlayerController {
     physics: PhysicsWorld,
     spawnPosition: THREE.Vector3 = new THREE.Vector3(0, 5, 0),
     modelPath: string = "/assets/characters/Astronaut_RaeTheRedPanda.gltf",
+    soundManager?: SoundManager,
   ) {
     this.engine = engine;
     this.input = input;
     this.physics = physics;
     this.modelPath = modelPath;
+    this.soundManager = soundManager ?? null;
 
     this.config = {
       moveSpeed: 5,
@@ -312,6 +319,7 @@ export class PlayerController {
     this.updateGroundedState(dt);
     this.handleMovement(dt);
     this.handleJump();
+    this.handleFootsteps(dt);
     this.animateModel(dt, this.getSpeed());
     this.syncCameraToBody();
   }
@@ -500,6 +508,21 @@ export class PlayerController {
       this.body.velocity.y = this.config.jumpForce;
       this.isGrounded = false;
       this.ungroundedTimer = this.coyoteTime; // instantly expire leniency
+      this.soundManager?.play("jump", 0.6);
+    }
+  }
+
+  private handleFootsteps(dt: number): void {
+    if (!this.soundManager) return;
+    const isMoving = this.direction.lengthSq() > 0.01;
+    if (this.isGrounded && isMoving) {
+      this.footstepTimer -= dt;
+      if (this.footstepTimer <= 0) {
+        this.soundManager.play("step", this.isSprinting ? 0.7 : 0.4);
+        this.footstepTimer = this.isSprinting ? 0.25 : 0.4;
+      }
+    } else {
+      this.footstepTimer = 0;
     }
   }
 

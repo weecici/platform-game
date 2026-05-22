@@ -1,3 +1,5 @@
+export type DialogSoundCallback = () => void;
+
 export class NPCDialog {
   private container: HTMLDivElement | null = null;
   private contentEl: HTMLDivElement | null = null;
@@ -10,8 +12,13 @@ export class NPCDialog {
   private isTyping = false;
   private typewriterInterval: any = null;
   private currentStepText = "";
+  private onCharTyped: DialogSoundCallback | null = null;
 
   constructor() { }
+
+  setOnCharTyped(cb: DialogSoundCallback | null): void {
+    this.onCharTyped = cb;
+  }
 
   show(
     steps: string[] | Array<{ speaker: string; text: string }>,
@@ -121,6 +128,7 @@ export class NPCDialog {
     this.typewriterInterval = setInterval(() => {
       if (charIndex < this.currentStepText.length) {
         this.contentEl!.textContent = this.currentStepText.slice(0, charIndex + 1);
+        if (this.currentStepText[charIndex] !== ' ') this.onCharTyped?.();
         charIndex++;
       } else {
         this.completeTypewriter();
