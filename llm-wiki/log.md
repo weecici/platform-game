@@ -76,6 +76,27 @@ Append-only chronological log of operations on the wiki.
 - Removed arbitrary `0.6` minimum thickness clamp for physics boxes.
 - Added `/timestop` cheat command to `DayNightSystem`.
 
+## [2026-05-23] ingest | Three Parkour Zones for Quest Items
+
+- Added parkour routes for the two remaining key items (Radio and Books) in `src/levels/parkour/object-position.ts`.
+- **Zone 2 (Left 2 - Radio):** Parkour path from Worker NPC (`[-135, 0.5, -235]`) eastward to radio building (`[-110, 84, -233]`). 12 objects: 2 boxes → 5 wood platforms → 2 moving → 1 rotating → 1 tire + platform.
+- **Zone 3 (Right 2 - Books):** Parkour path from Businessman NPC (`[165, 0.5, -265]`) westward to books building (`[121, 86, -265]`). 12 objects: 2 boxes → 5 wood platforms → 2 moving → 1 rotating → 1 tire + platform.
+- Both zones match the style of the existing Zone 1 (Left 1 - Waifu Pillow): easy-medium difficulty, single path from street up to mid-building height (~y=45), requiring placed blocks for the final ascent.
+
+## [2026-05-23] update | Extended Zone 2 & Zone 3 Parkour to Key Item Destinations
+
+- **Zone 2 (Radio — Deep Western Cliffs):** Extended from y=45 up to y=84 using Groups 6–10 in `object-position.ts`.
+  - Group 6: Inclined ladder off first adjacent building rooftop (~y=46).
+  - Group 7: 3 wood platforms zigzag upward (y=52→60), one moving on Z-axis.
+  - Group 8: 1 rotating platform (y=63) + 1 tiny static (y=67) + 1 tiny moving-X (y=71).
+  - Group 9: Spinning tire obstacle at y=74.
+  - Group 10: Inclined ladder (y=78) + wide landing platform at y=82, adjacent to Radio at y=84.
+- **Zone 3 (Books — Eastern Spire):** Mirrored structure from x=124 westward to x=121, extending from y=45 to y=86.
+  - Group 6–10 identical in pattern to Zone 2 but mirrored east-to-west.
+  - Final landing platform at y=83, directly below Books at y=86.
+- Both zones now have a **complete unbroken path from street (y=0) to key item** without needing placed blocks.
+- Difficulty curve: Boxes (easy) → Zigzag platforms (easy-medium) → Moving/rotating (medium) → Tire (medium) → Final ladders (easy).
+
 ## [2026-05-20] ingest | NPC Quest, Glassmorphism Dialogue Box & Multiple Endings
 
 - Created new Entity documentation for [NPC](./entities/npc.md) detailing GLTF skeletal loading, Idle fallback animations, flat look-at tracking, and spatial bounds.
