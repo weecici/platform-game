@@ -58,6 +58,12 @@ class Game {
   private deathSequenceTimer = 0;
   private readonly deathSequenceDuration = 1.2;
   private deathReason = "You fell out of the course.";
+  private readonly springPos = new THREE.Vector3(-8.6, 0.7, -234.7);
+  private springCooldown = 0;
+  private readonly tireLaunchPos = new THREE.Vector3(-50, 35, -230);
+  private tireLaunchCooldown = 0;
+  private readonly cyl3Pos = new THREE.Vector3(-115, 52, -215);
+  private cyl3Cooldown = 0;
 
   // Command console state
   private isCommandConsoleActive = false;
@@ -825,6 +831,9 @@ class Game {
     // Reset quest state variables dynamically
     this.teleportedToRoof = false;
     this.gameWon = false;
+    this.springCooldown = 0;
+    this.tireLaunchCooldown = 0;
+    this.cyl3Cooldown = 0;
     for (const key in this.npcTalkStates) {
       this.npcTalkStates[key] = false;
     }
@@ -945,6 +954,38 @@ class Game {
 
     const playerPos = this.player.getPosition();
     this.levelManager.update(dt, playerPos);
+
+    // Spring bounce pad check
+    if (this.springCooldown > 0) this.springCooldown -= dt;
+    if (
+      this.springCooldown <= 0 &&
+      playerPos.distanceTo(this.springPos) < 1.5 &&
+      this.player.isGrounded &&
+      !this.isDead
+    ) {
+      this.player.body.velocity.set(-6.6, 28.3, 3.3);
+      this.player.isGrounded = false;
+      this.springCooldown = 1.0;
+    }
+
+    // Cylinder bounce pad at [-50, 35, -230]: bật lên Y+5
+    if (this.tireLaunchCooldown > 0) this.tireLaunchCooldown -= dt;
+    const distToTire = playerPos.distanceTo(this.tireLaunchPos);
+    if (
+      this.tireLaunchCooldown <= 0 &&
+      distToTire < 2.5 &&
+      !this.isDead
+    ) {
+      this.player.body.velocity.y = 14;
+      this.tireLaunchCooldown = 0.5;
+    }
+
+    // Cylinder bounce at [-115, 52, -215]: Y+10
+    if (this.cyl3Cooldown > 0) this.cyl3Cooldown -= dt;
+    if (this.cyl3Cooldown <= 0 && playerPos.distanceTo(this.cyl3Pos) < 2.5 && !this.isDead) {
+      this.player.body.velocity.y = 20;
+      this.cyl3Cooldown = 0.5;
+    }
 
     // Only update ghost preview if not in spectator mode
     if (!this.engine.isSpectatorMode) {
