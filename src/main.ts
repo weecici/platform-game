@@ -64,6 +64,10 @@ class Game {
   private tireLaunchCooldown = 0;
   private readonly cyl3Pos = new THREE.Vector3(-115, 52, -215);
   private cyl3Cooldown = 0;
+  private readonly altPlat0 = new THREE.Vector3(109, 20, -231);
+  private readonly altPlat1 = new THREE.Vector3(109, 20, -227);
+  private altPlatCooldown = 0;
+  private altPlatNext = -1; // -1 = uninitialized; 0 or 1 = which bounces next
 
   // Command console state
   private isCommandConsoleActive = false;
@@ -834,6 +838,8 @@ class Game {
     this.springCooldown = 0;
     this.tireLaunchCooldown = 0;
     this.cyl3Cooldown = 0;
+    this.altPlatCooldown = 0;
+    this.altPlatNext = -1;
     for (const key in this.npcTalkStates) {
       this.npcTalkStates[key] = false;
     }
@@ -985,6 +991,27 @@ class Game {
     if (this.cyl3Cooldown <= 0 && playerPos.distanceTo(this.cyl3Pos) < 2.5 && !this.isDead) {
       this.player.body.velocity.y = 20;
       this.cyl3Cooldown = 0.5;
+    }
+
+    // Alternate bounce platforms at [109,20,-231] & [109,20,-227]: Y+10
+    if (this.altPlatCooldown > 0) this.altPlatCooldown -= dt;
+    const distAlt0 = playerPos.distanceTo(this.altPlat0);
+    const distAlt1 = playerPos.distanceTo(this.altPlat1);
+    if (this.altPlatCooldown <= 0 && !this.isDead) {
+      // First step on any platform → initialize
+      if (this.altPlatNext === -1) {
+        if (distAlt0 < 2.5) this.altPlatNext = 0;
+        else if (distAlt1 < 2.5) this.altPlatNext = 1;
+      }
+      if (this.altPlatNext === 0 && distAlt0 < 2.5) {
+        this.player.body.velocity.y = 20;
+        this.altPlatCooldown = 0.5;
+        this.altPlatNext = 1;
+      } else if (this.altPlatNext === 1 && distAlt1 < 2.5) {
+        this.player.body.velocity.y = 20;
+        this.altPlatCooldown = 0.5;
+        this.altPlatNext = 0;
+      }
     }
 
     // Only update ghost preview if not in spectator mode

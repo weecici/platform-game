@@ -212,7 +212,6 @@ export const objects: LevelConfig["decorations"] = [
     color: 0x00ff88,
     emissive: 0x00ff88,
   },
-
   // ### Moving Box Target ###
   {
     type: "model",
@@ -373,7 +372,6 @@ export const objects: LevelConfig["decorations"] = [
     solid: true,
   },
 
-  // ### Cylinder Bounce Y+10 ###
   {
     type: "cylinder",
     position: [-115, 54, -215],
@@ -524,6 +522,186 @@ export const objects: LevelConfig["decorations"] = [
       move: { x: 2 },
       moveSpeed: 1.5,
     },
+  },
+  //Books
+  // Starting point: 141.5, 0.7, -223.0
+  //Group 1 
+  {
+    type: "model",
+    modelPath: "object/wood_platform.usdz",
+    position: [135, 11, -223.0],
+    targetSize: [1.5, 0.3, 1.5],
+    rotation: [0, 0, 0],
+    solid: true,
+    animate: {
+      move: { y: 10 },
+      moveSpeed: 1.5,
+    },
+  },
+  //Group 2
+  {
+    type: "model",
+    modelPath: "object/box_1.usdz",
+    position: [112, 18, -229.0],
+    targetSizeY: 2,
+    rotation: [0, 0, 0],
+    solid: true,
+  },
+  //Road 1
+  {
+    type: "model",
+    modelPath: "object/wood_platform.usdz",
+    position: [109, 20, -231],
+    targetSize: [1.5, 0.3, 1.5],
+    rotation: [0, 0, 0],
+    solid: true,
+  },
+  {
+    type: "model",
+    modelPath: "object/wood_platform.usdz",
+    position: [106, 28, -235],
+    targetSize: [1.5, 0.3, 1.5],
+    rotation: [0, 0, 0],
+    solid: true,
+    animate: {
+      move: { y: 10 },
+      moveSpeed: 1.5,
+    },
+  },
+  {
+    type: "model",
+    modelPath: "object/wood_platform.usdz",
+    position: [102, 37, -235],
+    targetSize: [1.5, 0.3, 1.5],
+    rotation: [0, 0, 0],
+    solid: true,
+  },
+  {
+    type: "model",
+    modelPath: "object/wood_platform.usdz",
+    position: [102, 38.5, -237],
+    targetSize: [1.5, 0.3, 1.5],
+    rotation: [0, 0, 0],
+    solid: true,
+  },
+  {
+    type: "model",
+    modelPath: "object/wood_platform.usdz",
+    position: [102, 40, -239],
+    targetSize: [1.5, 0.3, 1.5],
+    rotation: [0, 0, 0],
+    solid: true,
+  },
+  {
+    type: "model",
+    modelPath: "object/wood_platform.usdz",
+    position: [102, 42, -241],
+    targetSize: [1.5, 0.3, 1.5],
+    rotation: [0, 0, 0],
+    solid: true,
+  },
+  {
+    type: "model",
+    modelPath: "object/wood_platform.usdz",
+    position: [102, 44, -243],
+    targetSize: [1.5, 0.3, 1.5],
+    rotation: [0, 0, 0],
+    solid: true,
+  },
+  {
+    type: "model",
+    modelPath: "object/wood_platform.usdz",
+    position: [102, 46, -240],
+    targetSize: [1.5, 0.3, 1.5],
+    rotation: [0, 0, 0],
+    solid: true,
+  },
+  //road 2
+  {
+    type: "model",
+    modelPath: "object/wood_platform.usdz",
+    position: [109, 20, -227],
+    targetSize: [1.5, 0.3, 1.5],
+    rotation: [0, 0, 0],
+    solid: true,
+  },
+  //Group 3
+  {
+    type: "model",
+    modelPath: "object/wood_platform.usdz",
+    position: [86, 47.8, -251],
+    targetSize: [1.5, 0.3, 1.5],
+    rotation: [0, 0, 0],
+    solid: true,
+    animate: {
+      move: { z: 2 },
+      moveSpeed: 1.5,
+    },
+  },
+  {
+    type: "model",
+    modelPath: "object/box_1.usdz",
+    position: [85, 49, -255],
+    targetSizeY: 2,
+    rotation: [0, 0, 0],
+    solid: true,
+    animate: {
+      move: { y: 6 },
+      moveSpeed: 1.5,
+    },
+  },
+  //Group 4
+  {
+    type: "model",
+    modelPath: "object/ladder_1.usdz",
+    position: [96.6, 42.3, -275.0],
+    targetSizeX: 1.0,
+    rotation: [Math.PI / 4, Math.PI / 2, 0],
+    solid: true,
+  },
+  {
+    type: "model",
+    modelPath: "object/box_1.usdz",
+    position: [98.4, 80.5, -242.6],
+    targetSizeY: 2,
+    rotation: [0, 0, 0],
+    solid: true,
+    animate: {
+      move: { y: 6 },
+      moveSpeed: 1.5,
+    },
+  },
+  {
+    type: "model",
+    modelPath: "object/box_1.usdz",
+    position: [98.4, 80.5, -246],
+    targetSizeY: 2,
+    rotation: [0, 0, 0],
+    solid: true,
+  },
+  {
+    type: "model",
+    modelPath: "object/box_1.usdz",
+    position: [98.4, 80.5, -248],
+    targetSizeY: 2,
+    rotation: [0, 0, 0],
+    solid: true,
+  },
+  {
+    type: "model",
+    modelPath: "object/wood_platform.usdz",
+    position: [98.4, 83, -250],
+    targetSize: [1.5, 0.3, 1.5],
+    rotation: [0, 0, 0],
+    solid: true,
+  },
+  {
+    type: "model",
+    modelPath: "object/wood_platform.usdz",
+    position: [98.4, 83, -252],
+    targetSize: [1.5, 0.3, 1.5],
+    rotation: [0, 0, 0],
+    solid: true,
   },
 ];
 
