@@ -119,7 +119,88 @@ export const objects: LevelConfig["decorations"] = [
     rotation: [-Math.PI / 8, Math.PI / 2, 0],
     solid: true,
   },
-
-  // Group 4
-  //Left 2
+  //left 2: waifu billow
+  // Ladder: [-110, 42.3, -100.3] → [-109.6, 77.1, -111.0]
+  // Midpoint: [-110, 59.7, -105.7] | Height: ~36.4 | Z-lean: ~17°
+  {
+    type: "model",
+    modelPath: "object/ladder_1.usdz",
+    position: [-110, 40, -100],
+    targetSizeX: 1.0,
+    rotation: [-Math.PI / 8, Math.PI / 2, 0],
+    solid: true,
+  },
+  {
+    type: "model",
+    modelPath: "object/box_1.usdz",
+    position: [-115, 55, -105],
+    targetSizeY: 2,
+    rotation: [0, 0, 0],
+    solid: true,
+  },
+  {
+    type: "model",
+    modelPath: "object/box_1.usdz",
+    position: [-120, 57.5, -105],
+    targetSizeY: 2,
+    rotation: [0, 0, 0],
+    solid: true,
+  },
+  {
+    type: "model",
+    modelPath: "object/box_1.usdz",
+    position: [-115, 60, -105],
+    targetSizeY: 2,
+    rotation: [0, 0, 0],
+    solid: true,
+  },
+  {
+    type: "model",
+    modelPath: "object/wood_platform.usdz",
+    position: [-120, 62.5, -105],
+    targetSize: [1.5, 0.3, 1.5],
+    rotation: [0, 0, 0],
+    solid: true,
+  },
+  {
+    type: "model",
+    modelPath: "object/wood_platform.usdz",
+    position: [-115, 65, -105.5],
+    targetSize: [1.5, 0.3, 1.5],
+    rotation: [0, 0, 0],
+    solid: true,
+  },
+  {
+    type: "model",
+    modelPath: "object/wood_platform.usdz",
+    position: [-110, 67.5, -105.5],
+    targetSize: [1.5, 0.3, 1.5],
+    rotation: [0, 0, 0],
+    solid: true,
+  },
+  {
+    type: "model",
+    modelPath: "object/wood_platform.usdz",
+    position: [-115, 70, -105.5],
+    targetSize: [1.5, 0.3, 1.5],
+    rotation: [0, 0, 0],
+    solid: true,
+  },
+  {
+    type: "model",
+    modelPath: "object/wood_platform.usdz",
+    position: [-110, 72.5, -105.5],
+    targetSize: [1.5, 0.3, 1.5],
+    rotation: [0, 0, 0],
+    solid: true,
+  },
+  {
+    type: "model",
+    modelPath: "object/wood_platform.usdz",
+    position: [-115, 75, -105.5],
+    targetSize: [1.5, 0.3, 1.5],
+    rotation: [0, 0, 0],
+    solid: true,
+  },
 ];
+

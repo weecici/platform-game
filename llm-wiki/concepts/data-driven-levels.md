@@ -1,6 +1,6 @@
 ---
 tags: [concept, levels, config]
-source_files: ["src/levels/level-data.ts"]
+source_files: ["src/levels/level-data.ts", "src/levels/parkour/object-position.ts"]
 last_updated: 2026-05-20
 ---
 
