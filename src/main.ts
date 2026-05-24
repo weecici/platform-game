@@ -979,7 +979,7 @@ class Game {
     const distToTire = playerPos.distanceTo(this.tireLaunchPos);
     if (
       this.tireLaunchCooldown <= 0 &&
-      distToTire < 2.5 &&
+      distToTire < 1.5 &&
       !this.isDead
     ) {
       this.player.body.velocity.y = 14;
@@ -988,7 +988,7 @@ class Game {
 
     // Cylinder bounce at [-115, 52, -215]: Y+10
     if (this.cyl3Cooldown > 0) this.cyl3Cooldown -= dt;
-    if (this.cyl3Cooldown <= 0 && playerPos.distanceTo(this.cyl3Pos) < 2.5 && !this.isDead) {
+    if (this.cyl3Cooldown <= 0 && playerPos.distanceTo(this.cyl3Pos) < 1.5 && !this.isDead) {
       this.player.body.velocity.y = 20;
       this.cyl3Cooldown = 0.5;
     }
@@ -1000,14 +1000,14 @@ class Game {
     if (this.altPlatCooldown <= 0 && !this.isDead) {
       // First step on any platform → initialize
       if (this.altPlatNext === -1) {
-        if (distAlt0 < 2.5) this.altPlatNext = 0;
-        else if (distAlt1 < 2.5) this.altPlatNext = 1;
+        if (distAlt0 < 1.5) this.altPlatNext = 0;
+        else if (distAlt1 < 1.5) this.altPlatNext = 1;
       }
-      if (this.altPlatNext === 0 && distAlt0 < 2.5) {
+      if (this.altPlatNext === 0 && distAlt0 < 1.5) {
         this.player.body.velocity.y = 20;
         this.altPlatCooldown = 0.5;
         this.altPlatNext = 1;
-      } else if (this.altPlatNext === 1 && distAlt1 < 2.5) {
+      } else if (this.altPlatNext === 1 && distAlt1 < 1.5) {
         this.player.body.velocity.y = 20;
         this.altPlatCooldown = 0.5;
         this.altPlatNext = 0;

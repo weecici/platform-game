@@ -232,7 +232,7 @@ export const STORY_CONFIG: StoryConfig = {
       id: "adventurer",
       name: "Adventurer",
       modelPath: "/assets/npcs/Adventurer.gltf",
-      position: [-135, 0.5, -125],
+      position: [-21.9, 0.2, -30.9],
       interactionRadius: 3,
       getDialogue: (state: GameQuestState): DialogueLine[] => {
         const talkedBefore = state.npcTalkStates["adventurer"];
@@ -242,16 +242,16 @@ export const STORY_CONFIG: StoryConfig = {
           return [
             {
               speaker: "Adventurer",
-              text: "Well met! I've been watching that western building cluster from this roadside. See the tallest one with the glint near the top? That's 'The Knight's Softening Blade' — the pillow the Building Owner wants.",
+              text: "Well met! Right here is where the path to the western peak begins. Look up — that glint you see is 'The Knight's Softening Blade' — the pillow the Building Owner wants.",
             },
             { speaker: "You", text: "That high up? How do I get there?" },
             {
               speaker: "Adventurer",
-              text: "I've scouted a route: climb those stacked boxes ahead, then follow the wood platforms I helped place. Watch for spinning tires near the top — they'll knock you off if you're not careful. Past those, it's a straight scramble to the ledge.",
+              text: "Start with the stacked boxes ahead, then follow the wood platforms climbing westward. Watch for spinning tires near the top — they'll knock you off. Past those, it's a straight scramble to the ledge where the pillow rests.",
             },
             {
               speaker: "Adventurer",
-              text: "The Worker reinforced the deeper western platforms where the radio is hidden. And the Businessman is lurking near the eastern spire where the books are stashed. Each of us is watching one item for the Building Owner.",
+              text: "The Worker is stationed deeper west near the radio, and the Businessman watches the books in the east. Each of us guards one item's path. Start climbing here and work your way up!",
             },
             { speaker: "You", text: "So you're all keeping an eye on the stolen goods?" },
             {
@@ -284,7 +284,7 @@ export const STORY_CONFIG: StoryConfig = {
         return [
           {
             speaker: "Adventurer",
-            text: `Still missing some? ${missing.join(", ")}. The route for the pillow starts with those boxes and wood platforms right over there.`,
+            text: `Still missing some? ${missing.join(", ")}. The route for the pillow starts right here — climb the stacked boxes and follow the platforms westward.`,
           },
           { speaker: "You", text: "I see them! Thanks!" },
         ];
@@ -294,7 +294,7 @@ export const STORY_CONFIG: StoryConfig = {
       id: "worker",
       name: "Worker",
       modelPath: "/assets/npcs/Worker.gltf",
-      position: [-135, 0.5, -235],
+      position: [-6, 0.3, -234.7],
       interactionRadius: 3,
       getDialogue: (state: GameQuestState): DialogueLine[] => {
         const talkedBefore = state.npcTalkStates["worker"];
@@ -303,18 +303,18 @@ export const STORY_CONFIG: StoryConfig = {
           return [
             {
               speaker: "Worker",
-              text: "Hey there! You found me on the roadside, right next to the western deep buildings. See that antenna poking out from the ledge over there? That's the radio the Building Owner's been whining about.",
+              text: "Hey there! Right next to me is the spring pad that'll launch you upward. See that antenna poking out from the far western ledge? That's the radio the Building Owner's been whining about.",
             },
             { speaker: "You", text: "That's quite a climb. How do I get up there?" },
             {
               speaker: "Worker",
-              text: "I built those platforms myself — they're sturdy. The trick is using the nearby buildings as stepping stones. The Adventurer can give you climbing tips, and the Philosopher might have some blocks if you need to fill gaps.",
+              text: "Use the spring to bounce up, then land on the moving box ahead. Follow the wood platforms westward — some move up and down, others oscillate. There are two cylinder bounce pads along the way that'll give you extra lift. Keep pushing west and you'll reach the radio ledge.",
             },
             {
               speaker: "Worker",
-              text: "The pillow's back west where the Adventurer's watching, and the books are east with the Businessman. We're each stationed at one item to guide travelers like you.",
+              text: "The pillow's back east where the Adventurer's waiting, and the books are further east with the Businessman. Each of us is stationed at one item's starting point.",
             },
-            { speaker: "You", text: "Makes sense. I'll start with the item closest to me!" },
+            { speaker: "You", text: "Makes sense. I'll start with the spring!" },
           ];
         }
 
@@ -337,7 +337,7 @@ export const STORY_CONFIG: StoryConfig = {
             speaker: "Worker",
             text: radioHint
               ? "You got the radio! Nice work. The books are east with the Businessman, and the pillow is back west with the Adventurer."
-              : "Radio's still up there. See the antenna glinting? Start climbing the nearby structures and work your way up.",
+              : "Radio's still up there. Use the spring pad, hop onto the moving box, then ride the platforms westward. The cylinder pads will boost you along the way.",
           },
           { speaker: "You", text: "I'm on it!" },
         ];
@@ -347,7 +347,7 @@ export const STORY_CONFIG: StoryConfig = {
       id: "businessman",
       name: "Businessman",
       modelPath: "/assets/npcs/Suit.gltf",
-      position: [165, 0.5, -265],
+      position: [141.5, 0.7, -223.0],
       interactionRadius: 3,
       getDialogue: (state: GameQuestState): DialogueLine[] => {
         const talkedBefore = state.npcTalkStates["businessman"];
@@ -357,16 +357,16 @@ export const STORY_CONFIG: StoryConfig = {
           return [
             {
               speaker: "Businessman",
-              text: "Ah, the cosmic traveler. Been waiting on this roadside for you. See those buildings eastward? Perched up on the highest ledge — those dusty old books belong to the Building Owner.",
+              text: "Ah, the cosmic traveler. Right here is where the eastern climb starts. See those buildings eastward? Perched on the highest ledge — those dusty old books belong to the Building Owner.",
             },
             { speaker: "You", text: "And you're watching them for him?" },
             {
               speaker: "Businessman",
-              text: "Hardly. I'm watching them for my syndicate. Those books contain property deeds and blueprints of the Apex Tower's quantum teleporter. If you retrieve them, I'd like a quick peek before returning them to the Building Owner.",
+              text: "Hardly. I'm watching them for my syndicate. Those books contain property deeds and blueprints of the Apex Tower's quantum teleporter.",
             },
             {
               speaker: "Businessman",
-              text: "The Adventurer guards the pillow on the western peak. The Worker watches the radio in the deep west. And I'm here for the books. We all have our own agendas, but we all need you to succeed.",
+              text: "The path starts at the alternating bounce platforms ahead — step on them one at a time to launch upward. Then follow the oscillating stairway west toward the books ledge. The Adventurer and Worker are at the other starting points out west.",
             },
             { speaker: "You", text: "I'll get those books down. But no promises about sharing corporate secrets." },
           ];
@@ -387,7 +387,7 @@ export const STORY_CONFIG: StoryConfig = {
         return [
           {
             speaker: "Businessman",
-            text: "Still collecting? The books are right up there — scale the eastern buildings and you'll find them. The Adventurer and Worker are watching the other two items out west.",
+            text: "Still collecting? The books are right up there — start on the bounce platforms here, then ride the oscillating stairway west toward the books ledge. The Adventurer and Worker are watching the other two items.",
           },
           { speaker: "You", text: "Getting there." },
         ];
