@@ -216,7 +216,7 @@ export const objects: LevelConfig["decorations"] = [
   {
     type: "model",
     modelPath: "object/box_1.usdz",
-    position: [-15, 15, -230],
+    position: [-15, 13, -230],
     targetSizeY: 2,
     rotation: [0, 0, 0],
     solid: true,
@@ -224,6 +224,22 @@ export const objects: LevelConfig["decorations"] = [
       move: { z: 5 },
       moveSpeed: 1.5,
     },
+  },
+  {
+    type: "model",
+    modelPath: "object/box_1.usdz",
+    position: [-15, 15, -228],
+    targetSizeY: 2,
+    rotation: [0, 0, 0],
+    solid: true,
+  },
+  {
+    type: "model",
+    modelPath: "object/box_1.usdz",
+    position: [-15, 17, -225],
+    targetSizeY: 2,
+    rotation: [0, 0, 0],
+    solid: true,
   },
   //1st group
   {
@@ -233,7 +249,7 @@ export const objects: LevelConfig["decorations"] = [
     targetSize: [1.5, 0.3, 1.5],
     rotation: [0, 0, 0],
     solid: true,
-  animate: {
+    animate: {
       move: { y: 5 },
       moveSpeed: 1.5,
     },
@@ -325,7 +341,7 @@ export const objects: LevelConfig["decorations"] = [
   {
     type: "model",
     modelPath: "object/box_1.usdz",
-    position: [-90, 42.5, -202],
+    position: [-90, 40.8, -202],
     targetSizeY: 2,
     rotation: [0, 0, 0],
     solid: true,
