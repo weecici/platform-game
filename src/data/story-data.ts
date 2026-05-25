@@ -37,7 +37,7 @@ export const STORY_CONFIG: StoryConfig = {
       id: "building_owner",
       name: "Building Owner",
       modelPath: "/assets/npcs/building_owner.gltf",
-      position: [70, 0.5, -70],
+      position: [70, 0.1, -70],
       interactionRadius: 4,
       requiredItems: ["waifu_pillow", "radio", "books"],
       getDialogue: (state: GameQuestState): DialogueLine[] => {
@@ -187,7 +187,7 @@ export const STORY_CONFIG: StoryConfig = {
       id: "space_philosopher",
       name: "Space Philosopher",
       modelPath: "/assets/npcs/King.gltf",
-      position: [0, 0.5, 5],
+      position: [0, 0.0, 5],
       interactionRadius: 3,
       getDialogue: (state: GameQuestState): DialogueLine[] => {
         const talkedBefore = state.npcTalkStates["space_philosopher"];
@@ -202,7 +202,10 @@ export const STORY_CONFIG: StoryConfig = {
               speaker: "Space Philosopher",
               text: "Ah, a cosmic traveler graces our humble city! I felt a disturbance in the space-time fabric — a pair of legendary handcrafted shorts, descending from the heavens onto the Apex Tower roof.",
             },
-            { speaker: "You", text: "You... you know about my grandmother's shorts?!" },
+            {
+              speaker: "You",
+              text: "You... you know about my grandmother's shorts?!",
+            },
             {
               speaker: "Space Philosopher",
               text: "I know many things. I also know the Building Owner owns a quantum teleporter, and he's a practical man. He won't help you unless you help him first. Three of his prized possessions were stolen to the highest peaks.",
@@ -232,7 +235,7 @@ export const STORY_CONFIG: StoryConfig = {
       id: "adventurer",
       name: "Adventurer",
       modelPath: "/assets/npcs/Adventurer.gltf",
-      position: [-21.9, 0.2, -30.9],
+      position: [-21.9, 0.1, -30.9],
       interactionRadius: 3,
       getDialogue: (state: GameQuestState): DialogueLine[] => {
         const talkedBefore = state.npcTalkStates["adventurer"];
@@ -253,7 +256,10 @@ export const STORY_CONFIG: StoryConfig = {
               speaker: "Adventurer",
               text: "The Worker is stationed deeper west near the radio, and the Businessman watches the books in the east. Each of us guards one item's path. Start climbing here and work your way up!",
             },
-            { speaker: "You", text: "So you're all keeping an eye on the stolen goods?" },
+            {
+              speaker: "You",
+              text: "So you're all keeping an eye on the stolen goods?",
+            },
             {
               speaker: "Adventurer",
               text: "Let's just say we all have our reasons to help you succeed. Now start climbing!",
@@ -264,7 +270,11 @@ export const STORY_CONFIG: StoryConfig = {
         const radioCollected = state.collectedSet.has("radio");
         const booksCollected = state.collectedSet.has("books");
         const pillowCollected = state.collectedSet.has("waifu_pillow");
-        const collected = [radioCollected, booksCollected, pillowCollected].filter(Boolean).length;
+        const collected = [
+          radioCollected,
+          booksCollected,
+          pillowCollected,
+        ].filter(Boolean).length;
 
         if (collected >= 3) {
           return [
@@ -277,9 +287,12 @@ export const STORY_CONFIG: StoryConfig = {
         }
 
         const missing = [];
-        if (!pillowCollected) missing.push("The Knight's Softening Blade (right above us!)");
-        if (!radioCollected) missing.push("radio (deeper west — ask the Worker)");
-        if (!booksCollected) missing.push("books (far east spire — ask the Businessman)");
+        if (!pillowCollected)
+          missing.push("The Knight's Softening Blade (right above us!)");
+        if (!radioCollected)
+          missing.push("radio (deeper west — ask the Worker)");
+        if (!booksCollected)
+          missing.push("books (far east spire — ask the Businessman)");
 
         return [
           {
@@ -294,7 +307,7 @@ export const STORY_CONFIG: StoryConfig = {
       id: "worker",
       name: "Worker",
       modelPath: "/assets/npcs/Worker.gltf",
-      position: [-6, 0.3, -234.7],
+      position: [-6, 0.2, -234.7],
       interactionRadius: 3,
       getDialogue: (state: GameQuestState): DialogueLine[] => {
         const talkedBefore = state.npcTalkStates["worker"];
@@ -305,7 +318,10 @@ export const STORY_CONFIG: StoryConfig = {
               speaker: "Worker",
               text: "Hey there! Right next to me is the spring pad that'll launch you upward. See that antenna poking out from the far western ledge? That's the radio the Building Owner's been whining about.",
             },
-            { speaker: "You", text: "That's quite a climb. How do I get up there?" },
+            {
+              speaker: "You",
+              text: "That's quite a climb. How do I get up there?",
+            },
             {
               speaker: "Worker",
               text: "Use the spring to bounce up, then land on the moving box ahead. Follow the wood platforms westward — some move up and down, others oscillate. There are two cylinder bounce pads along the way that'll give you extra lift. Keep pushing west and you'll reach the radio ledge.",
@@ -314,7 +330,10 @@ export const STORY_CONFIG: StoryConfig = {
               speaker: "Worker",
               text: "The pillow's back east where the Adventurer's waiting, and the books are further east with the Businessman. Each of us is stationed at one item's starting point.",
             },
-            { speaker: "You", text: "Makes sense. I'll start with the spring!" },
+            {
+              speaker: "You",
+              text: "Makes sense. I'll start with the spring!",
+            },
           ];
         }
 
@@ -347,7 +366,7 @@ export const STORY_CONFIG: StoryConfig = {
       id: "businessman",
       name: "Businessman",
       modelPath: "/assets/npcs/Suit.gltf",
-      position: [141.5, 0.7, -223.0],
+      position: [141.5, 0.2, -223.0],
       interactionRadius: 3,
       getDialogue: (state: GameQuestState): DialogueLine[] => {
         const talkedBefore = state.npcTalkStates["businessman"];
@@ -368,11 +387,17 @@ export const STORY_CONFIG: StoryConfig = {
               speaker: "Businessman",
               text: "The path starts at the alternating bounce platforms ahead — step on them one at a time to launch upward. Then follow the oscillating stairway west toward the books ledge. The Adventurer and Worker are at the other starting points out west.",
             },
-            { speaker: "You", text: "I'll get those books down. But no promises about sharing corporate secrets." },
+            {
+              speaker: "You",
+              text: "I'll get those books down. But no promises about sharing corporate secrets.",
+            },
           ];
         }
 
-        const hasRequired = state.collectedSet.has("waifu_pillow") && state.collectedSet.has("radio") && state.collectedSet.has("books");
+        const hasRequired =
+          state.collectedSet.has("waifu_pillow") &&
+          state.collectedSet.has("radio") &&
+          state.collectedSet.has("books");
 
         if (hasRequired) {
           return [
@@ -380,7 +405,10 @@ export const STORY_CONFIG: StoryConfig = {
               speaker: "Businessman",
               text: "You got all three! Don't forget our little arrangement — when you're on that roof, take a quick look at the teleporter's control panel. My syndicate will make it worth your while.",
             },
-            { speaker: "You", text: "I'll think about it. First, I need my grandmother's shorts back." },
+            {
+              speaker: "You",
+              text: "I'll think about it. First, I need my grandmother's shorts back.",
+            },
           ];
         }
 
