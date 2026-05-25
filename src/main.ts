@@ -64,6 +64,15 @@ class Game {
   private tireLaunchCooldown = 0;
   private readonly cyl3Pos = new THREE.Vector3(-115, 52, -215);
   private cyl3Cooldown = 0;
+
+  private dialogueLines = [
+    "An astronaut tried to change his pants.",
+    "However, a solar wind blew them away.",
+    "It fell down to the Earth, on top of a highest building in a crowded city.",
+    "To get it back without being noticed, the astronaut parked his UFO at a mountain nearby and started the journey to get his shorts back.",
+    "Can you help him reach the top?",
+  ];
+  private currentDialogueIndex = 0;
   private readonly altPlat0 = new THREE.Vector3(109, 20, -231);
   private readonly altPlat1 = new THREE.Vector3(109, 20, -227);
   private altPlatCooldown = 0;
@@ -300,7 +309,7 @@ class Game {
     });
 
     this.btnSelectPlay.addEventListener("click", () => {
-      this.startGame();
+      this.startDialogueSequence();
     });
 
     document.getElementById("btn-restart")!.addEventListener("click", () => {
@@ -600,6 +609,45 @@ class Game {
         loop();
       }
     });
+  }
+
+  private startDialogueSequence(): void {
+    this.charSelectScreen.classList.remove("active");
+    if (this.previewRAF) {
+      cancelAnimationFrame(this.previewRAF);
+      this.previewRAF = null;
+    }
+
+    const dialogueScreen = document.getElementById("dialogue-screen")!;
+    const dialogueText = document.getElementById("dialogue-text")!;
+
+    dialogueScreen.classList.add("active");
+    this.currentDialogueIndex = 0;
+
+    const showLine = () => {
+      dialogueText.classList.remove("visible");
+      setTimeout(() => {
+        if (this.currentDialogueIndex >= this.dialogueLines.length) {
+          dialogueScreen.classList.remove("active");
+          this.startGame();
+          return;
+        }
+        dialogueText.innerText = this.dialogueLines[this.currentDialogueIndex];
+        dialogueText.classList.add("visible");
+        this.currentDialogueIndex++;
+      }, 500);
+    };
+
+    showLine();
+
+    const clickHandler = () => {
+      if (!dialogueScreen.classList.contains("active")) {
+        dialogueScreen.removeEventListener("click", clickHandler);
+        return;
+      }
+      showLine();
+    };
+    dialogueScreen.addEventListener("click", clickHandler);
   }
 
   private startGame(): void {
