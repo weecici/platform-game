@@ -15,6 +15,7 @@ export class DebugGUI {
   private spawnShape: (type: string) => THREE.Object3D;
   private clearShapes: () => void;
   private selectedObject: THREE.Object3D | null = null;
+  private texController: any = null;
 
   private transformState = {
     mode: TransformMode.TRANSLATE as string,
@@ -110,6 +111,13 @@ export class DebugGUI {
         config.directionalPosition.z,
       );
     });
+    dirFolder.add(config.directionalPosition, 'z', -100, 100, 1).name('Pos Z').onChange(() => {
+      this.lighting.directionalLight.position.set(
+        config.directionalPosition.x,
+        config.directionalPosition.y,
+        config.directionalPosition.z,
+      );
+    });
 
     const pointFolder = folder.addFolder('Point Light');
     pointFolder.addColor(config, 'pointColor').name('Color').onChange(() => {
@@ -165,11 +173,11 @@ export class DebugGUI {
 
     const state = { texture: 'none', repeatX: 1, repeatY: 1 };
 
-    folder.add(state, 'texture', texOptions).name('Texture').onChange((val: string) => {
+    this.texController = folder.add(state, 'texture', texOptions).name('Texture').onChange((val: string) => {
       if (this.selectedObject && val !== 'none') {
         this.selectedObject.traverse((child) => {
           if (child instanceof THREE.Mesh) {
-            this.textureManager.applyTexture(child, val, state.repeatX, state.repeatY);
+            this.textureManager.applyTextureSet(child, val, state.repeatX, state.repeatY);
           }
         });
       }
@@ -177,6 +185,18 @@ export class DebugGUI {
     folder.add(state, 'repeatX', 1, 10, 1).name('Repeat X');
     folder.add(state, 'repeatY', 1, 10, 1).name('Repeat Y');
     folder.close();
+  }
+
+  updateTextureDropdown(): void {
+    if (!this.texController) return;
+    const texOptions: Record<string, string> = { None: 'none' };
+    
+    // Add dynamically loaded texture sets
+    for (const name of this.textureManager.getTextureNames()) {
+      texOptions[name.charAt(0).toUpperCase() + name.slice(1)] = name;
+    }
+    
+    this.texController.options(texOptions);
   }
 
   private setupShapeSpawner(): void {

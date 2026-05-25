@@ -228,6 +228,11 @@ class Game {
 
       // Refresh level so all already-created platform materials receive PBR maps.
       this.levelManager.loadLevel(LEVEL_PARKOUR_CITY);
+
+      // Update Debug GUI texture dropdown with newly loaded textures
+      if (this.debugGUI) {
+        this.debugGUI.updateTextureDropdown();
+      }
     } catch (error) {
       console.warn(
         "Failed to load external texture sets. Falling back to procedural textures.",
