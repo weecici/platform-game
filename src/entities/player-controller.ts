@@ -518,8 +518,8 @@ export class PlayerController {
     if (this.isGrounded && isMoving) {
       this.footstepTimer -= dt;
       if (this.footstepTimer <= 0) {
-        this.soundManager.play("step", this.isSprinting ? 0.7 : 0.4);
-        this.footstepTimer = this.isSprinting ? 0.25 : 0.4;
+        this.soundManager.play("step", this.isSprinting ? 0.5 : 0.3);
+        this.footstepTimer = this.isSprinting ? 0.25 : 0.5;
       }
     } else {
       this.footstepTimer = 0;

@@ -20,7 +20,7 @@ import {
   STORY_CONFIG,
   GameQuestState,
   getPantsRetrievedDialogue,
-  getUfoBoardingDialogue
+  getUfoBoardingDialogue,
 } from "./data/story-data";
 
 class Game {
@@ -132,7 +132,7 @@ class Game {
     }
     this.soundManager = new SoundManager();
     void this.soundManager.load("jump", "/assets/sfx/jump.wav");
-    void this.soundManager.load("step", "/assets/sfx/step.wav");
+    void this.soundManager.load("step", "/assets/sfx/step.mp3");
     void this.soundManager.load("typing", "/assets/sfx/typing.wav");
     void this.soundManager.load("bgm", "/assets/sfx/bgm.mp3");
 
@@ -977,18 +977,18 @@ class Game {
     // Cylinder bounce pad at [-50, 35, -230]: bật lên Y+5
     if (this.tireLaunchCooldown > 0) this.tireLaunchCooldown -= dt;
     const distToTire = playerPos.distanceTo(this.tireLaunchPos);
-    if (
-      this.tireLaunchCooldown <= 0 &&
-      distToTire < 1.5 &&
-      !this.isDead
-    ) {
+    if (this.tireLaunchCooldown <= 0 && distToTire < 1.5 && !this.isDead) {
       this.player.body.velocity.y = 14;
       this.tireLaunchCooldown = 0.5;
     }
 
     // Cylinder bounce at [-115, 52, -215]: Y+10
     if (this.cyl3Cooldown > 0) this.cyl3Cooldown -= dt;
-    if (this.cyl3Cooldown <= 0 && playerPos.distanceTo(this.cyl3Pos) < 1.5 && !this.isDead) {
+    if (
+      this.cyl3Cooldown <= 0 &&
+      playerPos.distanceTo(this.cyl3Pos) < 1.5 &&
+      !this.isDead
+    ) {
       this.player.body.velocity.y = 20;
       this.cyl3Cooldown = 0.5;
     }
@@ -1044,7 +1044,9 @@ class Game {
           this.input.setGameplayActive(true);
           this.input.requestPointerLock();
         })();
-      } else if (STORY_CONFIG.npcs.some((npc) => npc.requiredItems?.includes(blockId))) {
+      } else if (
+        STORY_CONFIG.npcs.some((npc) => npc.requiredItems?.includes(blockId))
+      ) {
         // Collect quest items dynamically
         const itemLabel = this.levelManager.getCollectibleLabel(blockId);
         this.showNotification(`✨ Collected Key Item: ${itemLabel}!`, 4000);
@@ -1143,7 +1145,10 @@ class Game {
             this.blockInventory.add(blockId);
           }
           this.updateInventoryHUD();
-          this.showNotification(`🎁 Received: ${bt.icon} ${count}x ${bt.label}!`, 4000);
+          this.showNotification(
+            `🎁 Received: ${bt.icon} ${count}x ${bt.label}!`,
+            4000,
+          );
         }
       },
     };
